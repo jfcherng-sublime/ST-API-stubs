@@ -11,8 +11,8 @@ class _LogWriter:
         sublime_api.log_message(s)
 
 
-sys.stdout = _LogWriter()
-sys.stderr = _LogWriter()
+sys.stdout = _LogWriter()  # type: ignore
+sys.stderr = _LogWriter()  # type: ignore
 
 HOVER_TEXT = 1
 HOVER_GUTTER = 2
