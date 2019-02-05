@@ -1,3 +1,2 @@
 .mypy_cache/
-__init__.py
 sublime_plugin.py

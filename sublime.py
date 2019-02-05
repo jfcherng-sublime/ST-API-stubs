@@ -255,8 +255,8 @@ def encode_value(val, pretty=False):
 
 def decode_value(data):
     """
-    Decodes a JSON string into an object If _`data`_ is invalid, a `ValueError`
-    will be thrown
+    Decodes a JSON string into an object.
+    If _`data`_ is invalid, a `ValueError` will be thrown
     """
     val, err = sublime_api.decode_value(data)
 
