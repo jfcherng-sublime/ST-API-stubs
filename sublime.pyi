@@ -20,60 +20,60 @@ class _LogWriter:
     def write(self, s): ...
 
 
-HOVER_TEXT = ...  # type: int
-HOVER_GUTTER = ...  # type: int
-HOVER_MARGIN = ...  # type: int
-ENCODED_POSITION = ...  # type: int
-TRANSIENT = ...  # type: int
-FORCE_GROUP = ...  # type: int
-IGNORECASE = ...  # type: int
-LITERAL = ...  # type: int
-MONOSPACE_FONT = ...  # type: int
-KEEP_OPEN_ON_FOCUS_LOST = ...  # type: int
-HTML = ...  # type: int
-COOPERATE_WITH_AUTO_COMPLETE = ...  # type: int
-HIDE_ON_MOUSE_MOVE = ...  # type: int
-HIDE_ON_MOUSE_MOVE_AWAY = ...  # type: int
-DRAW_EMPTY = ...  # type: int
-HIDE_ON_MINIMAP = ...  # type: int
-DRAW_EMPTY_AS_OVERWRITE = ...  # type: int
-PERSISTENT = ...  # type: int
-DRAW_OUTLINED = ...  # type: int
-DRAW_NO_FILL = ...  # type: int
-DRAW_NO_OUTLINE = ...  # type: int
-DRAW_SOLID_UNDERLINE = ...  # type: int
-DRAW_STIPPLED_UNDERLINE = ...  # type: int
-DRAW_SQUIGGLY_UNDERLINE = ...  # type: int
-HIDDEN = ...  # type: int
-OP_EQUAL = ...  # type: int
-OP_NOT_EQUAL = ...  # type: int
-OP_REGEX_MATCH = ...  # type: int
-OP_NOT_REGEX_MATCH = ...  # type: int
-OP_REGEX_CONTAINS = ...  # type: int
-OP_NOT_REGEX_CONTAINS = ...  # type: int
-CLASS_WORD_START = ...  # type: int
-CLASS_WORD_END = ...  # type: int
-CLASS_PUNCTUATION_START = ...  # type: int
-CLASS_PUNCTUATION_END = ...  # type: int
-CLASS_SUB_WORD_START = ...  # type: int
-CLASS_SUB_WORD_END = ...  # type: int
-CLASS_LINE_START = ...  # type: int
-CLASS_LINE_END = ...  # type: int
-CLASS_EMPTY_LINE = ...  # type: int
-INHIBIT_WORD_COMPLETIONS = ...  # type: int
-INHIBIT_EXPLICIT_COMPLETIONS = ...  # type: int
-DIALOG_CANCEL = ...  # type: int
-DIALOG_YES = ...  # type: int
-DIALOG_NO = ...  # type: int
-UI_ELEMENT_SIDE_BAR = ...  # type: int
-UI_ELEMENT_MINIMAP = ...  # type: int
-UI_ELEMENT_TABS = ...  # type: int
-UI_ELEMENT_STATUS_BAR = ...  # type: int
-UI_ELEMENT_MENU = ...  # type: int
-UI_ELEMENT_OPEN_FILES = ...  # type: int
-LAYOUT_INLINE = ...  # type: int
-LAYOUT_BELOW = ...  # type: int
-LAYOUT_BLOCK = ...  # type: int
+HOVER_TEXT: int
+HOVER_GUTTER: int
+HOVER_MARGIN: int
+ENCODED_POSITION: int
+TRANSIENT: int
+FORCE_GROUP: int
+IGNORECASE: int
+LITERAL: int
+MONOSPACE_FONT: int
+KEEP_OPEN_ON_FOCUS_LOST: int
+HTML: int
+COOPERATE_WITH_AUTO_COMPLETE: int
+HIDE_ON_MOUSE_MOVE: int
+HIDE_ON_MOUSE_MOVE_AWAY: int
+DRAW_EMPTY: int
+HIDE_ON_MINIMAP: int
+DRAW_EMPTY_AS_OVERWRITE: int
+PERSISTENT: int
+DRAW_OUTLINED: int
+DRAW_NO_FILL: int
+DRAW_NO_OUTLINE: int
+DRAW_SOLID_UNDERLINE: int
+DRAW_STIPPLED_UNDERLINE: int
+DRAW_SQUIGGLY_UNDERLINE: int
+HIDDEN: int
+OP_EQUAL: int
+OP_NOT_EQUAL: int
+OP_REGEX_MATCH: int
+OP_NOT_REGEX_MATCH: int
+OP_REGEX_CONTAINS: int
+OP_NOT_REGEX_CONTAINS: int
+CLASS_WORD_START: int
+CLASS_WORD_END: int
+CLASS_PUNCTUATION_START: int
+CLASS_PUNCTUATION_END: int
+CLASS_SUB_WORD_START: int
+CLASS_SUB_WORD_END: int
+CLASS_LINE_START: int
+CLASS_LINE_END: int
+CLASS_EMPTY_LINE: int
+INHIBIT_WORD_COMPLETIONS: int
+INHIBIT_EXPLICIT_COMPLETIONS: int
+DIALOG_CANCEL: int
+DIALOG_YES: int
+DIALOG_NO: int
+UI_ELEMENT_SIDE_BAR: int
+UI_ELEMENT_MINIMAP: int
+UI_ELEMENT_TABS: int
+UI_ELEMENT_STATUS_BAR: int
+UI_ELEMENT_MENU: int
+UI_ELEMENT_OPEN_FILES: int
+LAYOUT_INLINE: int
+LAYOUT_BELOW: int
+LAYOUT_BLOCK: int
 
 def version() -> str: ...
 def platform() -> str: ...
@@ -113,9 +113,9 @@ def windows() -> List[Window]: ...
 def get_macro() -> List[dict]: ...
 
 class Window:
-    window_id = ...  # type: Any
-    settings_object = ...  # type: Any
-    template_settings_object = ...  # type: Any
+    window_id: Any
+    settings_object: Any
+    template_settings_object: Any
 
     def __init__(self, id: int) -> None: ...
 
@@ -238,14 +238,14 @@ class Window:
     def status_message(self, msg: str) -> None: ...
 
 class Edit:
-    edit_token = ...  # type: Any
+    edit_token: Any
 
     def __init__(self, token) -> None: ...
 
 class Region:
-    a = ...  # type: int
-    b = ...  # type: int
-    xpos = ...  # type: int
+    a: int
+    b: int
+    xpos: int
 
     def __init__(self, a: int, b: Optional[int] = ..., xpos: int = ...) -> None: ...
 
@@ -278,7 +278,7 @@ class Region:
     def intersects(self, rhs: Region) -> bool: ...
 
 class Selection(Sized):
-    view_id = ...  # type: Any
+    view_id: Any
 
     def __init__(self, id: int) -> None: ...
 
@@ -309,7 +309,7 @@ class Selection(Sized):
     def contains(self, region: Region) -> None: ...
 
 class Sheet:
-    sheet_id = ...  # type: int
+    sheet_id: int
 
     def __init__(self, id: int) -> None: ...
 
@@ -322,9 +322,9 @@ class Sheet:
     def view(self) -> Optional[View]: ...
 
 class View:
-    view_id = ...  # type: int
-    selection = ...  # type: Selection
-    settings_object = ...  # type: Settings
+    view_id: int
+    selection: Selection
+    settings_object: Settings
 
     def __init__(self, id: int) -> None: ...
 
@@ -540,7 +540,7 @@ class View:
     def is_auto_complete_visible(self) -> bool: ...
 
 class Settings:
-    settings_id = ...  # type: int
+    settings_id: int
 
     def __init__(self, id: int) -> None: ...
 
@@ -557,20 +557,20 @@ class Settings:
     def clear_on_change(self, tag: str) -> None: ...
 
 class Phantom:
-    region = ...  # type: Region
-    content = ...  # type: str
-    layout = ...  # type: int
-    on_navigate = ...  # type: Optional[Callable]
-    id = ...  # type: Any
+    region: Region
+    content: str
+    layout: int
+    on_navigate: Optional[Callable]
+    id: Any
 
     def __init__(self, region: Region, content: str, layout: int, on_navigate: Optional[Callable] = ...) -> None: ...
 
     def __eq__(self, rhs: Phantom) -> bool: ...
 
 class PhantomSet:
-    view = ...  # type: View
-    key = ...  # type: Any
-    phantoms = ...  # type: Any
+    view: View
+    key: Any
+    phantoms: Any
 
     def __init__(self, view: View, key: str = ...) -> None: ...
 
@@ -579,7 +579,7 @@ class PhantomSet:
     def update(self, new_phantoms: Sequence[Phantom]): ...
 
 class Html:
-    data = ...  # type: Any
+    data: Any
 
     def __init__(self, data) -> None: ...
 
