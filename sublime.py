@@ -386,8 +386,8 @@ class Window(object):
     def new_file(self, flags=0, syntax=""):
         """
         Creates a new file, The returned view will be empty, and its
-        `is_loaded()` method will return `True`.flags must be either
-        `0` or `TRANSIENT`
+        `is_loaded()` method will return `True`.
+        flags must be either `0` or `TRANSIENT`
         """
         return View(sublime_api.window_new_file(self.window_id, flags, syntax))
 
