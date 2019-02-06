@@ -1,6 +1,6 @@
 import sys
 
-import sublime_api
+import sublime_api  # type: ignore
 
 
 class _LogWriter:
