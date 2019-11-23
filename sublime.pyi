@@ -197,7 +197,7 @@ def active_window() -> 'Window': ...
 def windows() -> 'List[Window]': ...
 
 
-def get_macro() -> List[dict]: ...
+def get_macro() -> List[Dict[str, _Value]]: ...
 
 
 class Window:
@@ -332,9 +332,9 @@ class Window:
 
     def lookup_symbol_in_open_files(self, sym: str) -> List[_Location]: ...
 
-    def lookup_references_in_index(self, sym: str) -> List[_Location]:
+    def lookup_references_in_index(self, sym: str) -> List[_Location]: ...
 
-    def lookup_references_in_open_files(self, sym: str) -> List[_Location]:
+    def lookup_references_in_open_files(self, sym: str) -> List[_Location]: ...
 
     def extract_variables(self) -> Dict[str, str]: ...
 
@@ -342,7 +342,7 @@ class Window:
 
 
 class Edit:
-    edit_token: Any
+    edit_token: int
 
     def __init__(self, token) -> None: ...
 
@@ -586,11 +586,11 @@ class View:
 
     def text_to_layout(self, tp: int) -> _Vector: ...
 
-    def text_to_window(self, tp: int) -> _Vector:
+    def text_to_window(self, tp: int) -> _Vector: ...
 
     def layout_to_text(self, xy: _Vector): ...
 
-    def layout_to_window(self, xy: _Vector) -> _Vector:
+    def layout_to_window(self, xy: _Vector) -> _Vector: ...
 
     def window_to_layout(self, xy: _Vector) -> _Vector: ...
 
@@ -648,18 +648,28 @@ class View:
 
     def find_all_results_with_text(self): ...
 
-    def command_history(
-        self, delta: int, modifying_only: bool = ...) -> Tuple[str, dict, int]: ...
+    def command_history(self, delta: int, modifying_only: bool = ...
+                        ) -> Tuple[Optional[str], Optional[Dict[str, Any]], int]: ...
 
     def overwrite_status(self) -> bool: ...
 
     def set_overwrite_status(self, value: bool) -> None: ...
 
-    def show_popup_menu(
-        self, items: Sequence[str], on_select: Callable[[int], None], flags: int = ...) -> None: ...
+    def show_popup_menu(self,
+                        items: Sequence[str],
+                        on_select: Callable[[int], None],
+                        flags: int = ...
+                        ) -> None: ...
 
-    def show_popup(self, content: str, flags: int = ..., location: int = ..., max_width: int = ...,
-                   max_height: int = ..., on_navigate: Optional[Callable[[str], None]] = ..., on_hide: Optional[Callable[[], None]] = ...) -> None: ...
+    def show_popup(self,
+                   content: str,
+                   flags: int = ...,
+                   location: int = ...,
+                   max_width: int = ...,
+                   max_height: int = ...,
+                   on_navigate: Optional[Callable[[str], None]] = ...,
+                   on_hide: Optional[Callable[[], None]] = ...
+                   ) -> None: ...
 
     def update_popup(self, content: str) -> None: ...
 
@@ -693,7 +703,7 @@ class Phantom:
     content: str
     layout: int
     on_navigate: Optional[Callable[[str], None]]
-    id: Any
+    id: int
 
     def __init__(self, region: Region, content: str, layout: int,
                  on_navigate: Optional[Callable[str], None] = ...) -> None: ...
@@ -703,8 +713,8 @@ class Phantom:
 
 class PhantomSet:
     view: View
-    key: Any
-    phantoms: Any
+    key: str
+    phantoms: List[Phantom]
 
     def __init__(self, view: View, key: str = ...) -> None: ...
 
@@ -714,7 +724,7 @@ class PhantomSet:
 
 
 class Html:
-    data: Any
+    data: str
 
     def __init__(self, data) -> None: ...
 
