@@ -4,11 +4,22 @@ import sublime_api  # type: ignore
 
 
 class _LogWriter:
+    def __init__(self):
+        self.buf = None
+
     def flush(self):
-        pass
+        b = self.buf
+        self.buf = None
+        if b is not None and len(b):
+            sublime_api.log_message(b)
 
     def write(self, s):
-        sublime_api.log_message(s)
+        if self.buf is None:
+            self.buf = s
+        else:
+            self.buf += s
+        if '\n' in s or '\r' in s:
+            self.flush()
 
 
 sys.stdout = _LogWriter()  # type: ignore
@@ -21,6 +32,7 @@ HOVER_MARGIN = 3
 ENCODED_POSITION = 1
 TRANSIENT = 4
 FORCE_GROUP = 8
+ADD_TO_SELECTION = 16
 IGNORECASE = 2
 LITERAL = 1
 MONOSPACE_FONT = 1
@@ -29,6 +41,7 @@ HTML = 1
 COOPERATE_WITH_AUTO_COMPLETE = 2
 HIDE_ON_MOUSE_MOVE = 4
 HIDE_ON_MOUSE_MOVE_AWAY = 8
+KEEP_ON_SELECTION_MODIFIED = 16
 
 DRAW_EMPTY = 1
 HIDE_ON_MINIMAP = 2
@@ -41,6 +54,7 @@ DRAW_NO_OUTLINE = 256
 DRAW_SOLID_UNDERLINE = 512
 DRAW_STIPPLED_UNDERLINE = 1024
 DRAW_SQUIGGLY_UNDERLINE = 2048
+NO_UNDO = 8192
 HIDDEN = 128
 
 OP_EQUAL = 0
@@ -60,6 +74,7 @@ CLASS_LINE_END = 128
 CLASS_EMPTY_LINE = 256
 INHIBIT_WORD_COMPLETIONS = 8
 INHIBIT_EXPLICIT_COMPLETIONS = 16
+DYNAMIC_COMPLETIONS = 32
 
 DIALOG_CANCEL = 0
 DIALOG_YES = 1
@@ -76,19 +91,43 @@ LAYOUT_INLINE = 0
 LAYOUT_BELOW = 1
 LAYOUT_BLOCK = 2
 
+KIND_ID_AMBIGUOUS = 0
+KIND_ID_KEYWORD = 1
+KIND_ID_TYPE = 2
+KIND_ID_FUNCTION = 3
+KIND_ID_NAMESPACE = 4
+KIND_ID_NAVIGATION = 5
+KIND_ID_MARKUP = 6
+KIND_ID_VARIABLE = 7
+KIND_ID_SNIPPET = 8
+
+KIND_AMBIGUOUS = (KIND_ID_AMBIGUOUS, "", "")
+KIND_KEYWORD = (KIND_ID_KEYWORD, "", "")
+KIND_TYPE = (KIND_ID_TYPE, "", "")
+KIND_FUNCTION = (KIND_ID_FUNCTION, "", "")
+KIND_NAMESPACE = (KIND_ID_NAMESPACE, "", "")
+KIND_NAVIGATION = (KIND_ID_NAVIGATION, "", "")
+KIND_MARKUP = (KIND_ID_MARKUP, "", "")
+KIND_VARIABLE = (KIND_ID_VARIABLE, "", "")
+KIND_SNIPPET = (KIND_ID_SNIPPET, "s", "Snippet")
+
+COMPLETION_FORMAT_TEXT = 0
+COMPLETION_FORMAT_SNIPPET = 1
+COMPLETION_FORMAT_COMMAND = 2
+
 
 def version():
-    """Returns the version number"""
+    """ Returns the version number """
     return sublime_api.version()
 
 
 def platform():
-    """Returns the platform, which may be "osx", "linux" or "windows" """
+    """ Returns the platform, which may be "osx", "linux" or "windows" """
     return sublime_api.platform()
 
 
 def arch():
-    """Returns the CPU architecture, which may be "x32" or "x64" """
+    """ Returns the CPU architecture, which may be "x32" or "x64" """
     return sublime_api.architecture()
 
 
@@ -97,7 +136,7 @@ def channel():
 
 
 def executable_path():
-    """Returns the path to _sublime_text_ executable"""
+    """ Returns the path to _sublime_text_ executable """
     return sublime_api.executable_path()
 
 
@@ -109,32 +148,32 @@ def executable_hash():
 
 
 def packages_path():
-    """Returns the path where all the user's loose packages are located"""
+    """ Returns the path where all the user's loose packages are located """
     return sublime_api.packages_path()
 
 
 def installed_packages_path():
-    """Returns the path where all the user's _.sublime-package_ files are located"""
+    """ Returns the path where all the user's _.sublime-package_ files are located """
     return sublime_api.installed_packages_path()
 
 
 def cache_path():
-    """Returns the path where Sublime Text stores cache files"""
+    """ Returns the path where Sublime Text stores cache files """
     return sublime_api.cache_path()
 
 
 def status_message(msg):
-    """Show a message in the status bar"""
+    """ Show a message in the status bar """
     sublime_api.status_message(msg)
 
 
 def error_message(msg):
-    """Displays an error dialog to the user"""
+    """ Displays an error dialog to the user """
     sublime_api.error_message(msg)
 
 
 def message_dialog(msg):
-    """Displays a message dialog to the user"""
+    """ Displays a message dialog to the user """
     sublime_api.message_dialog(msg)
 
 
@@ -158,7 +197,7 @@ def yes_no_cancel_dialog(msg, yes_title="", no_title=""):
 
 
 def run_command(cmd, args=None):
-    """Runs the named `ApplicationCommand` with the (optional) given _`args`_"""
+    """ Runs the named `ApplicationCommand` with the (optional) given _`args`_ """
     sublime_api.run_command(cmd, args)
 
 
@@ -172,7 +211,7 @@ def get_clipboard(size_limit=16777216):
 
 
 def set_clipboard(text):
-    """Sets the contents of the clipboard"""
+    """ Sets the contents of the clipboard """
     return sublime_api.set_clipboard(text)
 
 
@@ -208,6 +247,10 @@ def log_build_systems(flag):
     sublime_api.log_build_systems(flag)
 
 
+def log_control_tree(flag):
+    sublime_api.log_control_tree(flag)
+
+
 def score_selector(scope_name, selector):
     """
     Matches the _`selector`_ against the given scope, returning a score
@@ -225,7 +268,7 @@ def load_resource(name):
     """
     s = sublime_api.load_resource(name)
     if s is None:
-        raise IOError("resource not found")
+        raise FileNotFoundError(f'resource "{name}" not found')
     return s
 
 
@@ -236,12 +279,12 @@ def load_binary_resource(name):
     """
     bytes = sublime_api.load_binary_resource(name)
     if bytes is None:
-        raise IOError("resource not found")
+        raise FileNotFoundError(f'resource "{name}" not found')
     return bytes
 
 
 def find_resources(pattern):
-    """Finds resources whose file name matches the given _`pattern`_"""
+    """ Finds resources whose file name matches the given _`pattern`_ """
     return sublime_api.find_resources(pattern)
 
 
@@ -279,6 +322,18 @@ def expand_variables(val, variables):
     return sublime_api.expand_variables(val, variables)
 
 
+def list_syntaxes():
+    return sublime_api.list_syntaxes()
+
+
+def find_syntax(fname, first_line=None):
+    if first_line is None:
+        first_line = ""
+    if len(first_line) > 1024:
+        first_line = first_line[:1024]
+    return sublime_api.find_syntax(fname, first_line)
+
+
 def load_settings(base_name):
     """
     Loads the named settings. The name should include a file name and extension,
@@ -292,7 +347,7 @@ def load_settings(base_name):
 
 
 def save_settings(base_name):
-    """Flushes any in-memory changes to the named settings object to disk"""
+    """ Flushes any in-memory changes to the named settings object to disk """
     sublime_api.save_settings(base_name)
 
 
@@ -314,12 +369,12 @@ def set_timeout_async(f, timeout_ms=0):
 
 
 def active_window():
-    """Returns the most recently used window"""
+    """ Returns the most recently used window """
     return Window(sublime_api.active_window())
 
 
 def windows():
-    """Returns a list of all the open windows"""
+    """ Returns a list of all the open windows """
     return [Window(id) for id in sublime_api.windows()]
 
 
@@ -349,31 +404,35 @@ class Window(object):
         return self.window_id != 0
 
     def id(self):
-        """Returns a number that uniquely identifies this window"""
+        """ Returns a number that uniquely identifies this window """
         return self.window_id
 
     def is_valid(self):
         return sublime_api.window_num_groups(self.window_id) != 0
 
     def hwnd(self):
-        """Platform specific window handle, only returns a meaningful result under Windows"""
+        """ Platform specific window handle, only returns a meaningful result under Windows """
         return sublime_api.window_system_handle(self.window_id)
 
     def active_sheet(self):
-        """Returns the currently focused sheet"""
+        """ Returns the currently focused sheet """
         sheet_id = sublime_api.window_active_sheet(self.window_id)
         if sheet_id == 0:
             return None
         else:
-            return Sheet(sheet_id)
+            return make_sheet(sheet_id)
 
     def active_view(self):
-        """Returns the currently edited view"""
+        """ Returns the currently edited view """
         view_id = sublime_api.window_active_view(self.window_id)
         if view_id == 0:
             return None
         else:
             return View(view_id)
+
+    def new_html_sheet(self, name, contents, cmd="", args=None, flags=0, group=-1):
+        return make_sheet(sublime_api.window_new_html_sheet(
+            self.window_id, name, contents, cmd, args, flags, group))
 
     def run_command(self, cmd, args=None):
         """
@@ -404,8 +463,7 @@ class Window(object):
         a :row or :row:col suffix
         `TRANSIENT`: Open the file as a preview only: it won't have a tab
         assigned it until modified
-        `FORCE_GROUP`: don't select the file if it's opened in a different
-        group
+        `FORCE_GROUP`: don't select the file if it's opened in a different group
         """
         return View(sublime_api.window_open_file(self.window_id, fname, flags, group))
 
@@ -421,26 +479,29 @@ class Window(object):
             return View(view_id)
 
     def num_groups(self):
-        """Returns the number of view groups in the window"""
+        """ Returns the number of view groups in the window """
         return sublime_api.window_num_groups(self.window_id)
 
     def active_group(self):
-        """Returns the index of the currently selected group"""
+        """ Returns the index of the currently selected group """
         return sublime_api.window_active_group(self.window_id)
 
     def focus_group(self, idx):
-        """Makes the given group active"""
+        """ Makes the given group active """
         sublime_api.window_focus_group(self.window_id, idx)
 
     def focus_sheet(self, sheet):
-        """Switches to the given _`sheet`_"""
+        """ Switches to the given _`sheet`_ """
         if sheet:
             sublime_api.window_focus_sheet(self.window_id, sheet.sheet_id)
 
     def focus_view(self, view):
-        """Switches to the given _`view`_"""
+        """ Switches to the given _`view`_ """
         if view:
             sublime_api.window_focus_view(self.window_id, view.view_id)
+
+    def bring_to_front(self):
+        sublime_api.window_bring_to_front(self.window_id)
 
     def get_sheet_index(self, sheet):
         """
@@ -463,33 +524,33 @@ class Window(object):
             return (-1, -1)
 
     def set_sheet_index(self, sheet, group, idx):
-        """Moves the _`sheet`_ to the given _`group`_ and index"""
+        """ Moves the _`sheet`_ to the given _`group`_ and index """
         sublime_api.window_set_sheet_index(self.window_id, sheet.sheet_id, group, idx)
 
     def set_view_index(self, view, group, idx):
-        """Moves the _`view`_ to the given _`group`_ and index"""
+        """ Moves the _`view`_ to the given _`group`_ and index """
         sublime_api.window_set_view_index(self.window_id, view.view_id, group, idx)
 
     def sheets(self):
-        """Returns all open sheets in the window"""
+        """ Returns all open sheets in the window """
         sheet_ids = sublime_api.window_sheets(self.window_id)
-        return [Sheet(x) for x in sheet_ids]
+        return [make_sheet(x) for x in sheet_ids]
 
     def views(self):
-        """Returns all open views in the window"""
+        """ Returns all open views in the window """
         view_ids = sublime_api.window_views(self.window_id)
         return [View(x) for x in view_ids]
 
     def active_sheet_in_group(self, group):
-        """Returns the currently focused sheet in the given _`group`_"""
+        """ Returns the currently focused sheet in the given _`group`_ """
         sheet_id = sublime_api.window_active_sheet_in_group(self.window_id, group)
         if sheet_id == 0:
             return None
         else:
-            return Sheet(sheet_id)
+            return make_sheet(sheet_id)
 
     def active_view_in_group(self, group):
-        """Returns the currently edited view in the given _`group`_"""
+        """ Returns the currently edited view in the given _`group`_ """
         view_id = sublime_api.window_active_view_in_group(self.window_id, group)
         if view_id == 0:
             return None
@@ -497,19 +558,19 @@ class Window(object):
             return View(view_id)
 
     def sheets_in_group(self, group):
-        """Returns all open sheets in the given _`group`_"""
+        """ Returns all open sheets in the given _`group`_ """
         sheet_ids = sublime_api.window_sheets_in_group(self.window_id, group)
-        return [Sheet(x) for x in sheet_ids]
+        return [make_sheet(x) for x in sheet_ids]
 
     def views_in_group(self, group):
-        """Returns all open views in the given _`group`_"""
+        """ Returns all open views in the given _`group`_ """
         view_ids = sublime_api.window_views_in_group(self.window_id, group)
         return [View(x) for x in view_ids]
 
     def transient_sheet_in_group(self, group):
         sheet_id = sublime_api.window_transient_sheet_in_group(self.window_id, group)
         if sheet_id != 0:
-            return Sheet(sheet_id)
+            return make_sheet(sheet_id)
         else:
             return None
 
@@ -521,15 +582,15 @@ class Window(object):
             return None
 
     def layout(self):
-        """Returns the current layout"""
+        """ Returns the current layout """
         return sublime_api.window_get_layout(self.window_id)
 
     def get_layout(self):
-        """deprecated, use `layout()` instead"""
+        """ deprecated, use `layout()` """
         return sublime_api.window_get_layout(self.window_id)
 
     def set_layout(self, layout):
-        """Changes the tile-based panel layout of view groups"""
+        """ Changes the tile-based panel layout of view groups """
         sublime_api.window_set_layout(self.window_id, layout)
 
     def create_output_panel(self, name, unlisted=False):
@@ -552,7 +613,7 @@ class Window(object):
         return View(view_id) if view_id else None
 
     def destroy_output_panel(self, name):
-        """Destroys the named output panel, hiding it if currently open"""
+        """ Destroys the named output panel, hiding it if currently open """
         sublime_api.window_destroy_output_panel(self.window_id, name)
 
     def active_panel(self):
@@ -572,7 +633,7 @@ class Window(object):
         return sublime_api.window_panels(self.window_id)
 
     def get_output_panel(self, name):
-        """deprecated, use `create_output_panel()`"""
+        """ deprecated, use `create_output_panel()` """
         return self.create_output_panel(name)
 
     def show_input_panel(self, caption, initial_text, on_done, on_change, on_cancel):
@@ -622,51 +683,51 @@ class Window(object):
             flags, selected_index)
 
     def is_sidebar_visible(self):
-        """Returns `True` if the sidebar will be shown when contents are available"""
+        """ Returns `True` if the sidebar will be shown when contents are available """
         return sublime_api.window_is_ui_element_visible(self.window_id, UI_ELEMENT_SIDE_BAR)
 
     def set_sidebar_visible(self, flag):
-        """Sets the sidebar to be shown or hidden when contents are available"""
+        """ Sets the sidebar to be shown or hidden when contents are available """
         sublime_api.window_set_ui_element_visible(self.window_id, UI_ELEMENT_SIDE_BAR, flag)
 
     def is_minimap_visible(self):
-        """Returns `True` if the minimap is enabled"""
+        """ Returns `True` if the minimap is enabled """
         return sublime_api.window_is_ui_element_visible(self.window_id, UI_ELEMENT_MINIMAP)
 
     def set_minimap_visible(self, flag):
-        """Controls the visibility of the minimap"""
+        """ Controls the visibility of the minimap """
         sublime_api.window_set_ui_element_visible(self.window_id, UI_ELEMENT_MINIMAP, flag)
 
     def is_status_bar_visible(self):
-        """Returns `True` if the status bar will be shown"""
+        """ Returns `True` if the status bar will be shown """
         return sublime_api.window_is_ui_element_visible(self.window_id, UI_ELEMENT_STATUS_BAR)
 
     def set_status_bar_visible(self, flag):
-        """Controls the visibility of the status bar"""
+        """ Controls the visibility of the status bar """
         sublime_api.window_set_ui_element_visible(self.window_id, UI_ELEMENT_STATUS_BAR, flag)
 
     def get_tabs_visible(self):
-        """Returns `True` if tabs will be shown for open files"""
+        """ Returns `True` if tabs will be shown for open files """
         return sublime_api.window_is_ui_element_visible(self.window_id, UI_ELEMENT_TABS)
 
     def set_tabs_visible(self, flag):
-        """Controls if tabs will be shown for open files"""
+        """ Controls if tabs will be shown for open files """
         sublime_api.window_set_ui_element_visible(self.window_id, UI_ELEMENT_TABS, flag)
 
     def is_menu_visible(self):
-        """Returns `True` if the menu is visible"""
+        """ Returns `True` if the menu is visible """
         return sublime_api.window_is_ui_element_visible(self.window_id, UI_ELEMENT_MENU)
 
     def set_menu_visible(self, flag):
-        """Controls if the menu is visible"""
+        """ Controls if the menu is visible """
         sublime_api.window_set_ui_element_visible(self.window_id, UI_ELEMENT_MENU, flag)
 
     def folders(self):
-        """Returns a list of the currently open folders"""
+        """ Returns a list of the currently open folders """
         return sublime_api.window_folders(self.window_id)
 
     def project_file_name(self):
-        """Returns name of the currently opened project file, if any"""
+        """ Returns name of the currently opened project file, if any """
         name = sublime_api.window_project_file_name(self.window_id)
         if len(name) == 0:
             return None
@@ -689,8 +750,14 @@ class Window(object):
         """
         sublime_api.window_set_project_data(self.window_id, v)
 
+    def workspace_file_name(self):
+        name = sublime_api.window_workspace_file_name(self.window_id)
+        if len(name) == 0:
+            return None
+        return name
+
     def settings(self):
-        """Per-window settings, the contents are persisted in the session"""
+        """ Per-window settings, the contents are persisted in the session """
         if not self.settings_object:
             self.settings_object = Settings(
                 sublime_api.window_settings(self.window_id))
@@ -709,18 +776,22 @@ class Window(object):
         return self.template_settings_object
 
     def lookup_symbol_in_index(self, sym):
-        """
-        Returns all locations where the symbol _`sym`_ is defined across files in
-        the current project
-        """
+        """ Finds all files and locations where sym is defined, using the symbol index """
         return sublime_api.window_lookup_symbol(self.window_id, sym)
 
+    def lookup_symbol_in_index_by_kind(self, sym, kind):
+        """ Finds all files and locations where sym is defined, using the symbol index """
+        return sublime_api.window_lookup_symbol_by_kind(self.window_id, sym, kind)
     def lookup_symbol_in_open_files(self, sym):
         """
         Returns all files and locations where the symbol _`sym`_ is defined, searching
         through open files
         """
         return sublime_api.window_lookup_symbol_in_open_files(self.window_id, sym)
+
+    def lookup_symbol_in_open_files_by_kind(self, sym, kind):
+        """ Finds all files and locations where sym is defined, searching through open files """
+        return sublime_api.window_lookup_symbol_in_open_files_by_kind(self.window_id, sym, kind)
 
     def lookup_references_in_index(self, sym):
         """
@@ -747,7 +818,7 @@ class Window(object):
         return sublime_api.window_extract_variables(self.window_id)
 
     def status_message(self, msg):
-        """Show a message in the status bar"""
+        """ Show a message in the status bar """
         sublime_api.window_status_message(self.window_id, msg)
 
 
@@ -765,7 +836,7 @@ class Edit(object):
 
 
 class Region(object):
-    """Represents an area of the buffer. Empty regions, where `a == b` are valid"""
+    """ Represents an area of the buffer. Empty regions, where `a == b` are valid """
     __slots__ = ['a', 'b', 'xpos']
 
     def __init__(self, a, b=None, xpos=-1):
@@ -774,6 +845,9 @@ class Region(object):
         self.a = a
         self.b = b
         self.xpos = xpos
+
+    def __iter__(self):
+        return iter((self.a, self.b))
 
     def __str__(self):
         return "(" + str(self.a) + ", " + str(self.b) + ")"
@@ -787,6 +861,9 @@ class Region(object):
     def __eq__(self, rhs):
         return isinstance(rhs, Region) and self.a == rhs.a and self.b == rhs.b
 
+    def __hash__(self):
+        return hash((self.a, self.b))
+
     def __lt__(self, rhs):
         lhs_begin = self.begin()
         rhs_begin = rhs.begin()
@@ -796,19 +873,33 @@ class Region(object):
         else:
             return lhs_begin < rhs_begin
 
+    def __contains__(self, v):
+        if isinstance(v, Region):
+            return v.a in self and v.b in self
+        elif isinstance(v, int):
+            return v >= self.begin() and v <= self.end()
+        else:
+            fq_name = ""
+            if v.__class__.__module__ not in {'builtins', '__builtin__'}:
+                fq_name = f"{v.__class__.__module__}."
+            fq_name += v.__class__.__qualname__
+            raise TypeError(
+                "in <Region> requires int or Region as left operand"
+                f", not {fq_name}")
+
     def empty(self):
-        """Returns `True` if `begin() == end()`"""
+        """ Returns `True` if `begin() == end()` """
         return self.a == self.b
 
     def begin(self):
-        """Returns the minimum of `a` and `b`"""
+        """ Returns the minimum of `a` and `b` """
         if self.a < self.b:
             return self.a
         else:
             return self.b
 
     def end(self):
-        """Returns the maximum of `a` and `b`"""
+        """ Returns the maximum of `a` and `b` """
         if self.a < self.b:
             return self.b
         else:
@@ -826,13 +917,10 @@ class Region(object):
         If `x` is a region, returns `True` if it's a subset
         If `x` is a point, returns `True` if `begin() <= x <= end()`
         """
-        if isinstance(x, Region):
-            return self.contains(x.a) and self.contains(x.b)
-        else:
-            return x >= self.begin() and x <= self.end()
+        return x in self
 
     def cover(self, rhs):
-        """Returns a `Region` spanning both this and the given regions"""
+        """ Returns a `Region` spanning both this and the given regions """
         a = min(self.begin(), rhs.begin())
         b = max(self.end(), rhs.end())
 
@@ -842,7 +930,7 @@ class Region(object):
             return Region(b, a)
 
     def intersection(self, rhs):
-        """Returns the set intersection of the two regions"""
+        """ Returns the set intersection of the two regions """
         if self.end() <= rhs.begin():
             return Region(0)
         if self.begin() >= rhs.end():
@@ -866,6 +954,26 @@ class Region(object):
             (lb > rb and lb < re) or (le > rb and le < re))
 
 
+class HistoricPosition():
+    __slots__ = ['pt', 'row', 'col', 'col_utf16', 'col_utf8']
+
+    def __init__(self, pt, row, col, col_u16, col_u8):
+        self.pt = pt
+        self.row = row
+        self.col = col
+        self.col_utf16 = col_u16
+        self.col_utf8 = col_u8
+
+
+class TextChange():
+    __slots__ = ['a', 'b', 'str']
+
+    def __init__(self, pa, pb, s):
+        self.a = pa
+        self.b = pb
+        self.str = s
+
+
 class Selection(object):
     """
     Maintains a set of Regions, ensuring that none overlap
@@ -874,6 +982,13 @@ class Selection(object):
 
     def __init__(self, id):
         self.view_id = id
+
+    def __iter__(self):
+        i = 0
+        n = len(self)
+        while i < n:
+            yield sublime_api.view_selection_get(self.view_id, i)
+            i += 1
 
     def __len__(self):
         return sublime_api.view_selection_size(self.view_id)
@@ -894,7 +1009,7 @@ class Selection(object):
         return rhs is not None and list(self) < list(rhs)
 
     def __bool__(self):
-        return self.view_id != 0
+        return self.view_id != 0 and len(self) > 0
 
     def __contains__(self, region):
         return sublime_api.view_selection_contains(self.view_id, region.a, region.b)
@@ -903,7 +1018,7 @@ class Selection(object):
         return sublime_api.view_buffer_id(self.view_id) != 0
 
     def clear(self):
-        """Removes all regions"""
+        """ Removes all regions """
         sublime_api.view_selection_clear(self.view_id)
 
     def add(self, x):
@@ -917,12 +1032,12 @@ class Selection(object):
             sublime_api.view_selection_add_point(self.view_id, x)
 
     def add_all(self, regions):
-        """Adds all _`regions`_ in the given list or tuple"""
+        """ Adds all _`regions`_ in the given list or tuple """
         for r in regions:
             self.add(r)
 
     def subtract(self, region):
-        """Subtracts the _`region`_ from all regions in the set"""
+        """ Subtracts the _`region`_ from all regions in the set """
         sublime_api.view_selection_subtract_region(self.view_id, region.a, region.b)
 
     def contains(self, region):
@@ -931,6 +1046,17 @@ class Selection(object):
         Returns `True` if the given _`region`_ is a subset
         """
         return sublime_api.view_selection_contains(self.view_id, region.a, region.b)
+
+
+def make_sheet(sheet_id):
+    if (sheet_id & 3) == 0:
+        return TextSheet(sheet_id)
+    elif (sheet_id & 3) == 1:
+        return ImageSheet(sheet_id)
+    elif (sheet_id & 3) == 2:
+        return HtmlSheet(sheet_id)
+    else:
+        return None
 
 
 class Sheet(object):
@@ -946,7 +1072,7 @@ class Sheet(object):
         return isinstance(other, Sheet) and other.sheet_id == self.sheet_id
 
     def id(self):
-        """Returns a number that uniquely identifies this sheet"""
+        """ Returns a number that uniquely identifies this sheet """
         return self.sheet_id
 
     def window(self):
@@ -971,6 +1097,36 @@ class Sheet(object):
         else:
             return View(view_id)
 
+    def file_name(self):
+        fn = sublime_api.sheet_file_name(self.sheet_id)
+        if len(fn) == 0:
+            return None
+        return fn
+
+
+class TextSheet(Sheet):
+    def __init__(self, id):
+        self.sheet_id = id
+
+    def set_name(self, name):
+        sublime_api.sheet_set_name(self.sheet_id, name)
+
+
+class ImageSheet(Sheet):
+    def __init__(self, id):
+        self.sheet_id = id
+
+
+class HtmlSheet(Sheet):
+    def __init__(self, id):
+        self.sheet_id = id
+
+    def set_name(self, name):
+        sublime_api.sheet_set_name(self.sheet_id, name)
+
+    def set_contents(self, contents):
+        sublime_api.html_sheet_set_contents(self.sheet_id, contents)
+
 
 class View(object):
     """
@@ -993,12 +1149,18 @@ class View(object):
         return self.view_id != 0
 
     def id(self):
-        """Returns a number that uniquely identifies this view"""
+        """ Returns a number that uniquely identifies this view """
         return self.view_id
 
     def buffer_id(self):
-        """Returns a number that uniquely identifies the buffer underlying this view"""
+        """ Returns a number that uniquely identifies the buffer underlying this view """
         return sublime_api.view_buffer_id(self.view_id)
+
+    def element(self):
+        e = sublime_api.view_element(self.view_id)
+        if e == "":
+            return None
+        return e
 
     def is_valid(self):
         """
@@ -1015,7 +1177,7 @@ class View(object):
         return sublime_api.view_is_primary(self.view_id)
 
     def window(self):
-        """Returns a reference to the window containing the view"""
+        """ Returns a reference to the window containing the view """
         window_id = sublime_api.view_window(self.view_id)
         if window_id == 0:
             return None
@@ -1041,12 +1203,18 @@ class View(object):
         sublime_api.view_retarget(self.view_id, new_fname)
 
     def name(self):
-        """The name assigned to the buffer, if any"""
+        """ The name assigned to the buffer, if any """
         return sublime_api.view_get_name(self.view_id)
 
     def set_name(self, name):
-        """Assigns a _`name`_ to the buffer"""
+        """ Assigns a _`name`_ to the buffer """
         sublime_api.view_set_name(self.view_id, name)
+
+    def reset_reference_document(self):
+        sublime_api.view_reset_reference_document(self.view_id)
+
+    def set_reference_document(self, reference):
+        sublime_api.view_set_reference_document(self.view_id, reference)
 
     def is_loading(self):
         """
@@ -1056,15 +1224,15 @@ class View(object):
         return sublime_api.view_is_loading(self.view_id)
 
     def is_dirty(self):
-        """Returns `True` if there are any unsaved modifications to the buffer"""
+        """ Returns `True` if there are any unsaved modifications to the buffer """
         return sublime_api.view_is_dirty(self.view_id)
 
     def is_read_only(self):
-        """Returns `True` if the buffer may not be modified"""
+        """ Returns `True` if the buffer may not be modified """
         return sublime_api.view_is_read_only(self.view_id)
 
     def set_read_only(self, read_only):
-        """Sets the read only property on the buffer"""
+        """ Sets the read only property on the buffer """
         return sublime_api.view_set_read_only(self.view_id, read_only)
 
     def is_scratch(self):
@@ -1082,7 +1250,7 @@ class View(object):
         return sublime_api.view_set_scratch(self.view_id, scratch)
 
     def encoding(self):
-        """Returns the encoding currently associated with the file"""
+        """ Returns the encoding currently associated with the file """
         return sublime_api.view_encoding(self.view_id)
 
     def set_encoding(self, encoding_name):
@@ -1091,11 +1259,11 @@ class View(object):
         return sublime_api.view_set_encoding(self.view_id, encoding_name)
 
     def line_endings(self):
-        """Returns the line endings used by the current file"""
+        """ Returns the line endings used by the current file """
         return sublime_api.view_line_endings(self.view_id)
 
     def set_line_endings(self, line_ending_name):
-        """Sets the line endings that will be applied when next saving"""
+        """ Sets the line endings that will be applied when next saving """
         return sublime_api.view_set_line_endings(self.view_id, line_ending_name)
 
     def size(self):
@@ -1128,14 +1296,14 @@ class View(object):
         return sublime_api.view_insert(self.view_id, edit.edit_token, pt, text)
 
     def erase(self, edit, r):
-        """Erases the contents of the region from the buffer"""
+        """ Erases the contents of the region from the buffer """
         if edit.edit_token == 0:
             raise ValueError("Edit objects may not be used after the TextCommand's run method has returned")
 
         sublime_api.view_erase(self.view_id, edit.edit_token, r)
 
     def replace(self, edit, r, text):
-        """Replaces the contents of the region with the given string"""
+        """ Replaces the contents of the region with the given string """
         if edit.edit_token == 0:
             raise ValueError("Edit objects may not be used after the TextCommand's run method has returned")
 
@@ -1149,12 +1317,22 @@ class View(object):
         """
         return sublime_api.view_change_count(self.view_id)
 
+    def change_id(self):
+        """ Returns a token that represents the current state of the buffer """
+        return sublime_api.view_change_id(self.view_id)
+
+    def transform_region_from(self, r, when):
+        """ Given a Region, and a change_id() that describes what version of
+        the buffer the region is in relation to, transforms the region into
+        the current state of the buffer """
+        return sublime_api.view_transform_region_from(self.view_id, r, when)
+
     def run_command(self, cmd, args=None):
-        """Runs the named `TextCommand` with the (optional) given _`args`_"""
+        """ Runs the named `TextCommand` with the (optional) given _`args`_ """
         sublime_api.view_run_command(self.view_id, cmd, args)
 
     def sel(self):
-        """Returns a reference to the selection"""
+        """ Returns a reference to the selection """
         return self.selection
 
     def substr(self, x):
@@ -1223,7 +1401,7 @@ class View(object):
         return sublime_api.view_extract_scope(self.view_id, pt)
 
     def scope_name(self, pt):
-        """Returns the syntax scope name assigned to the character at the given point"""
+        """ Returns the syntax scope name assigned to the character at the given point """
         return sublime_api.view_scope_name(self.view_id, pt)
 
     def match_selector(self, pt, selector):
@@ -1278,7 +1456,7 @@ class View(object):
         return sublime_api.view_has_non_empty_selection_region(self.view_id)
 
     def lines(self, r):
-        """Returns a list of lines (in sorted order) intersecting the region _`r`_"""
+        """ Returns a list of lines (in sorted order) intersecting the region _`r`_ """
         return sublime_api.view_lines(self.view_id, r)
 
     def split_by_newlines(self, r):
@@ -1299,7 +1477,7 @@ class View(object):
             return sublime_api.view_line_from_point(self.view_id, x)
 
     def full_line(self, x):
-        """As line(), but the region includes the trailing newline character, if any"""
+        """ As line(), but the region includes the trailing newline character, if any """
         if isinstance(x, Region):
             return sublime_api.view_full_line_from_region(self.view_id, x)
         else:
@@ -1355,19 +1533,31 @@ class View(object):
             return sublime_api.view_expand_by_class(self.view_id, x, x, classes, separators)
 
     def rowcol(self, tp):
-        """Calculates the 0-based line and column numbers of the the given point"""
+        """ Calculates the 0-based line and column numbers of the the given point """
         return sublime_api.view_row_col(self.view_id, tp)
 
+    def rowcol_utf8(self, tp):
+        return sublime_api.view_row_col_utf8(self.view_id, tp)
+
+    def rowcol_utf16(self, tp):
+        return sublime_api.view_row_col_utf16(self.view_id, tp)
+
     def text_point(self, row, col):
-        """Converts a row and column into a text point"""
+        """ Converts a row and column into a text point """
         return sublime_api.view_text_point(self.view_id, row, col)
 
+    def text_point_utf8(self, row, col_utf8):
+        return sublime_api.view_text_point_utf8(self.view_id, row, col_utf8)
+
+    def text_point_utf16(self, row, col_utf16):
+        return sublime_api.view_text_point_utf16(self.view_id, row, col_utf16)
+
     def visible_region(self):
-        """Returns the approximate visible region"""
+        """ Returns the approximate visible region """
         return sublime_api.view_visible_region(self.view_id)
 
     def show(self, x, show_surrounds=True):
-        """Scrolls the view to reveal x, which may be a Region or point"""
+        """ Scrolls the view to reveal x, which may be a Region or point """
         if isinstance(x, Region):
             return sublime_api.view_show_region(self.view_id, x, show_surrounds)
         if isinstance(x, Selection):
@@ -1377,58 +1567,58 @@ class View(object):
             return sublime_api.view_show_point(self.view_id, x, show_surrounds)
 
     def show_at_center(self, x):
-        """Scrolls the view to center on x, which may be a Region or point"""
+        """ Scrolls the view to center on x, which may be a Region or point """
         if isinstance(x, Region):
             return sublime_api.view_show_region_at_center(self.view_id, x)
         else:
             return sublime_api.view_show_point_at_center(self.view_id, x)
 
     def viewport_position(self):
-        """Returns the (x, y) scroll position of the view in layout coordinates"""
+        """ Returns the (x, y) scroll position of the view in layout coordinates """
         return sublime_api.view_viewport_position(self.view_id)
 
     def set_viewport_position(self, xy, animate=True):
-        """Scrolls the view to the given position in layout coordinates"""
-        sublime_api.view_set_viewport_position(self.view_id, xy, animate)
+        """ Scrolls the view to the given position in layout coordinates """
+        return sublime_api.view_set_viewport_position(self.view_id, xy, animate)
 
     def viewport_extent(self):
-        """Returns the width and height of the viewport, in layout coordinates"""
+        """ Returns the width and height of the viewport, in layout coordinates """
         return sublime_api.view_viewport_extents(self.view_id)
 
     def layout_extent(self):
-        """Returns the total height and width of the document, in layout coordinates"""
+        """ Returns the total height and width of the document, in layout coordinates """
         return sublime_api.view_layout_extents(self.view_id)
 
     def text_to_layout(self, tp):
-        """Converts a text point to layout coordinates"""
+        """ Converts a text point to layout coordinates """
         return sublime_api.view_text_to_layout(self.view_id, tp)
 
     def text_to_window(self, tp):
-        """Converts a text point to window coordinates"""
+        """ Converts a text point to window coordinates """
         return self.layout_to_window(self.text_to_layout(tp))
 
     def layout_to_text(self, xy):
-        """Converts layout coordinates to a text point"""
+        """ Converts layout coordinates to a text point """
         return sublime_api.view_layout_to_text(self.view_id, xy)
 
     def layout_to_window(self, xy):
-        """Converts layout coordinates to window coordinates"""
+        """ Converts layout coordinates to window coordinates """
         return sublime_api.view_layout_to_window(self.view_id, xy)
 
     def window_to_layout(self, xy):
-        """Converts window coordinates to layout coordinates"""
+        """ Converts window coordinates to layout coordinates """
         return sublime_api.view_window_to_layout(self.view_id, xy)
 
     def window_to_text(self, xy):
-        """Converts window coordinates to a text point"""
+        """ Converts window coordinates to a text point """
         return self.layout_to_text(self.window_to_layout(xy))
 
     def line_height(self):
-        """Returns the height of a line in layout coordinates"""
+        """ Returns the height of a line in layout coordinates """
         return sublime_api.view_line_height(self.view_id)
 
     def em_width(self):
-        """Returns the em-width of the current font in layout coordinates"""
+        """ Returns the em-width of the current font in layout coordinates """
         return sublime_api.view_em_width(self.view_id)
 
     def is_folded(self, sr):
@@ -1444,13 +1634,14 @@ class View(object):
             return sublime_api.view_fold_regions(self.view_id, x)
 
     def unfold(self, x):
-        """Unfolds all text in the region(s), returning the unfolded regions"""
+        """ Unfolds all text in the region(s), returning the unfolded regions """
         if isinstance(x, Region):
             return sublime_api.view_unfold_region(self.view_id, x)
         else:
             return sublime_api.view_unfold_regions(self.view_id, x)
 
-    def add_regions(self, key, regions, scope="", icon="", flags=0):
+    def add_regions(self, key, regions, scope="", icon="", flags=0,
+                    annotations=[], annotation_color="", on_navigate=None, on_close=None):
         """
         Add a set of _`regions`_ to the view. If a set of regions already exists
         with the given _`key`_, they will be overwritten. The _`scope`_ is used
@@ -1487,14 +1678,24 @@ class View(object):
         if not isinstance(icon, "".__class__):
             raise ValueError("icon must be a string")
 
-        sublime_api.view_add_regions(self.view_id, key, regions, scope, icon, flags)
+        if not isinstance(annotations, list):
+            raise ValueError("annotations must be a list")
+
+        if len(annotations) != 0 and len(annotations) != len(regions):
+            raise ValueError("region and annotation length mismatch")
+
+        if on_close is not None:
+            flags = flags | 16384
+
+        sublime_api.view_add_regions(
+            self.view_id, key, regions, scope, icon, flags, annotations, annotation_color, on_navigate, on_close)
 
     def get_regions(self, key):
-        """Return the regions associated with the given _`key`_, if any"""
+        """ Return the regions associated with the given _`key`_, if any """
         return sublime_api.view_get_regions(self.view_id, key)
 
     def erase_regions(self, key):
-        """Remove the named regions"""
+        """ Remove the named regions """
         sublime_api.view_erase_regions(self.view_id, key)
 
     def add_phantom(self, key, region, content, layout, on_navigate=None):
@@ -1516,15 +1717,15 @@ class View(object):
         sublime_api.view_assign_syntax(self.view_id, syntax_file)
 
     def set_syntax_file(self, syntax_file):
-        """Deprecated, use `assign_syntax()` instead"""
+        """ Deprecated, use `assign_syntax()` """
         self.assign_syntax(syntax_file)
 
     def symbols(self):
-        """Extract all the symbols defined in the buffer"""
+        """ Extract all the symbols defined in the buffer """
         return sublime_api.view_symbols(self.view_id)
 
     def get_symbols(self):
-        """Deprecated, use `symbols()`"""
+        """ Deprecated, use `symbols()` """
         return self.symbols()
 
     def indexed_symbols(self):
@@ -1542,11 +1743,11 @@ class View(object):
         sublime_api.view_set_status(self.view_id, key, value)
 
     def get_status(self, key):
-        """Returns the previously assigned value associated with the _`key`_, if any"""
+        """ Returns the previously assigned value associated with the _`key`_, if any """
         return sublime_api.view_get_status(self.view_id, key)
 
     def erase_status(self, key):
-        """Clears the named status"""
+        """ Clears the named status """
         sublime_api.view_erase_status(self.view_id, key)
 
     def extract_completions(self, prefix, tp=-1):
@@ -1574,11 +1775,11 @@ class View(object):
         return sublime_api.view_command_history(self.view_id, delta, modifying_only)
 
     def overwrite_status(self):
-        """Returns the overwrite status, which the user normally toggles via the insert key"""
+        """ Returns the overwrite status, which the user normally toggles via the insert key """
         return sublime_api.view_get_overwrite_status(self.view_id)
 
     def set_overwrite_status(self, value):
-        """Sets the overwrite status"""
+        """ Sets the overwrite status """
         sublime_api.view_set_overwrite_status(self.view_id, value)
 
     def show_popup_menu(self, items, on_select, flags=0):
@@ -1621,26 +1822,47 @@ class View(object):
             on_navigate, on_hide)
 
     def update_popup(self, content):
-        """Updates the contents of the currently visible popup"""
+        """ Updates the contents of the currently visible popup """
         sublime_api.view_update_popup_content(self.view_id, content)
 
     def is_popup_visible(self):
-        """Returns if the popup is currently shown"""
+        """ Returns if the popup is currently shown """
         return sublime_api.view_is_popup_visible(self.view_id)
 
     def hide_popup(self):
-        """Hides the popup"""
+        """ Hides the popup """
         sublime_api.view_hide_popup(self.view_id)
 
     def is_auto_complete_visible(self):
-        """Returns wether the auto complete menu is currently visible"""
+        """ Returns wether the auto complete menu is currently visible """
         return sublime_api.view_is_auto_complete_visible(self.view_id)
+
+    def preserve_auto_complete_on_focus_lost(self):
+        sublime_api.view_preserve_auto_complete_on_focus_lost(self.view_id)
 
 
 class Settings(object):
 
     def __init__(self, id):
         self.settings_id = id
+
+    def __getitem__(self, key):
+        res = sublime_api.settings_get(self.settings_id, key)
+        if res is None and not sublime_api.settings_has(self.settings_id, key):
+            raise KeyError(repr(key))
+        return res
+
+    def __setitem__(self, key, value):
+        sublime_api.settings_set(self.settings_id, key, value)
+
+    def __contains__(self, key):
+        return sublime_api.settings_has(self.settings_id, key)
+
+    def setdefault(self, key, value):
+        if sublime_api.settings_has(self.settings_id, key):
+            return sublime_api.settings_get(self.settings_id, key)
+        sublime_api.settings_set(self.settings_id, key, value)
+        return value
 
     def get(self, key, default=None):
         """
@@ -1660,19 +1882,19 @@ class Settings(object):
         return sublime_api.settings_has(self.settings_id, key)
 
     def set(self, key, value):
-        """Sets the named setting. Only primitive types, lists, and dicts are accepted"""
+        """ Sets the named setting. Only primitive types, lists, and dicts are accepted """
         sublime_api.settings_set(self.settings_id, key, value)
 
     def erase(self, key):
-        """Removes the named setting. Does not remove it from any parent Settings"""
+        """ Removes the named setting. Does not remove it from any parent Settings """
         sublime_api.settings_erase(self.settings_id, key)
 
     def add_on_change(self, tag, callback):
-        """Register a _`callback`_ to be run whenever a setting in this object is changed"""
+        """ Register a _`callback`_ to be run whenever a setting in this object is changed """
         sublime_api.settings_add_on_change(self.settings_id, tag, callback)
 
     def clear_on_change(self, tag):
-        """Remove all callbacks registered with the given _`tag`_"""
+        """ Remove all callbacks registered with the given _`tag`_ """
         sublime_api.settings_clear_on_change(self.settings_id, tag)
 
 
@@ -1706,6 +1928,9 @@ class Phantom(object):
         return (self.region == rhs.region and self.content == rhs.content and
                 self.layout == rhs.layout and self.on_navigate == rhs.on_navigate)
 
+    def __hash__(self):
+        return hash((self.region, self.content, self.layout, self.on_navigate))
+
 
 class PhantomSet(object):
     """
@@ -1716,7 +1941,6 @@ class PhantomSet(object):
     def __init__(self, view, key=""):
         # deprecated
         self.view = view
-        self.__view_id = view.view_id
         self.key = key
         self.phantoms = []
 
@@ -1731,28 +1955,33 @@ class PhantomSet(object):
         New phantoms will be added to the view and phantoms not in phantoms list
         will be deleted
         """
+        new_phantoms = set(new_phantoms)
+
         # Update the list of phantoms that exist in the text buffer with their
         # current location
         regions = self.view.query_phantoms([p.id for p in self.phantoms])
-        for i in range(len(regions)):
-            self.phantoms[i].region = regions[i]
+        for phantom, region in zip(self.phantoms, regions):
+            phantom.region = region
+
+        current_phantoms = {p: p for p in self.phantoms}
 
         for p in new_phantoms:
             try:
                 # Phantom already exists, copy the id from the current one
-                idx = self.phantoms.index(p)
-                p.id = self.phantoms[idx].id
-            except ValueError:
+                p.id = current_phantoms[p].id
+            except KeyError:
                 p.id = self.view.add_phantom(
                     self.key, p.region, p.content, p.layout, p.on_navigate)
+
+        new_phantom_ids = set([p.id for p in new_phantoms])
 
         for p in self.phantoms:
             # if the region is -1, then it's already been deleted, no need to
             # call erase
-            if p not in new_phantoms and p.region != Region(-1):
+            if p.id not in new_phantom_ids and p.region != Region(-1):
                 self.view.erase_phantom_by_id(p.id)
 
-        self.phantoms = new_phantoms
+        self.phantoms = [p for p in new_phantoms]
 
 
 class Html(object):
@@ -1763,3 +1992,81 @@ class Html(object):
 
     def __str__(self):
         return "Html(" + str(self.data) + ")"
+
+
+class CompletionList(object):
+    def __init__(self, completions=None, flags=0):
+        self.target = None
+        self.completions = completions
+        self.flags = flags
+
+    def _set_target(self, target):
+        if self.completions is not None:
+            target.completions_ready(self.completions, self.flags)
+        else:
+            self.target = target
+
+    def set_completions(self, completions, flags=0):
+        assert(self.completions is None)
+        assert(flags is not None)
+
+        self.completions = completions
+        self.flags = flags
+
+        if self.target is not None:
+            self.target.completions_ready(completions, flags)
+
+
+class CompletionItem(object):
+    def __init__(
+            self,
+            trigger,
+            annotation="",
+            completion="",
+            completion_format=COMPLETION_FORMAT_TEXT,
+            kind=KIND_AMBIGUOUS,
+            details=""):
+
+        self.trigger = trigger
+        self.annotation = annotation
+        self.completion = completion
+        self.completion_format = completion_format
+        self.kind = kind
+        self.details = details
+
+    @classmethod
+    def snippet_completion(
+            cls,
+            trigger,
+            snippet,
+            annotation="",
+            kind=KIND_SNIPPET,
+            details=""):
+
+        return CompletionItem(
+            trigger,
+            annotation,
+            snippet,
+            COMPLETION_FORMAT_SNIPPET,
+            kind,
+            details)
+
+    @classmethod
+    def command_completion(
+            cls,
+            trigger,
+            command,
+            args={},
+            annotation="",
+            kind=KIND_AMBIGUOUS,
+            details=""):
+
+        completion = command + " " + encode_value(args)
+
+        return CompletionItem(
+            trigger,
+            annotation,
+            completion,
+            COMPLETION_FORMAT_COMMAND,
+            kind,
+            details)
