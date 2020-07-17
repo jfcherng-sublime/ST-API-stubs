@@ -1858,6 +1858,12 @@ class Settings(object):
     def __contains__(self, key):
         return sublime_api.settings_has(self.settings_id, key)
 
+    def to_dict(self):
+        """
+        Return the settings as a dict. This is not very fast.
+        """
+        return sublime_api.settings_to_dict(self.settings_id)
+
     def setdefault(self, key, value):
         if sublime_api.settings_has(self.settings_id, key):
             return sublime_api.settings_get(self.settings_id, key)
