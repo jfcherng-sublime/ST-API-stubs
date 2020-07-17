@@ -18,7 +18,7 @@ class _LogWriter:
             self.buf = s
         else:
             self.buf += s
-        if '\n' in s or '\r' in s:
+        if "\n" in s or "\r" in s:
             self.flush()
 
 
@@ -142,9 +142,12 @@ def executable_path():
 
 def executable_hash():
     import hashlib
+
     return (
-        version(), platform() + '_' + arch(),
-        hashlib.md5(open(executable_path(), 'rb').read()).hexdigest())
+        version(),
+        platform() + "_" + arch(),
+        hashlib.md5(open(executable_path(), "rb").read()).hexdigest(),
+    )
 
 
 def packages_path():
@@ -431,8 +434,11 @@ class Window(object):
             return View(view_id)
 
     def new_html_sheet(self, name, contents, cmd="", args=None, flags=0, group=-1):
-        return make_sheet(sublime_api.window_new_html_sheet(
-            self.window_id, name, contents, cmd, args, flags, group))
+        return make_sheet(
+            sublime_api.window_new_html_sheet(
+                self.window_id, name, contents, cmd, args, flags, group
+            )
+        )
 
     def run_command(self, cmd, args=None):
         """
@@ -644,8 +650,11 @@ class Window(object):
         _`on_cancel`_ should be a function that expects no arguments
         The view used for the input widget is returned
         """
-        return View(sublime_api.window_show_input_panel(
-            self.window_id, caption, initial_text, on_done, on_change, on_cancel))
+        return View(
+            sublime_api.window_show_input_panel(
+                self.window_id, caption, initial_text, on_done, on_change, on_cancel
+            )
+        )
 
     def show_quick_panel(self, items, on_select, flags=0, selected_index=-1, on_highlight=None):
         """
@@ -679,8 +688,14 @@ class Window(object):
                         flat_items.append(items[i][j])
 
         sublime_api.window_show_quick_panel(
-            self.window_id, flat_items, items_per_row, on_select, on_highlight,
-            flags, selected_index)
+            self.window_id,
+            flat_items,
+            items_per_row,
+            on_select,
+            on_highlight,
+            flags,
+            selected_index,
+        )
 
     def is_sidebar_visible(self):
         """ Returns `True` if the sidebar will be shown when contents are available """
@@ -759,8 +774,7 @@ class Window(object):
     def settings(self):
         """ Per-window settings, the contents are persisted in the session """
         if not self.settings_object:
-            self.settings_object = Settings(
-                sublime_api.window_settings(self.window_id))
+            self.settings_object = Settings(sublime_api.window_settings(self.window_id))
 
         return self.settings_object
 
@@ -771,7 +785,8 @@ class Window(object):
         """
         if not self.template_settings_object:
             self.template_settings_object = Settings(
-                sublime_api.window_template_settings(self.window_id))
+                sublime_api.window_template_settings(self.window_id)
+            )
 
         return self.template_settings_object
 
@@ -782,6 +797,7 @@ class Window(object):
     def lookup_symbol_in_index_by_kind(self, sym, kind):
         """ Finds all files and locations where sym is defined, using the symbol index """
         return sublime_api.window_lookup_symbol_by_kind(self.window_id, sym, kind)
+
     def lookup_symbol_in_open_files(self, sym):
         """
         Returns all files and locations where the symbol _`sym`_ is defined, searching
@@ -837,7 +853,8 @@ class Edit(object):
 
 class Region(object):
     """ Represents an area of the buffer. Empty regions, where `a == b` are valid """
-    __slots__ = ['a', 'b', 'xpos']
+
+    __slots__ = ["a", "b", "xpos"]
 
     def __init__(self, a, b=None, xpos=-1):
         if b is None:
@@ -880,12 +897,10 @@ class Region(object):
             return v >= self.begin() and v <= self.end()
         else:
             fq_name = ""
-            if v.__class__.__module__ not in {'builtins', '__builtin__'}:
+            if v.__class__.__module__ not in {"builtins", "__builtin__"}:
                 fq_name = f"{v.__class__.__module__}."
             fq_name += v.__class__.__qualname__
-            raise TypeError(
-                "in <Region> requires int or Region as left operand"
-                f", not {fq_name}")
+            raise TypeError("in <Region> requires int or Region as left operand" f", not {fq_name}")
 
     def empty(self):
         """ Returns `True` if `begin() == end()` """
@@ -949,13 +964,16 @@ class Region(object):
         re = rhs.end()
 
         return (
-            (lb == rb and le == re) or
-            (rb > lb and rb < le) or (re > lb and re < le) or
-            (lb > rb and lb < re) or (le > rb and le < re))
+            (lb == rb and le == re)
+            or (rb > lb and rb < le)
+            or (re > lb and re < le)
+            or (lb > rb and lb < re)
+            or (le > rb and le < re)
+        )
 
 
-class HistoricPosition():
-    __slots__ = ['pt', 'row', 'col', 'col_utf16', 'col_utf8']
+class HistoricPosition:
+    __slots__ = ["pt", "row", "col", "col_utf16", "col_utf8"]
 
     def __init__(self, pt, row, col, col_u16, col_u8):
         self.pt = pt
@@ -965,8 +983,8 @@ class HistoricPosition():
         self.col_utf8 = col_u8
 
 
-class TextChange():
-    __slots__ = ['a', 'b', 'str']
+class TextChange:
+    __slots__ = ["a", "b", "str"]
 
     def __init__(self, pa, pb, s):
         self.a = pa
@@ -1291,21 +1309,27 @@ class View(object):
         tabs are being translated into spaces in the current buffer
         """
         if edit.edit_token == 0:
-            raise ValueError("Edit objects may not be used after the TextCommand's run method has returned")
+            raise ValueError(
+                "Edit objects may not be used after the TextCommand's run method has returned"
+            )
 
         return sublime_api.view_insert(self.view_id, edit.edit_token, pt, text)
 
     def erase(self, edit, r):
         """ Erases the contents of the region from the buffer """
         if edit.edit_token == 0:
-            raise ValueError("Edit objects may not be used after the TextCommand's run method has returned")
+            raise ValueError(
+                "Edit objects may not be used after the TextCommand's run method has returned"
+            )
 
         sublime_api.view_erase(self.view_id, edit.edit_token, r)
 
     def replace(self, edit, r, text):
         """ Replaces the contents of the region with the given string """
         if edit.edit_token == 0:
-            raise ValueError("Edit objects may not be used after the TextCommand's run method has returned")
+            raise ValueError(
+                "Edit objects may not be used after the TextCommand's run method has returned"
+            )
 
         sublime_api.view_replace(self.view_id, edit.edit_token, r, text)
 
@@ -1640,8 +1664,18 @@ class View(object):
         else:
             return sublime_api.view_unfold_regions(self.view_id, x)
 
-    def add_regions(self, key, regions, scope="", icon="", flags=0,
-                    annotations=[], annotation_color="", on_navigate=None, on_close=None):
+    def add_regions(
+        self,
+        key,
+        regions,
+        scope="",
+        icon="",
+        flags=0,
+        annotations=[],
+        annotation_color="",
+        on_navigate=None,
+        on_close=None,
+    ):
         """
         Add a set of _`regions`_ to the view. If a set of regions already exists
         with the given _`key`_, they will be overwritten. The _`scope`_ is used
@@ -1688,7 +1722,17 @@ class View(object):
             flags = flags | 16384
 
         sublime_api.view_add_regions(
-            self.view_id, key, regions, scope, icon, flags, annotations, annotation_color, on_navigate, on_close)
+            self.view_id,
+            key,
+            regions,
+            scope,
+            icon,
+            flags,
+            annotations,
+            annotation_color,
+            on_navigate,
+            on_close,
+        )
 
     def get_regions(self, key):
         """ Return the regions associated with the given _`key`_, if any """
@@ -1794,9 +1838,16 @@ class View(object):
         """
         return sublime_api.view_show_popup_table(self.view_id, items, on_select, flags, -1)
 
-    def show_popup(self, content, flags=0, location=-1,
-                   max_width=320, max_height=240,
-                   on_navigate=None, on_hide=None):
+    def show_popup(
+        self,
+        content,
+        flags=0,
+        location=-1,
+        max_width=320,
+        max_height=240,
+        on_navigate=None,
+        on_hide=None,
+    ):
         """
         Shows a popup displaying HTML content.
 
@@ -1818,8 +1869,8 @@ class View(object):
         * _`on_hide`_ is called when the popup is hidden
         """
         sublime_api.view_show_popup(
-            self.view_id, location, content, flags, max_width, max_height,
-            on_navigate, on_hide)
+            self.view_id, location, content, flags, max_width, max_height, on_navigate, on_hide
+        )
 
     def update_popup(self, content):
         """ Updates the contents of the currently visible popup """
@@ -1842,7 +1893,6 @@ class View(object):
 
 
 class Settings(object):
-
     def __init__(self, id):
         self.settings_id = id
 
@@ -1931,8 +1981,12 @@ class Phantom(object):
 
     def __eq__(self, rhs):
         # Note that self.id is not considered
-        return (self.region == rhs.region and self.content == rhs.content and
-                self.layout == rhs.layout and self.on_navigate == rhs.on_navigate)
+        return (
+            self.region == rhs.region
+            and self.content == rhs.content
+            and self.layout == rhs.layout
+            and self.on_navigate == rhs.on_navigate
+        )
 
     def __hash__(self):
         return hash((self.region, self.content, self.layout, self.on_navigate))
@@ -1976,8 +2030,7 @@ class PhantomSet(object):
                 # Phantom already exists, copy the id from the current one
                 p.id = current_phantoms[p].id
             except KeyError:
-                p.id = self.view.add_phantom(
-                    self.key, p.region, p.content, p.layout, p.on_navigate)
+                p.id = self.view.add_phantom(self.key, p.region, p.content, p.layout, p.on_navigate)
 
         new_phantom_ids = set([p.id for p in new_phantoms])
 
@@ -1991,7 +2044,7 @@ class PhantomSet(object):
 
 
 class Html(object):
-    __slots__ = ['data']
+    __slots__ = ["data"]
 
     def __init__(self, data):
         self.data = data
@@ -2013,8 +2066,8 @@ class CompletionList(object):
             self.target = target
 
     def set_completions(self, completions, flags=0):
-        assert(self.completions is None)
-        assert(flags is not None)
+        assert self.completions is None
+        assert flags is not None
 
         self.completions = completions
         self.flags = flags
@@ -2025,13 +2078,14 @@ class CompletionList(object):
 
 class CompletionItem(object):
     def __init__(
-            self,
-            trigger,
-            annotation="",
-            completion="",
-            completion_format=COMPLETION_FORMAT_TEXT,
-            kind=KIND_AMBIGUOUS,
-            details=""):
+        self,
+        trigger,
+        annotation="",
+        completion="",
+        completion_format=COMPLETION_FORMAT_TEXT,
+        kind=KIND_AMBIGUOUS,
+        details="",
+    ):
 
         self.trigger = trigger
         self.annotation = annotation
@@ -2041,38 +2095,19 @@ class CompletionItem(object):
         self.details = details
 
     @classmethod
-    def snippet_completion(
-            cls,
-            trigger,
-            snippet,
-            annotation="",
-            kind=KIND_SNIPPET,
-            details=""):
+    def snippet_completion(cls, trigger, snippet, annotation="", kind=KIND_SNIPPET, details=""):
 
         return CompletionItem(
-            trigger,
-            annotation,
-            snippet,
-            COMPLETION_FORMAT_SNIPPET,
-            kind,
-            details)
+            trigger, annotation, snippet, COMPLETION_FORMAT_SNIPPET, kind, details
+        )
 
     @classmethod
     def command_completion(
-            cls,
-            trigger,
-            command,
-            args={},
-            annotation="",
-            kind=KIND_AMBIGUOUS,
-            details=""):
+        cls, trigger, command, args={}, annotation="", kind=KIND_AMBIGUOUS, details=""
+    ):
 
         completion = command + " " + encode_value(args)
 
         return CompletionItem(
-            trigger,
-            annotation,
-            completion,
-            COMPLETION_FORMAT_COMMAND,
-            kind,
-            details)
+            trigger, annotation, completion, COMPLETION_FORMAT_COMMAND, kind, details
+        )
