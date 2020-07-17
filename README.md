@@ -1,14 +1,14 @@
-## Overview
-The patch aims at making sublime text API more accessible, easier and safer for usage by developpers
+## Sublime Text API Stubs
 
-it does this by adding:
-- docstrings describing the API
-- type hints to enable static type checks
+With LSP proper configured, you can have something like the following screenshot.
 
-many sublime plugin developpers prefer to use static type checkers (e.g mypy) in their projects:
-for many reasons including code safety and smart autocompletion so they have to create stubs for
-_sublime.py_ and _sublime_plugin.py_, this patch avoids that.
+![LSP properly configured](https://raw.githubusercontent.com/jfcherng-sublime/ST-api-stubs/master/docs/with-lsp.png)
 
-Developpers would also appreciate not having to search the web every time they want
-a function description, this patch makes it easy to do that using various plugins that
-support function docstrings and signatures (e,g [LSP](https://packagecontrol.io/packages/LSP), [Anaconda](https://packagecontrol.io/packages/Anaconda))
+## Related Resources (Acknowledgment)
+
+This repository is mostly based on [AmjadHD/sublime_dev](https://github.com/AmjadHD/sublime_dev)'s work.
+
+Apart from [@AmjadHD](https://github.com/AmjadHD)'s work, there are also some other similar works:
+
+- https://github.com/sublimelsp/LSP/tree/master/stubs
+- https://github.com/SublimeText/sublime_lib/tree/master/stubs
