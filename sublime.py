@@ -40,6 +40,14 @@ Point = int
 Vector = Tuple[float, float]
 Value = Union[dict, list, str, float, bool, None]
 
+# fmt: off
+T_completion = Union[
+    str,
+    Union[List[str], Tuple[str, str]],
+    "CompletionItem",
+]
+# fmt: on
+
 _T = TypeVar("_T")
 Callback0 = Callable[[], None]
 Callback1 = Callable[[_T], None]
@@ -291,12 +299,12 @@ def select_folder_dialog(
     ...
 
 
-def run_command(cmd: str, args: Optional[Dict[str, Any]] = None) -> None:
+def run_command(cmd: str, args: Optional[Dict[str, Value]] = None) -> None:
     """ Runs the named `ApplicationCommand` with the (optional) given `args` """
     ...
 
 
-def format_command(cmd: str, args: Optional[Dict[str, Any]] = None) -> str:
+def format_command(cmd: str, args: Optional[Dict[str, Value]] = None) -> str:
     """
     Creates a "command string" from a str cmd name, and an optional dict of args.
     This is used when constructing a command-based `CompletionItem`
@@ -304,11 +312,11 @@ def format_command(cmd: str, args: Optional[Dict[str, Any]] = None) -> str:
     ...
 
 
-def html_format_command(cmd: str, args: Optional[Dict[str, Any]] = None) -> str:
+def html_format_command(cmd: str, args: Optional[Dict[str, Value]] = None) -> str:
     ...
 
 
-def command_url(cmd: str, args: Optional[Dict[str, Any]] = None) -> str:
+def command_url(cmd: str, args: Optional[Dict[str, Value]] = None) -> str:
     """ Creates a `subl:` protocol URL for executing a command in a minihtml link """
     ...
 
@@ -596,7 +604,7 @@ class Window:
         """
         ...
 
-    def run_command(self, cmd: str, args: Optional[Dict[str, Any]] = ...) -> None:
+    def run_command(self, cmd: str, args: Optional[Dict[str, Value]] = ...) -> None:
         """
         Runs the named `WindowCommand` with the (optional) given `args`
         This method is able to run any sort of command, dispatching the
@@ -1401,7 +1409,9 @@ class View:
         """
         ...
 
-    def begin_edit(self, edit_token: int, cmd: str, args: Optional[Dict[str, Any]] = None) -> Edit:
+    def begin_edit(
+        self, edit_token: int, cmd: str, args: Optional[Dict[str, Value]] = None
+    ) -> Edit:
         ...
 
     def end_edit(self, edit: Edit) -> None:
@@ -1452,7 +1462,7 @@ class View:
         """
         ...
 
-    def run_command(self, cmd: str, args: Optional[Dict[str, Any]] = None) -> None:
+    def run_command(self, cmd: str, args: Optional[Dict[str, Value]] = None) -> None:
         """ Runs the named `TextCommand` with the (optional) given `args` """
         ...
 
@@ -2155,90 +2165,107 @@ class Html:
 
 
 class CompletionList:
-    def __init__(self, completions=None, flags=0):
-        self.target = None
-        self.completions = completions
-        self.flags = flags
+    """ Represents a list of completions, some of which may be in the process of being asynchronously fetched """
 
-    def __repr__(self):
-        return f"CompletionList(completions={self.completions!r}, flags={self.flags!r})"
+    target: Optional[Any]
+    completions: List[T_completion]
+    flags: int
 
-    def _set_target(self, target):
-        if self.completions is not None:
-            target.completions_ready(self.completions, self.flags)
-        else:
-            self.target = target
+    def __init__(self, completions: List[T_completion] = None, flags: int = 0) -> str:
+        ...
 
-    def set_completions(self, completions, flags=0):
-        assert self.completions is None
-        assert flags is not None
+    def __repr__(self) -> str:
+        ...
 
-        self.completions = completions
-        self.flags = flags
+    def _set_target(self, target: Optional[Any]) -> None:
+        ...
 
-        if self.target is not None:
-            self.target.completions_ready(completions, flags)
+    def set_completions(self, completions: List[T_completion], flags: int = 0):
+        """ Sets the completions """
+        ...
 
 
 class CompletionItem:
+    """ Represents an available auto-completion item """
+
+    trigger: str
+    annotation: str
+    completion: T_completion
+    completion_format: int
+    kind: Tuple[int, str, str]
+    details: str
+    flags: int
+
     def __init__(
         self,
-        trigger,
-        annotation="",
-        completion="",
-        completion_format=COMPLETION_FORMAT_TEXT,
-        kind=KIND_AMBIGUOUS,
-        details="",
-    ):
+        trigger: str,
+        annotation: str = "",
+        completion: T_completion = "",
+        completion_format: int = COMPLETION_FORMAT_TEXT,
+        kind: Tuple[int, str, str] = KIND_AMBIGUOUS,
+        details: str = "",
+    ) -> None:
+        ...
 
-        self.trigger = trigger
-        self.annotation = annotation
-        self.completion = completion
-        self.completion_format = completion_format
-        self.kind = kind
-        self.details = details
-        self.flags = 0
+    def __eq__(self, rhs: "CompletionItem") -> bool:
+        ...
 
-    def __eq__(self, rhs):
-        if self.trigger != rhs.trigger:
-            return False
-        if self.annotation != rhs.annotation:
-            return False
-        if self.completion != rhs.completion:
-            return False
-        if self.completion_format != rhs.completion_format:
-            return False
-        if tuple(self.kind) != tuple(rhs.kind):
-            return False
-        if self.details != rhs.details:
-            return False
-        if self.flags != rhs.flags:
-            return False
-        return True
-
-    def __repr__(self):
-        return (
-            f"CompletionItem({self.trigger!r}, "
-            f"annotation={self.annotation!r}, "
-            f"completion={self.completion!r}, "
-            f"completion_format={self.completion_format!r}, "
-            f"kind={self.kind!r}, details={self.details!r})"
-        )
+    def __repr__(self) -> str:
+        ...
 
     @classmethod
-    def snippet_completion(cls, trigger, snippet, annotation="", kind=KIND_SNIPPET, details=""):
+    def snippet_completion(
+        cls,
+        trigger: str,
+        snippet: str,
+        annotation: str = "",
+        kind: Tuple[int, str, str] = KIND_SNIPPET,
+        details: str = "",
+    ) -> "CompletionItem":
+        """
+        trigger: A unicode string of the text to match against the user's input.
 
-        return CompletionItem(
-            trigger, annotation, snippet, COMPLETION_FORMAT_SNIPPET, kind, details
-        )
+        snippet: The snippet text to insert if the item is selected.
+
+        annotation: An optional unicode string of a hint to draw to
+        the right-hand side of the trigger.
+
+        kind: An optional completion_kind tuple that controls the presentation
+        in the auto-complete window – defaults to sublime.KIND_SNIPPET.
+
+        details: An optional HTML description of the completion,
+        shown in the detail pane at the bottom of the auto complete window.
+        Only supports limited inline HTML, including the tags:
+        `<a href="">` `<b>` `<strong>` `<i>` `<em>` `<u>` `<tt>` `<code>`
+        """
+        ...
 
     @classmethod
     def command_completion(
-        cls, trigger, command, args={}, annotation="", kind=KIND_AMBIGUOUS, details=""
-    ):
+        cls,
+        trigger: str,
+        command: str,
+        args: Dict[str, Value] = {},
+        annotation: str = "",
+        kind: Tuple[int, str, str] = KIND_AMBIGUOUS,
+        details: str = "",
+    ) -> "CompletionItem":
+        """
+        trigger: A unicode string of the text to match against the user's input.
 
-        completion = command + " " + encode_value(args)
+        command: A unicode string of the command to execute
 
-        return CompletionItem(
-            trigger, annotation, completion, COMPLETION_FORMAT_COMMAND, kind, details
-        )
+        args: An optional dict of args to pass to the command
+
+        annotation: An optional unicode string of a hint to draw to
+        the right-hand side of the trigger.
+
+        kind: An optional completion_kind tuple that controls the presentation
+        in the auto-complete window – defaults to sublime.KIND_AMBIGUOUS.
+
+        details: An optional HTML description of the completion,
+        shown in the detail pane at the bottom of the auto complete window.
+        Only supports limited inline HTML, including the tags:
+        `<a href="">` `<b>` `<strong>` `<i>` `<em>` `<u>` `<tt>` `<code>`
+        """
+        ...
