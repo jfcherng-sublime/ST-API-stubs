@@ -1,8 +1,3 @@
-import collections
-import html
-import json
-import sys
-
 from typing import (
     Any,
     Callable,
@@ -13,7 +8,6 @@ from typing import (
     Optional,
     overload,
     Sequence,
-    Sized,
     Tuple,
     TypeVar,
     Union,
@@ -182,8 +176,11 @@ def executable_path() -> str:
 
 def executable_hash() -> Tuple[str, str, str]:
     """
-    Returns `(version_number, platform_arch, executable_hash)`
-    such as `('4079', 'windows_x64', '906388de50d5233b5648200ce9d1452a')`
+    Returns `(version_number, platform_arch, executable_hash)` such as
+
+    ```python
+    ('4079', 'windows_x64', '906388de50d5233b5648200ce9d1452a')
+    ```
     """
     ...
 
@@ -573,7 +570,10 @@ class Window:
         ...
 
     def is_valid(self) -> bool:
-        """ Returns true if the `Window` is still a valid handle. Will return False for a closed window, for example. """
+        """ 
+        Returns true if the `Window` is still a valid handle. 
+        Will return False for a closed window, for example. 
+        """
         ...
 
     def hwnd(self) -> int:
@@ -1274,7 +1274,8 @@ class View:
 
     def element(self) -> Optional[str]:
         """
-        Returns None for normal views, for views that comprise part of the UI, a str is returned from the following list:
+        Returns None for normal views, for views that comprise part of the UI, 
+        a str is returned from the following list:
 
         "console:input": The console input
 
@@ -1304,12 +1305,16 @@ class View:
 
         "output:output": A general output panel
 
-        The console output, indexer status output and license input controls are not accessible via the API.
+        The console output, indexer status output and license input controls 
+        are not accessible via the API.
         """
         ...
 
     def is_valid(self) -> bool:
-        """ Returns true if the View is still a valid handle. Will return False for a closed view, for example. """
+        """ 
+        Returns true if the View is still a valid handle. 
+        Will return False for a closed view, for example. 
+        """
         ...
 
     def is_primary(self) -> bool:
@@ -1518,7 +1523,7 @@ class View:
 
         The returned value is like
         ```python
-        [(Region(0, 6), 'source.python meta.statement.import.python keyword.control.import.python')]
+        [(Region(0, 6), 'source.python meta.statement...')]
         ```
         """
         ...
@@ -2130,7 +2135,10 @@ class Phantom:
 
 
 class PhantomSet:
-    """ A collection that manages Phantoms and the process of adding them, updating them and removing them from the View """
+    """
+    A collection that manages Phantoms and the process of adding them,
+    updating them and removing them from the View
+    """
 
     view: View
     key: str
@@ -2149,7 +2157,8 @@ class PhantomSet:
         """
         phantoms should be a list of phantoms.
 
-        The .region attribute of each existing phantom in the set will be updated. New phantoms will be added to the view and phantoms not in phantoms list will be deleted.
+        The `region` attribute of each existing phantom in the set will be updated.
+        New phantoms will be added to the view and phantoms not in phantoms list will be deleted.
         """
         ...
 
@@ -2165,7 +2174,10 @@ class Html:
 
 
 class CompletionList:
-    """ Represents a list of completions, some of which may be in the process of being asynchronously fetched """
+    """
+    Represents a list of completions,
+    some of which may be in the process of being asynchronously fetched
+    """
 
     target: Optional[Any]
     completions: List[T_completion]
