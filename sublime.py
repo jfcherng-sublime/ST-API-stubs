@@ -5,16 +5,17 @@ import sys
 
 from typing import (
     Any,
-    Optional,
     Callable,
-    Sequence,
-    Tuple,
-    Union,
-    List,
     Dict,
-    Sized,
+    Iterator,
+    List,
+    Optional,
     overload,
+    Sequence,
+    Sized,
+    Tuple,
     TypeVar,
+    Union,
 )
 from typing_extensions import TypedDict
 
@@ -34,6 +35,7 @@ Layout = TypedDict(
     # fmt: on
 )
 Location = Tuple[str, str, Tuple[int, int]]
+Point = int
 Vector = Tuple[float, float]
 Value = Union[dict, list, str, float, bool, None]
 
@@ -952,130 +954,85 @@ class Edit:
 class Region:
     """ Represents an area of the buffer. Empty regions, where `a == b` are valid """
 
-    __slots__ = ["a", "b", "xpos"]
+    a: int
+    b: int
+    xpos: int
 
-    def __init__(self, a, b=None, xpos=-1):
-        if b is None:
-            b = a
-        self.a = a
-        self.b = b
-        self.xpos = xpos
+    def __init__(self, a: int, b: Optional[int] = None, xpos: int = -1) -> None:
+        ...
 
-    def __iter__(self):
-        return iter((self.a, self.b))
+    def __iter__(self) -> Iterator:
+        ...
 
-    def __str__(self):
-        return "(" + str(self.a) + ", " + str(self.b) + ")"
+    def __str__(self) -> str:
+        ...
 
-    def __repr__(self):
-        return "(" + str(self.a) + ", " + str(self.b) + ")"
+    def __repr__(self) -> str:
+        ...
 
-    def __len__(self):
-        return self.size()
+    def __len__(self) -> int:
+        ...
 
-    def __eq__(self, rhs):
-        return isinstance(rhs, Region) and self.a == rhs.a and self.b == rhs.b
+    def __eq__(self, rhs: Any) -> bool:
+        ...
 
-    def __hash__(self):
-        return hash((self.a, self.b))
+    def __hash__(self) -> int:
+        ...
 
-    def __lt__(self, rhs):
-        lhs_begin = self.begin()
-        rhs_begin = rhs.begin()
+    def __lt__(self, rhs: "Region") -> bool:
+        ...
 
-        if lhs_begin == rhs_begin:
-            return self.end() < rhs.end()
-        else:
-            return lhs_begin < rhs_begin
+    def __contains__(self, v: Union["Region", Point]) -> bool:
+        ...
 
-    def __contains__(self, v):
-        if isinstance(v, Region):
-            return v.a in self and v.b in self
-        elif isinstance(v, int):
-            return v >= self.begin() and v <= self.end()
-        else:
-            fq_name = ""
-            if v.__class__.__module__ not in {"builtins", "__builtin__"}:
-                fq_name = f"{v.__class__.__module__}."
-            fq_name += v.__class__.__qualname__
-            raise TypeError("in <Region> requires int or Region as left operand" f", not {fq_name}")
-
-    def to_tuple(self):
+    def to_tuple(self) -> Tuple[Point, Point]:
         """ Returns a tuple of this region (excluding xpos).
 
         Use this to uniquely identify a region in a set or similar. Regions
         can't be used for that directly as they may be mutated.
         """
-        return (self.a, self.b)
+        ...
 
-    def empty(self):
+    def empty(self) -> bool:
         """ Returns `True` if `begin() == end()` """
-        return self.a == self.b
+        ...
 
-    def begin(self):
+    def begin(self) -> int:
         """ Returns the minimum of `a` and `b` """
-        if self.a < self.b:
-            return self.a
-        else:
-            return self.b
+        ...
 
-    def end(self):
+    def end(self) -> int:
         """ Returns the maximum of `a` and `b` """
-        if self.a < self.b:
-            return self.b
-        else:
-            return self.a
+        ...
 
-    def size(self):
+    def size(self) -> int:
         """
         deprecated, use `len()` instead
         Returns the number of characters spanned by the region. Always >= 0
         """
-        return abs(self.a - self.b)
+        ...
 
-    def contains(self, x):
+    def contains(self, x: Union["Region", Point]) -> bool:
         """
         If `x` is a region, returns `True` if it's a subset
         If `x` is a point, returns `True` if `begin() <= x <= end()`
         """
-        return x in self
+        ...
 
-    def cover(self, rhs):
+    def cover(self, rhs: "Region") -> "Region":
         """ Returns a `Region` spanning both this and the given regions """
-        a = min(self.begin(), rhs.begin())
-        b = max(self.end(), rhs.end())
+        ...
 
-        if self.a < self.b:
-            return Region(a, b)
-        else:
-            return Region(b, a)
-
-    def intersection(self, rhs):
+    def intersection(self, rhs: "Region") -> "Region":
         """ Returns the set intersection of the two regions """
-        if self.end() <= rhs.begin():
-            return Region(0)
-        if self.begin() >= rhs.end():
-            return Region(0)
+        ...
 
-        return Region(max(self.begin(), rhs.begin()), min(self.end(), rhs.end()))
-
-    def intersects(self, rhs):
+    def intersects(self, rhs: "Region") -> bool:
         """
         Returns `True` if `self == rhs` or both include one or more
         positions in common
         """
-        lb = self.begin()
-        le = self.end()
-        rb = rhs.begin()
-        re = rhs.end()
-
-        return (
-            (lb == rb and le == re)
-            or (rb > lb and rb < le)
-            or (re > lb and re < le)
-            or (lb > rb and lb < re)
-            or (le > rb and le < re)
-        )
+        ...
 
 
 class HistoricPosition:
