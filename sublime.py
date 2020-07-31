@@ -2145,13 +2145,13 @@ class PhantomSet:
 
 
 class Html:
-    __slots__ = ["data"]
+    data: Any
 
-    def __init__(self, data):
-        self.data = data
+    def __init__(self, data: Any) -> None:
+        ...
 
-    def __repr__(self):
-        return f"Html({self.data})"
+    def __repr__(self) -> str:
+        ...
 
 
 class CompletionList:
