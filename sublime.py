@@ -564,6 +564,7 @@ class Window:
         ...
 
     def is_valid(self) -> bool:
+        """ Determines if this `Window` object is still valid """
         ...
 
     def hwnd(self) -> int:
@@ -1079,75 +1080,68 @@ class Selection:
     The regions are kept in sorted order
     """
 
-    def __init__(self, id):
-        self.view_id = id
+    view_id: int
 
-    def __iter__(self):
-        i = 0
-        n = len(self)
-        while i < n:
-            yield sublime_api.view_selection_get(self.view_id, i)
-            i += 1
+    def __init__(self, id: int) -> None:
+        ...
 
-    def __len__(self):
-        return sublime_api.view_selection_size(self.view_id)
+    def __iter__(self) -> Iterator:
+        ...
 
-    def __getitem__(self, index):
-        r = sublime_api.view_selection_get(self.view_id, index)
-        if r.a == -1:
-            raise IndexError()
-        return r
+    def __len__(self) -> int:
+        ...
 
-    def __delitem__(self, index):
-        sublime_api.view_selection_erase(self.view_id, index)
+    def __getitem__(self, index: int) -> Region:
+        ...
 
-    def __eq__(self, rhs):
-        return rhs is not None and list(self) == list(rhs)
+    def __delitem__(self, index: int) -> None:
+        ...
 
-    def __lt__(self, rhs):
-        return rhs is not None and list(self) < list(rhs)
+    def __eq__(self, rhs: Any) -> bool:
+        ...
 
-    def __bool__(self):
-        return self.view_id != 0 and len(self) > 0
+    def __lt__(self, rhs: "Selection") -> bool:
+        ...
 
-    def __str__(self):
-        return f"{self!r}[{', '.join(map(str, self))}]"
+    def __bool__(self) -> bool:
+        ...
 
-    def __repr__(self):
-        return f"Selection({self.view_id!r})"
+    def __str__(self) -> str:
+        ...
 
-    def is_valid(self):
-        return sublime_api.view_buffer_id(self.view_id) != 0
+    def __repr__(self) -> str:
+        ...
 
-    def clear(self):
+    def is_valid(self) -> bool:
+        """ Determines if this `Selection` object is still valid """
+        ...
+
+    def clear(self) -> None:
         """ Removes all regions """
-        sublime_api.view_selection_clear(self.view_id)
+        ...
 
-    def add(self, x):
+    def add(self, x: Union[Region, Point]) -> None:
         """
         Adds the given region or point. It will be merged with any intersecting
         regions already contained within the set
         """
-        if isinstance(x, Region):
-            sublime_api.view_selection_add_region(self.view_id, x.a, x.b, x.xpos)
-        else:
-            sublime_api.view_selection_add_point(self.view_id, x)
+        ...
 
-    def add_all(self, regions):
+    def add_all(self, regions: Sequence[Union[Region, Point]]) -> None:
         """ Adds all `regions` in the given list or tuple """
-        for r in regions:
-            self.add(r)
+        ...
 
-    def subtract(self, region):
+    def subtract(self, region: Region) -> None:
         """ Subtracts the `region` from all regions in the set """
-        sublime_api.view_selection_subtract_region(self.view_id, region.a, region.b)
+        ...
 
-    def contains(self, region):
+    def contains(self, region: Region) -> None:
         """
-        deprecated, use `in` instead
+        Deprecated, use `in` instead.
+
         Returns `True` if the given `region` is a subset
         """
-        return sublime_api.view_selection_contains(self.view_id, region.a, region.b)
+        ...
 
 
 def make_sheet(sheet_id):
