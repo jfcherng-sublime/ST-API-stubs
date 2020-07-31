@@ -1036,39 +1036,41 @@ class Region:
 
 
 class HistoricPosition:
-    __slots__ = ["pt", "row", "col", "col_utf16", "col_utf8"]
+    """
+    Provides a snapshot of the row and column info for a point, before changes were made to a `View`.
+    This is primarily useful for replaying changes to a document.
+    """
 
-    def __init__(self, pt, row, col, col_u16, col_u8):
-        self.pt = pt
-        self.row = row
-        self.col = col
-        self.col_utf16 = col_u16
-        self.col_utf8 = col_u8
+    pt: Point
+    row: int
+    col: int
+    col_utf16: int
+    col_utf8: int
 
-    def __repr__(self):
-        return (
-            f"HistoricPosition(pt={self.pt!r}, row={self.row!r}, "
-            f"col={self.col!r}, col_u16={self.col_u16!r}, "
-            f"col_u8={self.col_u8!r})"
-        )
+    def __init__(self, pt: Point, row: int, col: int, col_u16: int, col_u8: int) -> None:
+        ...
+
+    def __repr__(self) -> str:
+        ...
 
 
 class TextChange:
-    __slots__ = ["a", "b", "str"]
+    """
+    Represents a change that occured to the text of a `View`.
+    This is primarily useful for replaying changes to a document.
+    """
 
-    def __init__(self, pa, pb, s):
-        self.a = pa
-        self.b = pb
-        self.len_utf16 = len_utf16
-        self.len_utf8 = len_utf8
-        self.str = str
+    a: HistoricPosition
+    b: HistoricPosition
+    len_utf16: int
+    len_utf8: int
+    str: str
 
-    def __repr__(self):
-        return (
-            f"TextChange({self.a!r}, {self.b!r}, "
-            f"len_utf16={self.len_utf16!r}, len_utf8={self.len_utf8!r}, "
-            f"str={self.str!r})"
-        )
+    def __init__(self, pa: HistoricPosition, pb: HistoricPosition, s: str) -> None:
+        ...
+
+    def __repr__(self) -> str:
+        ...
 
 
 class Selection:
