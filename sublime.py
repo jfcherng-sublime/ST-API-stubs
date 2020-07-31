@@ -7,6 +7,7 @@ from typing import (
     Any,
     Callable,
     Dict,
+    Iterable,
     Iterator,
     List,
     Optional,
@@ -1991,85 +1992,80 @@ class View:
 
 
 class Settings:
-    def __init__(self, id):
-        self.settings_id = id
 
-    def __getitem__(self, key):
-        res = sublime_api.settings_get(self.settings_id, key)
-        if res is None and not sublime_api.settings_has(self.settings_id, key):
-            raise KeyError(repr(key))
-        return res
+    settings_id: int
 
-    def __setitem__(self, key, value):
-        sublime_api.settings_set(self.settings_id, key, value)
+    def __init__(self, id: int) -> None:
+        ...
 
-    def __delitem__(self, key):
-        sublime_api.settings_erase(self.settings_id, key)
+    def __getitem__(self, key: str) -> Value:
+        ...
 
-    def __contains__(self, key):
-        return sublime_api.settings_has(self.settings_id, key)
+    def __setitem__(self, key: str, value: Value) -> None:
+        ...
 
-    def __repr__(self):
-        return f"Settings({self.settings_id!r})"
+    def __delitem__(self, key: str) -> None:
+        ...
 
-    def to_dict(self):
+    def __contains__(self, key: str) -> bool:
+        ...
+
+    def __repr__(self) -> str:
+        ...
+
+    def to_dict(self) -> Dict[str, Value]:
         """
         Return the settings as a dict. This is not very fast.
+
+        Warning: Python 3.8 only.
         """
-        return sublime_api.settings_to_dict(self.settings_id)
+        ...
 
-    def setdefault(self, key, value):
-        if sublime_api.settings_has(self.settings_id, key):
-            return sublime_api.settings_get(self.settings_id, key)
-        sublime_api.settings_set(self.settings_id, key, value)
-        return value
+    def setdefault(self, key: str, value: Value) -> Value:
+        """
+        Returns the value of the item with the specified key.
 
-    def update(self, other=(), /, **kwargs):
-        if isinstance(other, collections.abc.Mapping):
-            for key in other:
-                self[key] = other[key]
-        elif hasattr(other, "keys"):
-            for key in other.keys():
-                self[key] = other[key]
-        else:
-            for key, value in other:
-                self[key] = value
+        If the key does not exist, insert the key, with the specified value, see example below.
+        """
+        ...
 
-        for key, value in kwargs.items():
-            self[key] = value
+    def update(self, other: Union[Dict, Iterable] = (), /, **kwargs) -> None:
+        """
+        Inserts the specified items to this Settings.
 
-    def get(self, key, default=None):
+        The specified items can be a dictionary, or an iterable object.
+        """
+        ...
+
+    def get(self, key: str, default: Optional[Value] = None) -> Value:
         """
         Returns the named setting, or `default` if it's not defined
         If not passed, `default` will have a value of `None`
         """
-        if default is not None:
-            return sublime_api.settings_get_default(self.settings_id, key, default)
-        else:
-            return sublime_api.settings_get(self.settings_id, key)
+        ...
 
-    def has(self, key):
+    def has(self, key: str) -> bool:
         """
         Returns `True` if the named option exists in this set of Settings or
         one of its parents
         """
-        return sublime_api.settings_has(self.settings_id, key)
+        ...
 
-    def set(self, key, value):
+    def set(self, key: str, value: Value) -> None:
         """ Sets the named setting. Only primitive types, lists, and dicts are accepted """
-        sublime_api.settings_set(self.settings_id, key, value)
+        ...
 
-    def erase(self, key):
+    def erase(self, key: str) -> None:
         """ Removes the named setting. Does not remove it from any parent Settings """
-        sublime_api.settings_erase(self.settings_id, key)
+        ...
 
-    def add_on_change(self, tag, callback):
+    def add_on_change(self, tag: str, callback: Callback0) -> None:
         """ Register a `callback` to be run whenever a setting in this object is changed """
-        sublime_api.settings_add_on_change(self.settings_id, tag, callback)
+        ...
 
-    def clear_on_change(self, tag):
+    def clear_on_change(self, tag: str) -> None:
         """ Remove all callbacks registered with the given `tag` """
-        sublime_api.settings_clear_on_change(self.settings_id, tag)
+        ...
 
 
 class Phantom:
