@@ -2086,79 +2086,62 @@ class Phantom:
     parameter, that is the _href_ attribute of the link clicked.
     """
 
-    def __init__(self, region, content, layout, on_navigate=None):
-        self.region = region
-        self.content = content
-        self.layout = layout
-        self.on_navigate = on_navigate
-        self.id = None
+    region: Region
+    content: str
+    layout: int
+    on_navigate: Optional[Callback1[str]]
+    id: int
 
-    def __eq__(self, rhs):
-        # Note that self.id is not considered
-        return (
-            self.region == rhs.region
-            and self.content == rhs.content
-            and self.layout == rhs.layout
-            and self.on_navigate == rhs.on_navigate
-        )
+    def __init__(
+        self,
+        region: Region,
+        content: str,
+        layout: int,
+        on_navigate: Optional[Callback1[str]] = None,
+    ) -> None:
+        ...
 
-    def __repr__(self):
-        return (
-            f"Phantom({self.region!r}, {self.content!r}, "
-            f"{self.layout!r}, on_navigate={self.on_navigate!r})"
-        )
+    def __eq__(self, rhs: "Phantom") -> bool:
+        ...
 
-    def to_tuple(self):
-        """ Returns a tuple of this phantom.
+    def __repr__(self) -> str:
+        ...
+
+    def to_tuple(self) -> Tuple[Tuple[int, int], str, Layout, Optional[Callback1[str]]]:
+        """
+        Returns a tuple of this phantom.
 
         Use this to uniquely identify a phantom in a set or similar. Phantoms
         can't be used for that directly as they may be mutated.
 
         The phantom's range will also be returned as a tuple.
         """
-        return (self.region.to_tuple(), self.content, self.layout, self.on_navigate)
+        ...
 
 
 class PhantomSet:
-    def __init__(self, view, key=""):
-        self.view = view
-        self.key = key
-        self.phantoms = []
+    """ A collection that manages Phantoms and the process of adding them, updating them and removing them from the View """
 
-    def __del__(self):
-        for p in self.phantoms:
-            self.view.erase_phantom_by_id(p.id)
+    view: View
+    key: str
+    phantoms: List[Phantom]
 
-    def __repr__(self):
-        return f"PhantomSet({self.view!r}, key={self.key!r})"
+    def __init__(self, view: View, key: str = "") -> None:
+        ...
 
-    def update(self, new_phantoms):
-        new_phantoms = {p.to_tuple(): p for p in new_phantoms}
+    def __del__(self) -> None:
+        ...
 
-        # Update the list of phantoms that exist in the text buffer with their
-        # current location
-        regions = self.view.query_phantoms([p.id for p in self.phantoms])
-        for phantom, region in zip(self.phantoms, regions):
-            phantom.region = region
+    def __repr__(self) -> str:
+        ...
 
-        current_phantoms = {p.to_tuple(): p for p in self.phantoms}
+    def update(self, new_phantoms: Sequence[Phantom]) -> None:
+        """
+        phantoms should be a list of phantoms.
 
-        for key, p in new_phantoms.items():
-            try:
-                # Phantom already exists, copy the id from the current one
-                p.id = current_phantoms[key].id
-            except KeyError:
-                p.id = self.view.add_phantom(self.key, p.region, p.content, p.layout, p.on_navigate)
-
-        new_phantom_ids = set([p.id for p in new_phantoms.values()])
-
-        for p in self.phantoms:
-            # if the region is -1, then it's already been deleted, no need to
-            # call erase
-            if p.id not in new_phantom_ids and p.region != Region(-1):
-                self.view.erase_phantom_by_id(p.id)
-
-        self.phantoms = [p for p in new_phantoms.values()]
+        The .region attribute of each existing phantom in the set will be updated. New phantoms will be added to the view and phantoms not in phantoms list will be deleted.
+        """
+        ...
 
 
 class Html:
