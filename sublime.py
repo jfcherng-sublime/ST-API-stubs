@@ -1144,15 +1144,8 @@ class Selection:
         ...
 
 
-def make_sheet(sheet_id):
-    if (sheet_id & 3) == 0:
-        return TextSheet(sheet_id)
-    elif (sheet_id & 3) == 1:
-        return ImageSheet(sheet_id)
-    elif (sheet_id & 3) == 2:
-        return HtmlSheet(sheet_id)
-    else:
-        return None
+def make_sheet(sheet_id: int) -> "Sheet":
+    """ Create a `Sheet` object with the given ID """
 
 
 class Sheet:
@@ -1161,79 +1154,80 @@ class Sheet:
     Sheets may contain a View, or an image preview
     """
 
-    def __init__(self, id):
-        self.sheet_id = id
+    sheet_id: int
 
-    def __eq__(self, other):
-        return isinstance(other, Sheet) and other.sheet_id == self.sheet_id
+    def __init__(self, id: int) -> None:
+        ...
 
-    def __repr__(self):
-        return f"Sheet({self.sheet_id!r})"
+    def __eq__(self, other: Any) -> bool:
+        ...
 
-    def id(self):
+    def __repr__(self) -> str:
+        ...
+
+    def id(self) -> int:
         """ Returns a number that uniquely identifies this sheet """
-        return self.sheet_id
+        ...
 
-    def window(self):
+    def window(self) -> Optional[Window]:
         """
         Returns the window containing the sheet. May be `None` if the sheet
         has been closed
         """
-        window_id = sublime_api.sheet_window(self.sheet_id)
-        if window_id == 0:
-            return None
-        else:
-            return Window(window_id)
+        ...
 
-    def view(self):
+    def view(self) -> "Optional[View]":
         """
         Returns the view contained within the sheet. May be `None` if the
         sheet is an image preview, or the view has been closed
         """
-        view_id = sublime_api.sheet_view(self.sheet_id)
-        if view_id == 0:
-            return None
-        else:
-            return View(view_id)
+        ...
 
-    def file_name(self):
-        fn = sublime_api.sheet_file_name(self.sheet_id)
-        if len(fn) == 0:
-            return None
-        return fn
+    def file_name(self) -> Optional[str]:
+        """
+        The full name file the file associated with the buffer,
+        or None if it doesn't exist on disk.
+        """
+        ...
 
 
 class TextSheet(Sheet):
-    def __init__(self, id):
-        self.sheet_id = id
+    sheet_id: int
 
-    def __repr__(self):
-        return f"TextSheet({self.sheet_id!r})"
+    def __init__(self, id: int) -> None:
+        ...
 
-    def set_name(self, name):
-        sublime_api.sheet_set_name(self.sheet_id, name)
+    def __repr__(self) -> str:
+        ...
+
+    def set_name(self, name: str) -> None:
+        """ Sets the name of this `Sheet` """
+        ...
 
 
 class ImageSheet(Sheet):
-    def __init__(self, id):
-        self.sheet_id = id
+    sheet_id: int
 
-    def __repr__(self):
-        return f"ImageSheet({self.sheet_id!r})"
+    def __repr__(self) -> str:
+        ...
 
 
 class HtmlSheet(Sheet):
-    def __init__(self, id):
-        self.sheet_id = id
+    sheet_id: int
 
-    def __repr__(self):
-        return f"HtmlSheet({self.sheet_id!r})"
+    def __init__(self, id: int) -> None:
+        ...
 
-    def set_name(self, name):
-        sublime_api.sheet_set_name(self.sheet_id, name)
+    def __repr__(self) -> str:
+        ...
 
-    def set_contents(self, contents):
-        sublime_api.html_sheet_set_contents(self.sheet_id, contents)
+    def set_name(self, name: str) -> None:
+        """ Sets the name of this `Sheet` """
+        ...
+
+    def set_contents(self, contents: str) -> None:
+        """ Sets the content of this `Sheet` """
+        ...
 
 
 class View:
