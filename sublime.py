@@ -8,7 +8,6 @@ from typing import (
     Iterator,
     List,
     Optional,
-    overload,
     Sequence,
     Tuple,
     TypeVar,
@@ -35,18 +34,14 @@ Location = Tuple[str, str, Tuple[int, int]]
 Point = int
 Vector = Tuple[float, float]
 Value = Union[dict, list, str, float, bool, None]
-
-# fmt: off
-T_completion = Union[
-    str,
-    Union[List[str], Tuple[str, str]],
-    "CompletionItem",
-]
-# fmt: on
+Str = str  # alias in case we have a variable named as "str"
 
 _T = TypeVar("_T")
 Callback0 = Callable[[], None]
 Callback1 = Callable[[_T], None]
+
+T_COMPLETION = Union[str, List[str], Tuple[str, str], "CompletionItem"]
+T_EXPANDABLE_VAR = TypeVar("T_EXPANDABLE_VAR", str, List[str], Dict[str, str])
 
 
 # -------- #
@@ -439,36 +434,7 @@ def decode_value(data: str) -> Value:
     ...
 
 
-@overload
-def expand_variables(val: str, variables: Dict[str, str]) -> str:
-    """
-    Expands any variables in the string `value` using the variables defined in
-    the dictionary `variables`
-    `value` may also be a `list` or `dict`, in which case the structure will be
-    recursively expanded. Strings should use snippet syntax, for example:
-    ```python
-    expand_variables("Hello, ${name}", {"name": "Foo"})
-    ```
-    """
-    ...
-
-
-@overload
-def expand_variables(val: List[str], variables: Dict[str, str]) -> List[str]:
-    """
-    Expands any variables in the string `value` using the variables defined in
-    the dictionary `variables`
-    `value` may also be a `list` or `dict`, in which case the structure will be
-    recursively expanded. Strings should use snippet syntax, for example:
-    ```python
-    expand_variables("Hello, ${name}", {"name": "Foo"})
-    ```
-    """
-    ...
-
-
-@overload
-def expand_variables(val: Dict[str, str], variables: Dict[str, str]) -> Dict[str, str]:
+def expand_variables(val: T_EXPANDABLE_VAR, variables: Dict[str, str]) -> T_EXPANDABLE_VAR:
     """
     Expands any variables in the string `value` using the variables defined in
     the dictionary `variables`
@@ -572,9 +538,9 @@ class Window:
         ...
 
     def is_valid(self) -> bool:
-        """ 
-        Returns true if the `Window` is still a valid handle. 
-        Will return False for a closed window, for example. 
+        """
+        Returns true if the `Window` is still a valid handle.
+        Will return False for a closed window, for example.
         """
         ...
 
@@ -1076,12 +1042,12 @@ class TextChange:
     b: HistoricPosition
     len_utf16: int
     len_utf8: int
-    str: str
+    str: Str
 
-    def __init__(self, pa: HistoricPosition, pb: HistoricPosition, s: str) -> None:
+    def __init__(self, pa: HistoricPosition, pb: HistoricPosition, s: Str) -> None:
         ...
 
-    def __repr__(self) -> str:
+    def __repr__(self) -> Str:
         ...
 
 
@@ -1276,7 +1242,7 @@ class View:
 
     def element(self) -> Optional[str]:
         """
-        Returns None for normal views, for views that comprise part of the UI, 
+        Returns None for normal views, for views that comprise part of the UI,
         a str is returned from the following list:
 
         "console:input": The console input
@@ -1307,15 +1273,15 @@ class View:
 
         "output:output": A general output panel
 
-        The console output, indexer status output and license input controls 
+        The console output, indexer status output and license input controls
         are not accessible via the API.
         """
         ...
 
     def is_valid(self) -> bool:
-        """ 
-        Returns true if the View is still a valid handle. 
-        Will return False for a closed view, for example. 
+        """
+        Returns true if the View is still a valid handle.
+        Will return False for a closed view, for example.
         """
         ...
 
@@ -2046,7 +2012,7 @@ class Settings:
         """
         ...
 
-    def update(self, other: Union[Dict, Iterable] = (), /, **kwargs) -> None:
+    def update(self, other: Union[Dict, Iterable] = (), /, **kwargs: Any) -> None:
         """
         Inserts the specified items to this Settings.
 
@@ -2118,7 +2084,7 @@ class Phantom:
     ) -> None:
         ...
 
-    def __eq__(self, rhs: "Phantom") -> bool:
+    def __eq__(self, rhs: Any) -> bool:
         ...
 
     def __repr__(self) -> str:
@@ -2182,10 +2148,10 @@ class CompletionList:
     """
 
     target: Optional[Any]
-    completions: List[T_completion]
+    completions: List[T_COMPLETION]
     flags: int
 
-    def __init__(self, completions: List[T_completion] = None, flags: int = 0) -> str:
+    def __init__(self, completions: List[T_COMPLETION] = None, flags: int = 0) -> None:
         ...
 
     def __repr__(self) -> str:
@@ -2194,7 +2160,7 @@ class CompletionList:
     def _set_target(self, target: Optional[Any]) -> None:
         ...
 
-    def set_completions(self, completions: List[T_completion], flags: int = 0):
+    def set_completions(self, completions: List[T_COMPLETION], flags: int = 0) -> None:
         """ Sets the completions """
         ...
 
@@ -2204,7 +2170,7 @@ class CompletionItem:
 
     trigger: str
     annotation: str
-    completion: T_completion
+    completion: T_COMPLETION
     completion_format: int
     kind: Tuple[int, str, str]
     details: str
@@ -2214,14 +2180,14 @@ class CompletionItem:
         self,
         trigger: str,
         annotation: str = "",
-        completion: T_completion = "",
+        completion: T_COMPLETION = "",
         completion_format: int = COMPLETION_FORMAT_TEXT,
         kind: Tuple[int, str, str] = KIND_AMBIGUOUS,
         details: str = "",
     ) -> None:
         ...
 
-    def __eq__(self, rhs: "CompletionItem") -> bool:
+    def __eq__(self, rhs: Any) -> bool:
         ...
 
     def __repr__(self) -> str:
