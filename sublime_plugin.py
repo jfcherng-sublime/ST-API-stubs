@@ -1,3 +1,21 @@
+# version: 4079
+
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    Iterable,
+    Iterator,
+    List,
+    Optional,
+    Sequence,
+    Set,
+    Tuple,
+    TypeVar,
+    Union,
+)
+from typing_extensions import TypedDict
+
 import importlib
 import io
 import marshal
@@ -9,7 +27,39 @@ import traceback
 import zipfile
 
 import sublime
-import sublime_api
+import sublime_api  # type: ignore
+
+# ----- #
+# types #
+# ----- #
+
+_T = TypeVar("_T")
+
+T_CALLBACK_0 = Callable[[], None]
+T_CALLBACK_1 = Callable[[_T], None]
+T_COMPLETION = Union[str, List[str], Tuple[str, str], sublime.CompletionItem]
+T_EXPANDABLE_VAR = TypeVar("T_EXPANDABLE_VAR", str, List[str], Dict[str, str])
+T_KIND = Tuple[int, str, str]
+T_LAYOUT = TypedDict(
+    "T_LAYOUT",
+    # fmt: off
+    {
+        "cols": Sequence[float],
+        "rows": Sequence[float],
+        "cells": Sequence[Sequence[int]],
+    },
+    # fmt: on
+)
+T_LOCATION = Tuple[str, str, Tuple[int, int]]
+T_POINT = int
+T_STR = str  # alias in case we have a variable named as "str"
+T_VALUE = Union[Dict, Set, List, Tuple, str, int, float, bool, None]
+T_VECTOR = Tuple[float, float]
+
+
+# -------- #
+# ST codes #
+# -------- #
 
 
 api_ready = False
@@ -1147,195 +1197,125 @@ class ListInputHandler(CommandInputHandler):
 
 
 class Command:
-    def name(self):
-        clsname = self.__class__.__name__
-        name = clsname[0].lower()
-        last_upper = False
-        for c in clsname[1:]:
-            if c.isupper() and not last_upper:
-                name += "_"
-                name += c.lower()
-            else:
-                name += c
-            last_upper = c.isupper()
-        if name.endswith("_command"):
-            name = name[0:-8]
-        return name
+    def name(self) -> str:
+        """
+        The command argument name this input handler is editing.
+        Defaults to `foo_bar` for an input handler named `FooBarInputHandler`.
+        """
+        ...
 
-    def is_enabled_(self, args):
-        ret = None
-        try:
-            args = self.filter_args(args)
-            if args:
-                ret = self.is_enabled(**args)
-            else:
-                ret = self.is_enabled()
-        except TypeError:
-            ret = self.is_enabled()
+    def is_enabled_(self, args: Dict[str, T_VALUE]) -> bool:
+        ...
 
-        if not isinstance(ret, bool):
-            raise ValueError("is_enabled must return a bool", self)
+    def is_enabled(self) -> bool:
+        """
+        Returns True if the command is able to be run at this time.
+        The default implementation simply always returns True.
+        """
+        ...
 
-        return ret
+    def is_visible_(self, args: Dict[str, T_VALUE]) -> bool:
+        ...
 
-    def is_enabled(self):
-        return True
+    def is_visible(self) -> bool:
+        """
+        Returns True if the command should be shown in the menu at this time.
+        The default implementation always returns True.
+        """
+        ...
 
-    def is_visible_(self, args):
-        ret = None
-        try:
-            args = self.filter_args(args)
-            if args:
-                ret = self.is_visible(**args)
-            else:
-                ret = self.is_visible()
-        except TypeError:
-            ret = self.is_visible()
+    def is_checked_(self, args: Dict[str, T_VALUE]) -> bool:
+        ...
 
-        if not isinstance(ret, bool):
-            raise ValueError("is_visible must return a bool", self)
+    def is_checked(self) -> bool:
+        """
+        Returns True if a checkbox should be shown next to the menu item.
+        The `.sublime-menu` file must have the "checkbox key set to true for this to be used.
+        """
+        ...
 
-        return ret
+    def description_(self, args: Dict[str, T_VALUE]) -> str:
+        ...
 
-    def is_visible(self):
-        return True
+    def description(self) -> str:
+        """
+        Returns a description of the command with the given arguments.
+        Used in the menus, and for Undo / Redo descriptions.
+        Return None to get the default description.
+        """
+        ...
 
-    def is_checked_(self, args):
-        ret = None
-        try:
-            args = self.filter_args(args)
-            if args:
-                ret = self.is_checked(**args)
-            else:
-                ret = self.is_checked()
-        except TypeError:
-            ret = self.is_checked()
+    def filter_args(self, args: Dict[str, T_VALUE]) -> Dict[str, T_VALUE]:
+        """ Returns the args after without the "event" entry """
+        ...
 
-        if not isinstance(ret, bool):
-            raise ValueError("is_checked must return a bool", self)
+    def want_event(self) -> bool:
+        """
+        Return True to receive an event argument when the command is triggered by a mouse action.
+        The event information allows commands to determine which portion of the view was clicked on.
+        The default implementation returns False.
+        """
+        ...
 
-        return ret
+    def input(self, args: Dict[str, T_VALUE]) -> Optional[CommandInputHandler]:
+        """
+        If this returns something other than None,
+        the user will be prompted for an input before the command is run in the Command Palette.
+        """
+        ...
 
-    def is_checked(self):
-        return False
+    def input_description(self) -> str:
+        """
+        Allows a custom name to be show to the left of the cursor in the input box,
+        instead of the default one generated from the command name.
+        """
+        ...
 
-    def description_(self, args):
-        try:
-            args = self.filter_args(args)
-            if args is not None:
-                res = self.description(**args)
-            else:
-                res = self.description()
-            if res is None:
-                return ""
-            return res
-        except TypeError:
-            return ""
-
-    def description(self):
-        return ""
-
-    def filter_args(self, args):
-        if args:
-            if "event" in args and not self.want_event():
-                args = args.copy()
-                del args["event"]
-
-        return args
-
-    def want_event(self):
-        return False
-
-    def input(self, args):
-        return None
-
-    def input_description(self):
-        return ""
-
-    def create_input_handler_(self, args):
-        return self.input(args)
+    def create_input_handler_(self, args: Dict[str, T_VALUE]) -> Optional[CommandInputHandler]:
+        ...
 
 
 class ApplicationCommand(Command):
-    def run_(self, edit_token, args):
-        args = self.filter_args(args)
-        try:
-            if args:
-                return self.run(**args)
-            else:
-                return self.run()
-        except (TypeError) as e:
-            if "required positional argument" in str(e):
-                if sublime_api.can_accept_input(self.name(), args):
-                    sublime.active_window().run_command(
-                        "show_overlay",
-                        {"overlay": "command_palette", "command": self.name(), "args": args},
-                    )
-                    return
-            raise
+    """ ApplicationCommands are instantiated once per application. """
 
-    def run(self):
-        pass
+    def run_(self, edit_token: int, args: Dict[str, T_VALUE]) -> None:
+        ...
+
+    def run(self) -> None:
+        """ Called when the command is run """
+        ...
 
 
 class WindowCommand(Command):
-    def __init__(self, window):
-        self.window = window
+    """ WindowCommands are instantiated once per window. The Window object may be retrieved via `self.window` """
 
-    def run_(self, edit_token, args):
-        args = self.filter_args(args)
-        try:
-            if args:
-                return self.run(**args)
-            else:
-                return self.run()
-        except (TypeError) as e:
-            if "required positional argument" in str(e):
-                if sublime_api.window_can_accept_input(self.window.id(), self.name(), args):
-                    sublime_api.window_run_command(
-                        self.window.id(),
-                        "show_overlay",
-                        {"overlay": "command_palette", "command": self.name(), "args": args},
-                    )
-                    return
-            raise
+    window: sublime.Window
 
-    def run(self):
-        pass
+    def __init__(self, window: sublime.Window) -> None:
+        ...
+
+    def run_(self, edit_token: int, args: Dict[str, T_VALUE]) -> None:
+        ...
+
+    def run(self) -> None:
+        """ Called when the command is run """
+        ...
 
 
 class TextCommand(Command):
-    def __init__(self, view):
-        self.view = view
+    """ TextCommands are instantiated once per view. The View object may be retrieved via `self.view` """
 
-    def run_(self, edit_token, args):
-        args = self.filter_args(args)
-        try:
-            if args:
-                edit = self.view.begin_edit(edit_token, self.name(), args)
-                try:
-                    return self.run(edit, **args)
-                finally:
-                    self.view.end_edit(edit)
-            else:
-                edit = self.view.begin_edit(edit_token, self.name())
-                try:
-                    return self.run(edit)
-                finally:
-                    self.view.end_edit(edit)
-        except (TypeError) as e:
-            if "required positional argument" in str(e):
-                if sublime_api.view_can_accept_input(self.view.id(), self.name(), args):
-                    sublime_api.window_run_command(
-                        sublime_api.view_window(self.view.id()),
-                        "show_overlay",
-                        {"overlay": "command_palette", "command": self.name(), "args": args},
-                    )
-                    return
-            raise
+    view: sublime.View
 
-    def run(self, edit):
-        pass
+    def __init__(self, view: sublime.View) -> None:
+        ...
+
+    def run_(self, edit_token: int, args: Dict[str, T_VALUE]) -> None:
+        ...
+
+    def run(self) -> None:
+        """ Called when the command is run """
+        ...
 
 
 class EventListener:
