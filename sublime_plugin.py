@@ -738,15 +738,15 @@ def on_clone_async(view_id):
 
 
 class Summary:
-    def __init__(self):
-        self.max = 0.0
-        self.sum = 0.0
-        self.count = 0
+    max: float
+    sum: float
+    count: int
 
-    def record(self, x):
-        self.count += 1
-        self.sum += x
-        self.max = max(self.max, x)
+    def __init__(self) -> None:
+        ...
+
+    def record(self, x: float) -> None:
+        ...
 
 
 def get_profiling_data():
