@@ -40,7 +40,7 @@ T_LAYOUT = TypedDict(
 T_LOCATION = Tuple[str, str, Tuple[int, int]]
 T_POINT = int
 T_STR = str  # alias in case we have a variable named as "str"
-T_VALUE = Union[dict, list, str, float, bool, None]
+T_VALUE = Union[Dict, List, str, int, float, bool, None]
 T_VECTOR = Tuple[float, float]
 
 
