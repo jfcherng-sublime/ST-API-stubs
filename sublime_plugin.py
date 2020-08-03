@@ -1076,124 +1076,130 @@ def on_exit(log_path):
 
 
 class CommandInputHandler:
-    def name(self):
-        clsname = self.__class__.__name__
-        name = clsname[0].lower()
-        last_upper = False
-        for c in clsname[1:]:
-            if c.isupper() and not last_upper:
-                name += "_"
-                name += c.lower()
-            else:
-                name += c
-            last_upper = c.isupper()
-        if name.endswith("_input_handler"):
-            name = name[0:-14]
-        return name
+    def name(self) -> str:
+        """
+        The command argument name this input handler is editing.
+        Defaults to `foo_bar` for an input handler named `FooBarInputHandler`.
+        """
+        ...
 
-    def next_input(self, args):
-        return None
+    def next_input(self, args: Dict[str, T_VALUE]) -> Optional["CommandInputHandler"]:
+        """
+        Returns the next input after the user has completed this one.
+        May return None to indicate no more input is required,
+        or `sublime_plugin.BackInputHandler()` to indicate that
+        the input handler should be poped off the stack instead.
+        """
+        ...
 
-    def placeholder(self):
-        return ""
+    def placeholder(self) -> str:
+        """
+        Placeholder text is shown in the text entry box before the user has entered anything.
+        Empty by default.
+        """
+        ...
 
-    def initial_text(self):
-        return ""
+    def initial_text(self) -> str:
+        """ Initial text shown in the text entry box. Empty by default. """
+        ...
 
-    def preview(self, arg):
-        return ""
+    def preview(self, arg: Dict[str, T_VALUE]) -> Union[str, sublime.Html]:
+        """
+        Called whenever the user changes the text in the entry box.
+        The returned value (either plain text or HTML) will be shown in the preview area of the Command Palette.
+        """
+        ...
 
-    def validate(self, arg):
-        return True
+    def validate(self, arg: Dict[str, T_VALUE]) -> bool:
+        """
+        Called whenever the user presses enter in the text entry box.
+        Return False to disallow the current value.
+        """
+        ...
 
-    def cancel(self):
-        pass
+    def cancel(self) -> None:
+        """ Called when the input handler is canceled, either by the user pressing backspace or escape. """
+        ...
 
-    def confirm(self, arg):
-        pass
+    def confirm(self, text: Dict[str, T_VALUE]) -> None:
+        """ Called when the input is accepted, after the user has pressed enter and the text has been validated. """
+        ...
 
-    def create_input_handler_(self, args):
-        return self.next_input(args)
+    def create_input_handler_(self, args: Dict[str, T_VALUE]) -> Optional["CommandInputHandler"]:
+        ...
 
-    def preview_(self, v):
-        ret = self.preview(v)
+    def preview_(self, v: str) -> Tuple[str, int]:
+        ...
 
-        if ret is None:
-            return ("", 0)
-        elif isinstance(ret, sublime.Html):
-            return (ret.data, 1)
-        else:
-            return (ret, 0)
+    def validate_(self, v: str) -> bool:
+        ...
 
-    def validate_(self, v):
-        return self.validate(v)
+    def cancel_(self) -> None:
+        ...
 
-    def cancel_(self):
-        self.cancel()
-
-    def confirm_(self, v):
-        self.confirm(v)
+    def confirm_(self, v: str) -> None:
+        ...
 
 
 class BackInputHandler(CommandInputHandler):
-    def name(self):
-        return "_Back"
+    def name(self) -> str:
+        """ The command argument name this input handler is editing. Defaults to `_Back`. """
+        ...
 
 
 class TextInputHandler(CommandInputHandler):
-    def description(self, text):
-        return text
+    """
+    TextInputHandlers can be used to accept textual input in the Command Palette.
+    Return a subclass of this from the `input()` method of a command.
+    """
 
-    def setup_(self, args):
-        props = {
-            "initial_text": self.initial_text(),
-            "placeholder_text": self.placeholder(),
-            "type": "text",
-        }
+    def description(self, text: str) -> str:
+        """
+        The text to show in the Command Palette when this input handler is not at the top of the input handler stack.
+        Defaults to the text the user entered.
+        """
+        ...
 
-        return ([], props)
+    def setup_(self, args: Dict[str, T_VALUE]) -> Tuple[list, Dict[str, str]]:
+        ...
 
-    def description_(self, v, text):
-        res = self.description(text)
-        if res is None:
-            return ""
-        return res
+    def description_(self, v: str, text: str) -> str:
+        ...
 
 
 class ListInputHandler(CommandInputHandler):
-    def list_items(self):
-        return []
+    """
+    ListInputHandlers can be used to accept a choice input from a list items in the Command Palette.
+    Return a subclass of this from the input() method of a command.
+    """
 
-    def description(self, v, text):
-        return text
+    def list_items(
+        self,
+    ) -> Union[
+        List[str],
+        List[Tuple[str, T_VALUE]],
+        Tuple[Union[List[str], List[Tuple[str, T_VALUE]]], int],
+    ]:
+        """
+        The items to show in the list. If returning a list of `(str, value)` tuples,
+        then the str will be shown to the user, while the value will be used as the command argument.
 
-    def setup_(self, args):
-        items = self.list_items()
+        Optionally return a tuple of `(list_items, selected_item_index)` to indicate an initial selection.
+        """
+        ...
 
-        selected_item_index = -1
+    def description(self, v: str, text: str) -> str:
+        """
+        The text to show in the Command Palette when this input handler is not at the top of the input handler stack.
+        Defaults to the text of the list item the user selected.
+        """
+        ...
 
-        if isinstance(items, tuple):
-            items, selected_item_index = items
+    def setup_(self, args: Dict[str, T_VALUE]) -> Tuple[List[Tuple[str, T_VALUE]], Dict[str, str]]:
+        ...
 
-        for i in range(len(items)):
-            it = items[i]
-            if isinstance(it, str):
-                items[i] = (it, it)
-
-        props = {
-            "initial_text": self.initial_text(),
-            "placeholder_text": self.placeholder(),
-            "selected": selected_item_index,
-            "type": "list",
-        }
-
-        return (items, props)
-
-    def description_(self, v, text):
-        res = self.description(v, text)
-        if res is None:
-            return ""
-        return res
+    def description_(self, v: str, text: str) -> str:
+        ...
 
 
 class Command:
