@@ -1323,16 +1323,34 @@ class EventListener:
 
 
 class ViewEventListener:
-    @classmethod
-    def is_applicable(cls, settings):
-        return True
+    """
+    A class that provides similar event handling to EventListener, but bound to a specific view.
+    Provides class method-based filtering to control what views objects are created for.
+
+    The view is passed as a single parameter to the constructor.
+    The default implementation makes the view available via `self.view`.
+    """
+
+    view: sublime.View
 
     @classmethod
-    def applies_to_primary_view_only(cls):
-        return True
+    def is_applicable(cls, settings: sublime.Settings) -> bool:
+        """
+        Receives a Settings object and should return a bool
+        indicating if this class applies to a view with those settings.
+        """
+        ...
 
-    def __init__(self, view):
-        self.view = view
+    @classmethod
+    def applies_to_primary_view_only(cls) -> bool:
+        """
+        Returns a bool indicating if this class applies only to the primary view for a file.
+        A view is considered primary if it is the only, or first, view into a file.
+        """
+        ...
+
+    def __init__(self, view: sublime.View) -> None:
+        ...
 
 
 class MultizipImporter(importlib.abc.MetaPathFinder):
