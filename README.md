@@ -25,9 +25,23 @@ I personally use this with [LSP](https://packagecontrol.io/packages/LSP) + `a Py
                      "pyls",
                  ],
                  "settings": {
+                     // if you are using ST 3
+                     "pyls": {
+                         "plugins": {
+                             "jedi": {
+                                 "extra_paths": [
+                                     // add jfcherng-sublime/ST-API-stubs
+                                     "$packages/../st-stubs",
+                                     "$packages",
+                                 ],
+                             },
+                         },
+                     },
+                     // if you are using ST 4
                      "pyls.plugins.jedi.extra_paths": [
-                         // for ST plugin development
+                         // add jfcherng-sublime/ST-API-stubs
                          "$packages/../st-stubs",
+                         "$packages",
                      ],
                  },
              },
@@ -35,14 +49,16 @@ I personally use this with [LSP](https://packagecontrol.io/packages/LSP) + `a Py
      }
      ```
 
-   - If you use [LSP-pyright](https://packagecontrol.io/packages/LSP-pyright), configure the `python.analysis.extraPaths`:
+   - If you use [LSP-pyright](https://packagecontrol.io/packages/LSP-pyright),
+     configure the `python.analysis.extraPaths`:
 
      ```js
      {
          "settings": {
              "python.analysis.extraPaths": [
-                 // For Sublime Text plugin development
+                 // add jfcherng-sublime/ST-API-stubs
                  "$packages/../st-stubs",
+                 // the followings come from the default settings
                  "$sublime_py_files_dir",
                  "$packages",
              ],
