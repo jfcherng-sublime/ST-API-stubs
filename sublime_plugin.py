@@ -1,11 +1,8 @@
 # version: 4079
 
 from typing import (
-    Any,
     Callable,
     Dict,
-    Iterable,
-    Iterator,
     List,
     Optional,
     Sequence,
@@ -27,7 +24,6 @@ import traceback
 import zipfile
 
 import sublime
-import sublime_api  # type: ignore
 
 # ----- #
 # types #
@@ -492,8 +488,8 @@ def _instantiation_error(cls, e):
     traceback.print_exception(None, rex, None)
 
 
-def notify_application_commands():
-    sublime_api.notify_application_commands(create_application_commands())
+def notify_application_commands() -> None:
+    ...
 
 
 def create_application_commands():
@@ -531,34 +527,8 @@ def create_text_commands(view_id):
     return cmds
 
 
-def on_api_ready():
-    global api_ready
-    api_ready = True
-
-    for plc in deferred_plugin_loadeds:
-        try:
-            plc()
-        except:
-            traceback.print_exc()
-    deferred_plugin_loadeds.clear()
-
-    # Create ViewEventListener instances
-    if len(view_event_listener_classes) > 0:
-        for w in sublime.windows():
-            for v in w.views():
-                attach_view(v)
-
-    def init():
-        on_init(None)
-
-        # Synthesize an on_activated call
-        w = sublime.active_window()
-        if w:
-            view_id = sublime_api.window_active_view(w.window_id)
-            if view_id != 0:
-                on_activated(view_id)
-
-    sublime.set_timeout(init)
+def on_api_ready() -> None:
+    ...
 
 
 def is_view_event_listener_applicable(cls, view):
@@ -932,15 +902,10 @@ class MultiCompletionList:
         self.completions = []
         self.flags = 0
 
-    def completions_ready(self, completions, flags):
-        self.completions += [normalise_completion(c) for c in completions]
-        self.flags |= flags
-        self.remaining_calls -= 1
-
-        if self.remaining_calls == 0:
-            sublime_api.view_set_completions(
-                self.view_id, self.req_id, (self.completions, self.flags)
-            )
+    def completions_ready(self, completions, flags) -> None:
+        # what's the type?
+        # self.completions += [normalise_completion(c) for c in completions]
+        ...
 
 
 def on_query_completions(view_id, req_id, prefix, locations):

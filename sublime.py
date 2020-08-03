@@ -15,7 +15,6 @@ from typing import (
 )
 from typing_extensions import TypedDict
 
-
 # ----- #
 # types #
 # ----- #
@@ -42,7 +41,6 @@ T_POINT = int
 T_STR = str  # alias in case we have a variable named as "str"
 T_VALUE = Union[Dict, List, str, int, float, bool, None]
 T_VECTOR = Tuple[float, float]
-
 
 # -------- #
 # ST codes #
