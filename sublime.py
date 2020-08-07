@@ -1,4 +1,4 @@
-# version: 4079
+# version: 4081
 
 from typing import (
     Any,
@@ -445,22 +445,6 @@ def expand_variables(val: T_EXPANDABLE_VAR, variables: Dict[str, str]) -> T_EXPA
     ...
 
 
-def list_syntaxes() -> List[Dict[str, Any]]:
-    """
-    Returns a list of all available syntaxes.
-    Each dict will have the keys "path", "name", "hidden" and "scope"
-    """
-    ...
-
-
-def find_syntax(fname: str, first_line: Optional[str] = None) -> Optional[str]:
-    """
-    Returns the path to the syntax that will be used when opening a file with the name fname.
-    The first_line of file contents may also be provided if available.
-    """
-    ...
-
-
 def load_settings(base_name: str) -> "Settings":
     """
     Loads the named settings. The name should include a file name and extension,
@@ -764,6 +748,7 @@ class Window:
         flags: int = 0,
         selected_index: int = -1,
         on_highlight: Optional[T_CALLBACK_1[int]] = None,
+        placeholder: Optional[str] = None,
     ) -> None:
         """
         Shows a quick panel, to select an item in a list.
@@ -930,6 +915,8 @@ class Edit:
 class Region:
     """ Represents an area of the buffer. Empty regions, where `a == b` are valid """
 
+    __slots__: List[str] = ["a", "b", "xpos"]
+
     a: int
     b: int
     xpos: int
@@ -950,9 +937,6 @@ class Region:
         ...
 
     def __eq__(self, rhs: Any) -> bool:
-        ...
-
-    def __hash__(self) -> int:
         ...
 
     def __lt__(self, rhs: "Region") -> bool:
@@ -1017,6 +1001,8 @@ class HistoricPosition:
     This is primarily useful for replaying changes to a document.
     """
 
+    __slots__: List[str] = ["pt", "row", "col", "col_utf16", "col_utf8"]
+
     pt: T_POINT
     row: int
     col: int
@@ -1035,6 +1021,8 @@ class TextChange:
     Represents a change that occured to the text of a `View`.
     This is primarily useful for replaying changes to a document.
     """
+
+    __slots__: List[str] = ["a", "b", "len_utf16", "len_utf8", "str"]
 
     a: HistoricPosition
     b: HistoricPosition
@@ -1165,6 +1153,14 @@ class Sheet:
         """
         ...
 
+    def is_semi_transient(self) -> bool:
+        """ Determines if this view is semi-transient or not """
+        ...
+
+    def is_transient(self) -> bool:
+        """ Determines if this view is transient or not """
+        ...
+
 
 class TextSheet(Sheet):
     sheet_id: int
@@ -1292,6 +1288,10 @@ class View:
 
     def window(self) -> Optional[Window]:
         """ Returns a reference to the window containing the view """
+        ...
+
+    def clones(self) -> List["View"]:
+        """ Gets a list of all the other views with the same buffer. """
         ...
 
     def file_name(self) -> Optional[str]:
@@ -1843,6 +1843,10 @@ class View:
         """ Deprecated, use `assign_syntax()` instead """
         ...
 
+    def syntax(self) -> "Optional[Syntax]":
+        """ Get the syntax used by the view. May be None. """
+        ...
+
     def symbols(self) -> List[Tuple[Region, str]]:
         """ Extract all the symbols defined in the buffer """
         ...
@@ -1971,6 +1975,28 @@ class View:
 
     def preserve_auto_complete_on_focus_lost(self) -> None:
         """ Make the auto complete menu when this view loses focus """
+
+
+def _buffers() -> "List[Buffer]":
+    """ Returns all available Buffer objects """
+    ...
+
+
+class Buffer:
+    buffer_id: int
+
+    def __init__(self, id: int) -> None:
+        ...
+
+    def __repr__(self) -> str:
+        ...
+
+    def views(self) -> List[View]:
+        """ Returns all views which are attched to this Buffer """
+        ...
+
+    def primary_view(self) -> View:
+        """ Returns the primary view which is attched to this Buffer """
         ...
 
 
@@ -1998,9 +2024,9 @@ class Settings:
 
     def to_dict(self) -> Dict[str, T_VALUE]:
         """
-        Return the settings as a dict. This is not very fast.
-
         Warning: Python 3.8 only.
+
+        Return the settings as a dict. This is not very fast.
         """
         ...
 
@@ -2132,6 +2158,8 @@ class PhantomSet:
 
 
 class Html:
+    __slots__: List[str] = ["data"]
+
     data: Any
 
     def __init__(self, data: Any) -> None:
@@ -2248,4 +2276,52 @@ class CompletionItem:
         Only supports limited inline HTML, including the tags:
         `<a href="">` `<b>` `<strong>` `<i>` `<em>` `<u>` `<tt>` `<code>`
         """
+        ...
+
+
+def list_syntaxes() -> "List[Syntax]":
+    """ Returns a list of Syntaxes for all known syntaxes. """
+    ...
+
+
+def syntax_from_path(path: str) -> "Optional[Syntax]":
+    """ Get the syntax for a specific path. """
+    ...
+
+
+def find_syntax_by_name(name: str) -> "List[Syntax]":
+    """ Find syntaxes with the specified name. Name must match exactly. """
+    ...
+
+
+def find_syntax_by_scope(scope: str) -> "List[Syntax]":
+    """ Find syntaxes with the specified scope. Scope must match exactly. """
+    ...
+
+
+def find_syntax_for_file(path: str, first_line: str = "") -> "Syntax":
+    """
+    Find the syntax to use for a path.
+
+    Uses the file extension, various application settings and optionally the
+    first line of the file to pick the right syntax for the file.
+    """
+    ...
+
+
+class Syntax:
+    __slots__: List[str] = ["path", "name", "hidden", "scope"]
+
+    path: str
+    name: str
+    hidden: bool
+    scope: str
+
+    def __init__(self, path: str, name: str, hidden: bool, scope: str) -> None:
+        ...
+
+    def __eq__(self, other: Any) -> bool:
+        ...
+
+    def __repr__(self) -> str:
         ...

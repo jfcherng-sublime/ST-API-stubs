@@ -1,9 +1,11 @@
-# version: 4079
+# version: 4081
 
 from typing import (
     Callable,
     Dict,
+    Iterable,
     List,
+    ModuleType,
     Optional,
     Sequence,
     Set,
@@ -58,7 +60,7 @@ T_VECTOR = Tuple[float, float]
 # -------- #
 
 
-api_ready = False
+api_ready: bool = False
 
 deferred_plugin_loadeds = []
 
@@ -86,7 +88,6 @@ all_callbacks = {
     "on_post_move": [],
     "on_modified": [],
     "on_selection_modified": [],
-    "on_text_changed": [],
     "on_activated": [],
     "on_deactivated": [],
     "on_query_context": [],
@@ -98,7 +99,6 @@ all_callbacks = {
     "on_post_window_command": [],
     "on_modified_async": [],
     "on_selection_modified_async": [],
-    "on_text_changed_async": [],
     "on_pre_save_async": [],
     "on_post_save_async": [],
     "on_post_move_async": [],
@@ -109,6 +109,10 @@ all_callbacks = {
     "on_revert_async": [],
     "on_reload_async": [],
     "on_clone_async": [],
+    "on_new_buffer": [],
+    "on_new_buffer_async": [],
+    "on_close_buffer": [],
+    "on_close_buffer_async": [],
     "on_new_project": [],
     "on_new_project_async": [],
     "on_load_project": [],
@@ -130,11 +134,16 @@ pending_on_activated_async_callbacks = {"EventListener": [], "ViewEventListener"
 view_event_listener_excluded_callbacks = {
     "on_clone",
     "on_clone_async",
-    "on_exit" "on_init",
+    "on_exit",
+    "on_init",
     "on_load_project",
     "on_load_project_async",
     "on_new",
     "on_new_async",
+    "on_new_buffer",
+    "on_new_buffer_async",
+    "on_close_buffer",
+    "on_close_buffer_async",
     "on_new_project",
     "on_new_project_async",
     "on_new_window",
@@ -146,6 +155,16 @@ view_event_listener_excluded_callbacks = {
     "on_pre_close_window",
     "on_pre_save_project",
     "on_window_command",
+}
+
+text_change_listener_classes = []
+text_change_listener_callbacks = {
+    "on_text_changed",
+    "on_text_changed_async",
+    "on_revert",
+    "on_revert_async",
+    "on_reload",
+    "on_reload_async",
 }
 
 profile = {}
@@ -255,231 +274,24 @@ def decorate_handler(cls, method_name):
     setattr(cls, method_name, wrapped)
 
 
-def unload_module(module):
-    if "plugin_unloaded" in module.__dict__:
-        try:
-            module.plugin_unloaded()
-        except:
-            traceback.print_exc()
-
-    # Unload the old plugins
-    if "__plugins__" in module.__dict__:
-        for view_id, listener_instances in view_event_listeners.items():
-            for vel in listener_instances[:]:
-                if vel.__class__ in module.__plugins__:
-                    listener_instances.remove(vel)
-
-        for p in module.__plugins__:
-            for cmd_cls_list in all_command_classes:
-                try:
-                    cmd_cls_list.remove(p)
-                except ValueError:
-                    pass
-            for c in all_callbacks.values():
-                try:
-                    c.remove(p)
-                except ValueError:
-                    pass
-
-            try:
-                view_event_listener_classes.remove(p)
-            except ValueError:
-                pass
+def unload_module(module: ModuleType) -> None:
+    ...
 
 
-def unload_plugin(modulename):
-    print(f"unloading plugin {modulename}")
-
-    was_loaded = modulename in sys.modules
-    if was_loaded:
-        m = sys.modules[modulename]
-        unload_module(m)
-        del sys.modules[modulename]
+def unload_plugin(modulename: str) -> None:
+    ...
 
 
-def reload_plugin(modulename):
-    print(f"reloading plugin {modulename}")
-
-    loaded = False
-    if modulename in sys.modules:
-        m = sys.modules[modulename]
-        unload_module(m)
-
-        # In the situation that the module was previously loaded using
-        # ZipLoader, but now the .sublime-package is gone, we can't use the
-        # ZipLoader to reload, so we erase all traces and do a fresh import
-        l = m.__spec__.loader
-        if not isinstance(l, ZipLoader) or l in multi_importer.loaders:
-            m = importlib.reload(m)
-            loaded = True
-        else:
-            del sys.modules[modulename]
-
-    if not loaded:
-        m = importlib.import_module(modulename)
-
-    load_module(m)
+def reload_plugin(modulename: str) -> None:
+    ...
 
 
-def load_module(m):
-    module_plugins = []
-    on_activated_targets = []
-    vel_on_activated_classes = []
-    el_on_activated_async_targets = []
-    vel_on_activated_async_targets = []
-    module_view_event_listener_classes = []
-
-    objs = dir(m)
-    # We build a set of allowed imports, but iterate over the
-    # module itself so that the classes are added in order
-    if "__all__" in objs:
-        importable_objs = m.__all__
-    else:
-        # When the plugin doesn't define __all__, we ignore
-        # "private" entries
-        importable_objs = set()
-        for type_name in objs:
-            if type_name[0] != "_":
-                importable_objs.add(type_name)
-
-    for type_name in objs:
-        if type_name not in importable_objs:
-            continue
-
-        try:
-            t = m.__dict__[type_name]
-            if t.__bases__:
-                is_plugin = False
-                if issubclass(t, ApplicationCommand) and t is not ApplicationCommand:
-                    application_command_classes.append(t)
-                    is_plugin = True
-                if issubclass(t, WindowCommand) and t is not WindowCommand:
-                    window_command_classes.append(t)
-                    is_plugin = True
-                if issubclass(t, TextCommand) and t is not TextCommand:
-                    text_command_classes.append(t)
-                    is_plugin = True
-
-                if is_plugin:
-                    module_plugins.append(t)
-
-                if issubclass(t, EventListener) and t is not EventListener:
-                    for method_name, _ in all_callbacks.items():
-                        if method_name in dir(t):
-                            decorate_handler(t, method_name)
-
-                    obj = t()
-
-                    for method_name, listeners in all_callbacks.items():
-                        if method_name in dir(t):
-                            listeners.append(obj)
-
-                    if "on_activated" in dir(obj):
-                        on_activated_targets.append(obj)
-
-                    if "on_activated_async" in dir(obj):
-                        el_on_activated_async_targets.append(obj)
-
-                    module_plugins.append(obj)
-
-                if issubclass(t, ViewEventListener) and t is not ViewEventListener:
-                    for method_name, _ in all_callbacks.items():
-                        if method_name in view_event_listener_excluded_callbacks:
-                            continue
-                        if method_name in dir(t):
-                            decorate_handler(t, method_name)
-                    view_event_listener_classes.append(t)
-                    module_view_event_listener_classes.append(t)
-                    if "on_activated" in dir(t):
-                        vel_on_activated_classes.append(t)
-                    if "on_activated_async" in dir(t):
-                        vel_on_activated_async_targets.append(t)
-                    module_plugins.append(t)
-
-        except AttributeError:
-            pass
-
-    if el_on_activated_async_targets or vel_on_activated_async_targets:
-        with pending_on_activated_async_lock:
-            pending_on_activated_async_callbacks["EventListener"].extend(
-                el_on_activated_async_targets
-            )
-            pending_on_activated_async_callbacks["ViewEventListener"].extend(
-                vel_on_activated_async_targets
-            )
-
-    if len(module_plugins) > 0:
-        m.__plugins__ = module_plugins
-
-    if api_ready:
-        if "plugin_loaded" in m.__dict__:
-            try:
-                m.plugin_loaded()
-            except:
-                traceback.print_exc()
-
-        # Create any require ViewEventListener objects
-        if len(module_view_event_listener_classes) > 0:
-            for w in sublime.windows():
-                for v in w.views():
-                    create_view_event_listeners(module_view_event_listener_classes, v)
-
-        on_init(m.__name__)
-
-        # Synthesize any required on_activated calls
-        w = sublime.active_window()
-        if w:
-            v = w.active_view()
-            if v:
-                for el in on_activated_targets:
-                    try:
-                        el.on_activated(v)
-                    except:
-                        traceback.print_exc()
-
-                for vel_cls in vel_on_activated_classes:
-                    vel = find_view_event_listener(v, vel_cls)
-                    if not vel:
-                        continue
-                    try:
-                        vel.on_activated()
-                    except:
-                        traceback.print_exc()
-
-    elif "plugin_loaded" in m.__dict__:
-        deferred_plugin_loadeds.append(m.plugin_loaded)
+def load_module(m: ModuleType) -> None:
+    ...
 
 
-def synthesize_on_activated_async():
-    if not api_ready:
-        return
-
-    with pending_on_activated_async_lock:
-        els = pending_on_activated_async_callbacks["EventListener"]
-        vels = pending_on_activated_async_callbacks["ViewEventListener"]
-        pending_on_activated_async_callbacks["EventListener"] = []
-        pending_on_activated_async_callbacks["ViewEventListener"] = []
-
-    for el in els:
-        w = sublime.active_window()
-        if not w:
-            continue
-        v = w.active_view()
-        if not v:
-            continue
-        el.on_activated_async(v)
-
-    for vel_cls in vels:
-        w = sublime.active_window()
-        if not w:
-            continue
-        v = w.active_view()
-        if not v:
-            continue
-        vel = find_view_event_listener(v, vel_cls)
-        if not vel:
-            continue
-        vel.on_activated_async()
+def synthesize_on_activated_async() -> None:
+    ...
 
 
 def _instantiation_error(cls, e):
@@ -503,7 +315,7 @@ def create_application_commands():
     return cmds
 
 
-def create_window_commands(window_id):
+def create_window_commands(window_id: int):
     window = sublime.Window(window_id)
     cmds = []
     for cls in window_command_classes:
@@ -515,7 +327,7 @@ def create_window_commands(window_id):
     return cmds
 
 
-def create_text_commands(view_id):
+def create_text_commands(view_id: int):
     view = sublime.View(view_id)
     cmds = []
     for cls in text_command_classes:
@@ -531,89 +343,43 @@ def on_api_ready() -> None:
     ...
 
 
-def is_view_event_listener_applicable(cls, view):
-    if not cls.is_applicable(view.settings()):
-        return False
-
-    if cls.applies_to_primary_view_only() and not view.is_primary():
-        return False
-
-    return True
+def is_view_event_listener_applicable(cls, view: sublime.View) -> bool:
+    ...
 
 
-def create_view_event_listeners(classes, view):
-    if len(classes) > 0:
-        if view.view_id not in view_event_listeners:
-            view_event_listeners[view.view_id] = []
-
-        for c in classes:
-            if is_view_event_listener_applicable(c, view):
-                view_event_listeners[view.view_id].append(c(view))
+def create_view_event_listeners(classes, view: sublime.View) -> None:
+    ...
 
 
-def check_view_event_listeners(view):
-    if len(view_event_listener_classes) > 0:
-        if view.view_id not in view_event_listeners:
-            view_event_listeners[view.view_id] = []
-
-        listeners = view_event_listeners[view.view_id]
-
-        for cls in view_event_listener_classes:
-            found = False
-            instance = None
-            for l in listeners:
-                if l.__class__ == cls:
-                    found = True
-                    instance = l
-                    break
-
-            want = is_view_event_listener_applicable(cls, view)
-
-            if want and not found:
-                listeners.append(cls(view))
-            elif found and not want:
-                listeners.remove(instance)
+def check_view_event_listeners(view: sublime.View) -> None:
+    ...
 
 
-def attach_view(view):
-    check_view_event_listeners(view)
-
-    view.settings().add_on_change(
-        "check_view_event_listeners", lambda: check_view_event_listeners(view)
-    )
+def attach_view(view: sublime.View) -> None:
+    ...
 
 
-check_all_view_event_listeners_scheduled = False
+check_all_view_event_listeners_scheduled: bool = False
 
 
-def check_all_view_event_listeners():
-    global check_all_view_event_listeners_scheduled
-    check_all_view_event_listeners_scheduled = False
-    for w in sublime.windows():
-        for v in w.views():
-            check_view_event_listeners(v)
+def check_all_view_event_listeners() -> None:
+    ...
 
 
-def detach_view(view):
-    if view.view_id in view_event_listeners:
-        del view_event_listeners[view.view_id]
-
-    # A view has closed, which implies 'is_primary' may have changed, so see if
-    # any of the ViewEventListener classes need to be created.
-    # Call this in a timeout, as 'view' will still be reporting itself as a
-    # primary at this stage
-    global check_all_view_event_listeners_scheduled
-    if not check_all_view_event_listeners_scheduled:
-        check_all_view_event_listeners_scheduled = True
-        sublime.set_timeout(check_all_view_event_listeners)
+def detach_view(view: sublime.View) -> None:
+    ...
 
 
-def find_view_event_listener(view, cls):
+def find_view_event_listener(view: sublime.View, cls):
     if view.view_id in view_event_listeners:
         for vel in view_event_listeners[view.view_id]:
             if vel.__class__ == cls:
                 return vel
     return None
+
+
+def attach_buffer(buf: sublime.Buffer) -> None:
+    ...
 
 
 def plugin_module_for_obj(obj):
@@ -638,30 +404,17 @@ def vel_callbacks(v, name, listener_only=False):
         yield vel if listener_only else getattr(vel, name)
 
 
-def run_view_callbacks(name, view_id, *args, attach=False, el_only=False):
-    v = sublime.View(view_id)
-
-    if attach:
-        attach_view(v)
-
-    for callback in el_callbacks(name):
-        callback(v, *args)
-
-    if el_only:
-        return
-
-    for callback in vel_callbacks(v, name):
-        callback(*args)
+def run_view_callbacks(
+    name: str, view_id: int, *args: T_VALUE, attach: bool = False, el_only: bool = False,
+) -> None:
+    ...
 
 
-def run_window_callbacks(name, window_id, *args):
-    w = sublime.Window(window_id)
-
-    for callback in el_callbacks(name):
-        callback(w, *args)
+def run_window_callbacks(name: str, window_id: int, *args: T_VALUE) -> None:
+    ...
 
 
-def on_init(module):
+def on_init(module: str) -> None:
     """
     Trigger the on_init() methods on EventListener and ViewEventListener
     objects. This is method that allows event listeners to run something
@@ -671,40 +424,39 @@ def on_init(module):
     :param module:
         A unicode string of the name of a plugin module to filter listeners by
     """
-
-    views = []
-
-    for w in sublime.windows():
-        for v in w.views():
-            if not v.is_loading():
-                views.append(v)
-
-    for listener in el_callbacks("on_init", listener_only=True):
-        if module is not None and plugin_module_for_obj(listener) != module:
-            continue
-        listener.on_init(views)
-
-    for v in views:
-        for listener in vel_callbacks(v, "on_init", listener_only=True):
-            if module is not None and plugin_module_for_obj(listener) != module:
-                continue
-            listener.on_init()
+    ...
 
 
-def on_new(view_id):
-    run_view_callbacks("on_new", view_id, attach=True, el_only=True)
+def on_new(view_id: int) -> None:
+    ...
 
 
-def on_new_async(view_id):
-    run_view_callbacks("on_new_async", view_id, el_only=True)
+def on_new_async(view_id: int) -> None:
+    ...
 
 
-def on_clone(view_id):
-    run_view_callbacks("on_clone", view_id, attach=True, el_only=True)
+def on_new_buffer(buffer_id: int) -> None:
+    ...
 
 
-def on_clone_async(view_id):
-    run_view_callbacks("on_clone_async", view_id, el_only=True)
+def on_new_buffer_async(buffer_id: int) -> None:
+    ...
+
+
+def on_close_buffer(buffer_id: int) -> None:
+    ...
+
+
+def on_close_buffer_async(buffer_id: int) -> None:
+    ...
+
+
+def on_clone(view_id: int) -> None:
+    ...
+
+
+def on_clone_async(view_id: int) -> None:
+    ...
 
 
 class Summary:
@@ -719,133 +471,106 @@ class Summary:
         ...
 
 
-def get_profiling_data():
-    global profile
-    out = []
-    for event in profile:
-        data = profile[event]
-        for plugin in data:
-            s = data[plugin]
-            out.append((event, plugin, s.count, s.max, s.sum))
-    return out
+def get_profiling_data() -> List[Tuple[str, str, int, float, float]]:
+    ...
 
 
-def on_load(view_id):
-    run_view_callbacks("on_load", view_id, attach=True)
+def on_load(view_id: int) -> None:
+    ...
 
 
-def on_load_async(view_id):
-    run_view_callbacks("on_load_async", view_id)
+def on_load_async(view_id: int) -> None:
+    ...
 
 
-def on_revert(view_id):
-    run_view_callbacks("on_revert", view_id, attach=True)
+def on_revert(view_id: int) -> None:
+    ...
 
 
-def on_revert_async(view_id):
-    run_view_callbacks("on_revert_async", view_id)
+def on_revert_async(view_id: int) -> None:
+    ...
 
 
-def on_reload(view_id):
-    run_view_callbacks("on_reload", view_id, attach=True)
+def on_reload(view_id: int) -> None:
+    ...
 
 
-def on_reload_async(view_id):
-    run_view_callbacks("on_reload_async", view_id)
+def on_reload_async(view_id: int) -> None:
+    ...
 
 
-def on_pre_close(view_id):
-    run_view_callbacks("on_pre_close", view_id)
+def on_pre_close(view_id: int) -> None:
+    ...
 
 
-def on_close(view_id):
-    v = sublime.View(view_id)
-    for callback in vel_callbacks(v, "on_close"):
-        callback()
-    detach_view(v)
-    for callback in el_callbacks("on_close"):
-        callback(v)
+def on_close(view_id) -> None:
+    ...
 
 
-def on_pre_save(view_id):
-    run_view_callbacks("on_pre_save", view_id)
+def on_pre_save(view_id: int) -> None:
+    ...
 
 
-def on_pre_save_async(view_id):
-    run_view_callbacks("on_pre_save_async", view_id)
+def on_pre_save_async(view_id: int) -> None:
+    ...
 
 
-def on_post_save(view_id):
-    run_view_callbacks("on_post_save", view_id)
+def on_post_save(view_id: int) -> None:
+    ...
 
 
-def on_post_save_async(view_id):
-    run_view_callbacks("on_post_save_async", view_id)
+def on_post_save_async(view_id: int) -> None:
+    ...
 
 
-def on_pre_move(view_id):
-    run_view_callbacks("on_pre_move", view_id)
+def on_pre_move(view_id: int) -> None:
+    ...
 
 
-def on_post_move(view_id):
-    run_view_callbacks("on_post_move", view_id)
+def on_post_move(view_id: int) -> None:
+    ...
 
 
-def on_post_move_async(view_id):
-    run_view_callbacks("on_post_move_async", view_id)
+def on_post_move_async(view_id: int) -> None:
+    ...
 
 
-def on_modified(view_id):
-    run_view_callbacks("on_modified", view_id)
+def on_modified(view_id: int) -> None:
+    ...
 
 
-def on_modified_async(view_id):
-    run_view_callbacks("on_modified_async", view_id)
+def on_modified_async(view_id: int) -> None:
+    ...
 
 
-def on_selection_modified(view_id):
-    run_view_callbacks("on_selection_modified", view_id)
+def on_selection_modified(view_id: int) -> None:
+    ...
 
 
-def on_selection_modified_async(view_id):
-    run_view_callbacks("on_selection_modified_async", view_id)
+def on_selection_modified_async(view_id: int) -> None:
+    ...
 
 
-def on_text_changed(view_id, changes):
-    run_view_callbacks("on_text_changed", view_id, changes)
+def on_activated(view_id: int) -> None:
+    ...
 
 
-def on_text_changed_async(view_id, changes):
-    run_view_callbacks("on_text_changed_async", view_id, changes)
+def on_activated_async(view_id: int) -> None:
+    ...
 
 
-def on_activated(view_id):
-    run_view_callbacks("on_activated", view_id)
+def on_deactivated(view_id: int) -> None:
+    ...
 
 
-def on_activated_async(view_id):
-    run_view_callbacks("on_activated_async", view_id)
+def on_deactivated_async(view_id: int) -> None:
+    ...
 
 
-def on_deactivated(view_id):
-    run_view_callbacks("on_deactivated", view_id)
-
-
-def on_deactivated_async(view_id):
-    run_view_callbacks("on_deactivated_async", view_id)
-
-
-def on_query_context(view_id, key, operator, operand, match_all):
-    v = sublime.View(view_id)
-    for callback in el_callbacks("on_query_context"):
-        val = callback(v, key, operator, operand, match_all)
-        if val:
-            return True
-    for callback in vel_callbacks(v, "on_query_context"):
-        val = callback(key, operator, operand, match_all)
-        if val:
-            return True
-    return False
+def on_query_context(
+    view_id: int, key: str, operator: str, operand: T_VALUE, match_all: bool
+) -> bool:
+    ...
 
 
 def normalise_completion(c):
@@ -908,136 +633,80 @@ class MultiCompletionList:
         ...
 
 
-def on_query_completions(view_id, req_id, prefix, locations):
-    v = sublime.View(view_id)
-
-    completion_lists = []
-
-    def norm_res(res):
-        if isinstance(res, tuple):
-            completion_lists.append(sublime.CompletionList(res[0], flags=res[1]))
-        elif isinstance(res, list):
-            completion_lists.append(sublime.CompletionList(res))
-        elif isinstance(res, sublime.CompletionList):
-            completion_lists.append(res)
-
-    for callback in el_callbacks("on_query_completions"):
-        norm_res(callback(v, prefix, locations))
-
-    for callback in vel_callbacks(v, "on_query_completions"):
-        norm_res(callback(prefix, locations))
-
-    if not completion_lists:
-        completion_lists = [sublime.CompletionList([])]
-
-    mlist = MultiCompletionList(len(completion_lists), view_id, req_id)
-    for cl in completion_lists:
-        cl._set_target(mlist)
+def on_query_completions(view_id: int, req_id: int, prefix: str, locations: List[T_POINT]) -> None:
+    ...
 
 
-def on_hover(view_id, point, hover_zone):
-    run_view_callbacks("on_hover", view_id, point, hover_zone)
+def on_hover(view_id: int, point: T_POINT, hover_zone: int) -> None:
+    ...
 
 
-def on_text_command(view_id, name, args):
-    v = sublime.View(view_id)
-
-    for callback in vel_callbacks(v, "on_text_command"):
-        res = callback(name, args)
-        if isinstance(res, tuple):
-            return res
-        if res:
-            return (res, None)
-
-    for callback in el_callbacks("on_text_command"):
-        res = callback(v, name, args)
-        if isinstance(res, tuple):
-            return res
-        if res:
-            return (res, None)
-
-    return ("", None)
+def on_text_command(
+    view_id: int, name: str, args: Optional[Dict[str, T_VALUE]]
+) -> Tuple[str, Optional[Dict]]:
+    ...
 
 
-def on_window_command(window_id, name, args):
-    w = sublime.Window(window_id)
-    for callback in el_callbacks("on_window_command"):
-        res = callback(w, name, args)
-        if isinstance(res, tuple):
-            return res
-        if res:
-            return (res, None)
-
-    return ("", None)
+def on_window_command(
+    window_id: int, name: str, args: Optional[Dict[str, T_VALUE]]
+) -> Tuple[str, Optional[Dict]]:
+    ...
 
 
-def on_post_text_command(view_id, name, args):
-    run_view_callbacks("on_post_text_command", view_id, name, args)
+def on_post_text_command(view_id: int, name: str, args: Optional[Dict[str, T_VALUE]]) -> None:
+    ...
 
 
-def on_post_window_command(window_id, name, args):
-    run_window_callbacks("on_post_window_command", window_id, name, args)
+def on_post_window_command(window_id: int, name: str, args: Optional[Dict[str, T_VALUE]]) -> None:
+    ...
 
 
-def on_new_project(window_id):
-    run_window_callbacks("on_new_project", window_id)
+def on_new_project(window_id: int) -> None:
+    ...
 
 
-def on_new_project_async(window_id):
-    run_window_callbacks("on_new_project_async", window_id)
+def on_new_project_async(window_id: int) -> None:
+    ...
 
 
-def on_load_project(window_id):
-    run_window_callbacks("on_load_project", window_id)
+def on_load_project(window_id: int) -> None:
+    ...
 
 
-def on_load_project_async(window_id):
-    run_window_callbacks("on_load_project_async", window_id)
+def on_load_project_async(window_id: int) -> None:
+    ...
 
 
-def on_pre_save_project(window_id):
-    run_window_callbacks("on_pre_save_project", window_id)
+def on_pre_save_project(window_id: int) -> None:
+    ...
 
 
-def on_post_save_project(window_id):
-    run_window_callbacks("on_post_save_project", window_id)
+def on_post_save_project(window_id: int) -> None:
+    ...
 
 
-def on_post_save_project_async(window_id):
-    run_window_callbacks("on_post_save_project_async", window_id)
+def on_post_save_project_async(window_id: int) -> None:
+    ...
 
 
-def on_pre_close_project(window_id):
-    run_window_callbacks("on_pre_close_project", window_id)
+def on_pre_close_project(window_id: int) -> None:
+    ...
 
 
-def on_new_window(window_id):
-    run_window_callbacks("on_new_window", window_id)
+def on_new_window(window_id: int) -> None:
+    ...
 
 
-def on_new_window_async(window_id):
-    run_window_callbacks("on_new_window_async", window_id)
+def on_new_window_async(window_id: int) -> None:
+    ...
 
 
-def on_pre_close_window(window_id):
-    run_window_callbacks("on_pre_close_window", window_id)
+def on_pre_close_window(window_id: int) -> None:
+    ...
 
 
-def on_exit(log_path):
-    # on_exit() is called once the API it shutdown, which means that stdout
-    # will not be visible for debugging. Thus we write to a log file.
-    stdout = io.StringIO()
-    sys.stdout = stdout
-    sys.stderr = stdout
-
-    for callback in el_callbacks("on_exit"):
-        callback()
-
-    if len(stdout.getvalue()):
-        with open(log_path, "w", encoding="utf-8") as f:
-            f.write(stdout.getvalue())
-    else:
-        os.unlink(log_path)
+def on_exit(log_path: str) -> None:
+    ...
 
 
 class CommandInputHandler:
@@ -1066,6 +735,12 @@ class CommandInputHandler:
 
     def initial_text(self) -> str:
         """ Initial text shown in the text entry box. Empty by default. """
+        ...
+
+    def initial_selection(self) -> List:
+        """
+        @todo List of what???
+        """
         ...
 
     def preview(self, arg: Dict[str, T_VALUE]) -> Union[str, sublime.Html]:
@@ -1321,6 +996,75 @@ class ViewEventListener:
         ...
 
     def __init__(self, view: sublime.View) -> None:
+        ...
+
+
+class TextChangeListener:
+    """ Base implementation of a text change listener.
+
+    An instance may be added to a view using `sublime.View.add_text_listener`.
+
+    Has the following callbacks:
+
+    on_text_changed(changes):
+        Called when text is changed in a buffer.
+
+        :param changes:
+            A list of TextChange
+
+    on_text_changed_async(changes):
+        Async version of on_text_changed_async.
+
+    on_revert():
+        Called when the buffer is reverted.
+
+        A revert does not trigger text changes. If the contents of the buffer
+        are required here use View.substr()
+
+    on_revert_async():
+        Async version of on_revert_async.
+
+    on_reload():
+        Called when the buffer is reloaded.
+
+        A reload does not trigger text changes. If the contents of the buffer
+        are required here use View.substr()
+
+    on_reload_async():
+        Async version of on_reload_async.
+    """
+
+    __key: Optional[int] = None
+    buffer: Optional[sublime.Buffer] = None
+
+    @classmethod
+    def is_applicable(cls, buffer: sublime.Buffer) -> bool:
+        """
+        Receives a Buffer object and should return a bool
+        indicating if this class applies to a view with the Buffer.
+        """
+        ...
+
+    def __init__(self, buffer: sublime.Buffer) -> None:
+        ...
+
+    def remove(self) -> None:
+        """
+        Remove this listener from the buffer.
+
+        Async callbacks may still be called after this, as they are queued separately.
+        """
+        ...
+
+    def attach(self, buffer: sublime.Buffer) -> None:
+        """ Attach this listener to a buffer. """
+        ...
+
+    def is_attached(self) -> bool:
+        """
+        Check whether the listener is receiving events from a buffer.
+        May not be called from __init__.
+        """
         ...
 
 
@@ -1764,15 +1508,9 @@ multi_importer = MultizipImporter()
 sys.meta_path.insert(0, multi_importer)
 
 
-def update_compressed_packages(pkgs):
-    multi_importer.loaders = []
-    for p in pkgs:
-        try:
-            multi_importer.loaders.append(ZipLoader(p))
-        except (FileNotFoundError, zipfile.BadZipFile) as e:
-            print("error loading " + p + ": " + str(e))
+def update_compressed_packages(pkgs: Iterable[str]) -> None:
+    ...
 
 
-def set_override_path(path):
-    global override_path
-    override_path = path
+def set_override_path(path: str) -> None:
+    ...
