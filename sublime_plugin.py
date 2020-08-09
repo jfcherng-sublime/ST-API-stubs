@@ -533,7 +533,7 @@ class MultiCompletionList:
     def completions_ready(
         self,
         completions: Iterable[
-            Union[sublime.CompletionItem, str, Sequence[str], Sequence[str, str], Sequence[str, str, str],]
+            Union[sublime.CompletionItem, str, Sequence[str], Sequence[str, str], Sequence[str, str, str]]
         ],
         flags: int,
     ) -> None:
