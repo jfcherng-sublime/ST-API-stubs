@@ -1461,12 +1461,14 @@ class View:
         """
         ...
 
-    def find(self, pattern: str, start_pt: int, flags: int = 0) -> Optional[Region]:
+    def find(self, pattern: str, start_pt: int, flags: int = 0) -> Region:
         """
         Returns the first region matching the regex `pattern`, starting from
         `start_pt`, or `None` if it can't be found. The optional `flags`
         parameter may be `LITERAL`, `IGNORECASE`, or the two
         ORed together
+
+        If there is no match, `Region(-1, -1)` will be returned.
         """
         ...
 
