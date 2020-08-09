@@ -20,8 +20,6 @@ import importlib
 import io
 import sys
 import threading
-import time
-import traceback
 
 import sublime
 
