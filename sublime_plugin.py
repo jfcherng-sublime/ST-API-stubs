@@ -1,12 +1,12 @@
 # version: 4081
 
+from types import ModuleType
 from typing import (
     Any,
     Callable,
     Dict,
     Iterable,
     List,
-    ModuleType,
     Optional,
     Sequence,
     Set,
