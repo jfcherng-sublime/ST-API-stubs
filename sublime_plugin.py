@@ -1,11 +1,14 @@
 # version: 4081
 
+from importlib.machinery import ModuleSpec
 from types import ModuleType
 from typing import (
     Any,
     Callable,
     Dict,
+    Generator,
     Iterable,
+    Iterator,
     List,
     Optional,
     Sequence,
@@ -18,6 +21,7 @@ from typing_extensions import TypedDict
 
 import importlib
 import io
+import os
 import sys
 import threading
 
@@ -78,18 +82,18 @@ T_VECTOR = Tuple[float, float]
 
 api_ready: bool = False
 
-deferred_plugin_loadeds = []
+deferred_plugin_loadeds: List[str] = []
 
-application_command_classes = []
-window_command_classes = []
-text_command_classes = []
+application_command_classes: List[str] = []
+window_command_classes: List[str] = []
+text_command_classes: List[str] = []
 
-view_event_listener_classes = []
-view_event_listeners = {}
+view_event_listener_classes: List[str] = []
+view_event_listeners: Dict[int, List[type]] = {}
 
-all_command_classes = [application_command_classes, window_command_classes, text_command_classes]
+all_command_classes: List[List[str]] = [application_command_classes, window_command_classes, text_command_classes]
 
-all_callbacks = {
+all_callbacks: Dict[str, List[Union[type, str]]] = {
     "on_init": [],
     "on_new": [],
     "on_clone": [],
@@ -145,7 +149,7 @@ all_callbacks = {
 
 pending_on_activated_async_lock = threading.Lock()
 
-pending_on_activated_async_callbacks = {"EventListener": [], "ViewEventListener": []}
+pending_on_activated_async_callbacks: Dict[str, List[str]] = {"EventListener": [], "ViewEventListener": []}
 
 view_event_listener_excluded_callbacks: Set[str] = {
     "on_clone",
@@ -173,7 +177,7 @@ view_event_listener_excluded_callbacks: Set[str] = {
     "on_window_command",
 }
 
-text_change_listener_classes = []
+text_change_listener_classes: List[str] = []
 text_change_listener_callbacks: Set[str] = {
     "on_text_changed",
     "on_text_changed_async",
@@ -255,50 +259,27 @@ def notify_application_commands() -> None:
     ...
 
 
-def create_application_commands():
-    cmds = []
-    for cls in application_command_classes:
-        try:
-            o = cls()
-            cmds.append((o, o.name()))
-        except Exception as e:
-            _instantiation_error(cls, e)
-    return cmds
+def create_application_commands() -> List[Tuple[_T, str]]:
+    ...
 
 
-def create_window_commands(window_id: int):
-    window = sublime.Window(window_id)
-    cmds = []
-    for cls in window_command_classes:
-        try:
-            o = cls(window)
-            cmds.append((o, o.name()))
-        except Exception as e:
-            _instantiation_error(cls, e)
-    return cmds
+def create_window_commands(window_id: int) -> List[Tuple[_T, str]]:
+    ...
 
 
-def create_text_commands(view_id: int):
-    view = sublime.View(view_id)
-    cmds = []
-    for cls in text_command_classes:
-        try:
-            o = cls(view)
-            cmds.append((o, o.name()))
-        except Exception as e:
-            _instantiation_error(cls, e)
-    return cmds
+def create_text_commands(view_id: int) -> List[Tuple[_T, str]]:
+    ...
 
 
 def on_api_ready() -> None:
     ...
 
 
-def is_view_event_listener_applicable(cls, view: sublime.View) -> bool:
+def is_view_event_listener_applicable(cls: _T, view: sublime.View) -> bool:
     ...
 
 
-def create_view_event_listeners(classes, view: sublime.View) -> None:
+def create_view_event_listeners(classes: Iterable[_T], view: sublime.View) -> None:
     ...
 
 
@@ -321,12 +302,8 @@ def detach_view(view: sublime.View) -> None:
     ...
 
 
-def find_view_event_listener(view: sublime.View, cls):
-    if view.view_id in view_event_listeners:
-        for vel in view_event_listeners[view.view_id]:
-            if vel.__class__ == cls:
-                return vel
-    return None
+def find_view_event_listener(view: sublime.View, cls: str) -> Optional[_T]:
+    ...
 
 
 def attach_buffer(buf: sublime.Buffer) -> None:
@@ -337,16 +314,12 @@ def plugin_module_for_obj(obj: _T) -> str:
     ...
 
 
-def el_callbacks(name, listener_only=False):
-    for el in all_callbacks[name]:
-        yield el if listener_only else getattr(el, name)
+def el_callbacks(name: str, listener_only: bool = False) -> Generator[Union[type, str], None, None]:
+    ...
 
 
-def vel_callbacks(v, name, listener_only=False):
-    for vel in view_event_listeners.get(v.view_id, []):
-        if not hasattr(vel, name):
-            continue
-        yield vel if listener_only else getattr(vel, name)
+def vel_callbacks(v: sublime.View, name: str, listener_only: bool = False) -> Generator[Union[type, str], None, None]:
+    ...
 
 
 def run_view_callbacks(name: str, view_id: int, *args: T_VALUE, attach: bool = False, el_only: bool = False,) -> None:
@@ -446,7 +419,7 @@ def on_pre_close(view_id: int) -> None:
     ...
 
 
-def on_close(view_id) -> None:
+def on_close(view_id: int) -> None:
     ...
 
 
@@ -514,9 +487,7 @@ def on_query_context(view_id: int, key: str, operator: str, operand: T_VALUE, ma
     ...
 
 
-def normalise_completion(
-    c: Union[sublime.CompletionItem, str, Sequence[str], Sequence[str, str], Sequence[str, str, str]]
-) -> T_COMPLETION_NORMALIZED:
+def normalise_completion(c: Union[sublime.CompletionItem, str, List[str]]) -> T_COMPLETION_NORMALIZED:
     ...
 
 
@@ -531,11 +502,7 @@ class MultiCompletionList:
         ...
 
     def completions_ready(
-        self,
-        completions: Iterable[
-            Union[sublime.CompletionItem, str, Sequence[str], Sequence[str, str], Sequence[str, str, str]]
-        ],
-        flags: int,
+        self, completions: Iterable[Union[sublime.CompletionItem, str, List[str]]], flags: int,
     ) -> None:
         ...
 
@@ -860,7 +827,7 @@ class TextCommand(Command):
     def run_(self, edit_token: int, args: Dict[str, T_VALUE]) -> None:
         ...
 
-    def run(self, edit: sublime.Edit):
+    def run(self, edit: sublime.Edit) -> None:
         """ Called when the command is run """
         ...
 
@@ -970,10 +937,12 @@ class TextChangeListener:
 
 
 class MultizipImporter(importlib.abc.MetaPathFinder):
-    def __init__(self):
-        self.loaders = []
+    loaders: List[importlib.abc.Loader]
 
-    def _make_spec(self, loader: importlib.abc.Loader, fullname: str) -> importlib.machinery.ModuleSpec:
+    def __init__(self) -> None:
+        ...
+
+    def _make_spec(self, loader: importlib.abc.Loader, fullname: str) -> ModuleSpec:
         """
         :param loader:
             The importlib.abc.Loader to create the ModuleSpec from
@@ -987,8 +956,8 @@ class MultizipImporter(importlib.abc.MetaPathFinder):
         ...
 
     def find_spec(
-        self, fullname: str, path: Optional[List[str]], target: Optional[Any] = None
-    ) -> Optional[importlib.machinery.ModuleSpec]:
+        self, fullname: str, path: Optional[Sequence[Union[bytes, str]]], target: Optional[Any] = None
+    ) -> Optional[ModuleSpec]:
         """
         :param fullname:
             A unicode string of the module name
@@ -1024,7 +993,7 @@ class ZipResourceReader(importlib.abc.ResourceReader):
         """
         ...
 
-    def open_resource(self, resource: str) -> io.BytesIO:
+    def open_resource(self, resource: Union[bytes, str, os.PathLike[Any]]) -> io.BytesIO:
         """
         :param resource:
             A unicode string of a resource name - should not contain a path
@@ -1038,7 +1007,7 @@ class ZipResourceReader(importlib.abc.ResourceReader):
         """
         ...
 
-    def resource_path(self, resource: str) -> None:
+    def resource_path(self, resource: Union[bytes, str, os.PathLike[Any]]) -> str:
         """
         :param resource:
             A unicode string of a resource name - should not contain a path
@@ -1059,7 +1028,7 @@ class ZipResourceReader(importlib.abc.ResourceReader):
         """
         ...
 
-    def contents(self) -> List[str]:
+    def contents(self) -> Iterator[str]:
         """
         :return:
             A list of the resources for this module
@@ -1172,7 +1141,7 @@ class ZipLoader(importlib.abc.InspectLoader):
         """
         ...
 
-    def _load_source(self, fullname: str, path) -> str:
+    def _load_source(self, fullname: str, path: str) -> str:
         """
         Loads the source code to the module
 
@@ -1212,7 +1181,7 @@ class ZipLoader(importlib.abc.InspectLoader):
         """
         ...
 
-    def _scan_zip(self):
+    def _scan_zip(self) -> None:
         """
         Rebuild the internal cached info about the contents of the zip
         """
