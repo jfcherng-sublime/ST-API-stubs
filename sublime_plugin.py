@@ -959,7 +959,7 @@ class TextCommand(Command):
     def run_(self, edit_token: int, args: Dict[str, T_VALUE]) -> None:
         ...
 
-    def run(self) -> None:
+    def run(self, edit: sublime.Edit):
         """ Called when the command is run """
         ...
 
