@@ -966,10 +966,7 @@ class Region:
         ...
 
     def size(self) -> int:
-        """
-        deprecated, use `len()` instead
-        Returns the number of characters spanned by the region. Always >= 0
-        """
+        """ Returns the number of characters spanned by the region """
         ...
 
     def contains(self, x: Union["Region", T_POINT]) -> bool:
@@ -1373,11 +1370,7 @@ class View:
         ...
 
     def size(self) -> int:
-        """
-        Deprecated, use `len()` instead.
-
-        Returns the number of character in the file
-        """
+        """ Returns the number of character in the file """
         ...
 
     def begin_edit(
