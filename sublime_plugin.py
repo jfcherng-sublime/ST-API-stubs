@@ -1,6 +1,7 @@
 # version: 4081
 
 from typing import (
+    Any,
     Callable,
     Dict,
     Iterable,
@@ -17,13 +18,10 @@ from typing_extensions import TypedDict
 
 import importlib
 import io
-import marshal
-import os
 import sys
 import threading
 import time
 import traceback
-import zipfile
 
 import sublime
 
@@ -36,6 +34,26 @@ _T = TypeVar("_T")
 T_CALLBACK_0 = Callable[[], None]
 T_CALLBACK_1 = Callable[[_T], None]
 T_COMPLETION = Union[str, List[str], Tuple[str, str], sublime.CompletionItem]
+T_COMPLETION_NORMALIZED = Tuple[
+    # trigger
+    str,
+    # annotation
+    str,
+    # details
+    str,
+    # completion
+    T_COMPLETION,
+    # kind_name
+    str,
+    # letter
+    str,
+    # completion_format
+    int,
+    # flags
+    int,
+    # kind
+    int,
+]
 T_EXPANDABLE_VAR = TypeVar("T_EXPANDABLE_VAR", str, List[str], Dict[str, str])
 T_KIND = Tuple[int, str, str]
 T_LAYOUT = TypedDict(
@@ -131,7 +149,7 @@ pending_on_activated_async_lock = threading.Lock()
 
 pending_on_activated_async_callbacks = {"EventListener": [], "ViewEventListener": []}
 
-view_event_listener_excluded_callbacks = {
+view_event_listener_excluded_callbacks: Set[str] = {
     "on_clone",
     "on_clone_async",
     "on_exit",
@@ -158,7 +176,7 @@ view_event_listener_excluded_callbacks = {
 }
 
 text_change_listener_classes = []
-text_change_listener_callbacks = {
+text_change_listener_callbacks: Set[str] = {
     "on_text_changed",
     "on_text_changed_async",
     "on_revert",
@@ -167,10 +185,10 @@ text_change_listener_callbacks = {
     "on_reload_async",
 }
 
-profile = {}
+profile: Dict[str, Dict[str, Any]] = {}
 
 
-def add_profiling(event_handler):
+def add_profiling(event_handler: Callable) -> Callable:
     """
     Decorator to measure blocking event handler methods. Also prevents
     exceptions from interrupting other events handlers.
@@ -181,37 +199,10 @@ def add_profiling(event_handler):
     :return:
         The decorated method
     """
-
-    def profiler(*args):
-        global profile
-        t0 = time.time()
-        try:
-            return event_handler(*args)
-        except (Exception) as e:
-            # All this to include stack frames before the call to
-            # event_handler() above
-            tb = traceback.extract_stack()[:-1]
-            tb += traceback.extract_tb(e.__traceback__)
-            out = ["Traceback (most recent call last):\n"]
-            out += traceback.format_list(tb)
-            out += traceback.format_exception_only(type(e), e)
-            print("".join(out), end="")
-        finally:
-            elapsed = time.time() - t0
-            mod = event_handler.__module__
-            p = profile.setdefault(event_handler.__name__, {})
-            p.setdefault(mod, Summary()).record(elapsed)
-
-    # Make the method look like the original for introspection
-    profiler.__doc__ = event_handler.__doc__
-    profiler.__name__ = event_handler.__name__
-    profiler.__module__ = event_handler.__module__
-    # Follow the pattern of decorators like @classmethod and @staticmethod
-    profiler.__func__ = event_handler
-    return profiler
+    ...
 
 
-def trap_exceptions(event_handler):
+def trap_exceptions(event_handler: Callable) -> Callable:
     """
     Decorator to prevent exceptions from interrupting other events handlers.
 
@@ -221,31 +212,10 @@ def trap_exceptions(event_handler):
     :return:
         The decorated method
     """
-
-    def exception_handler(*args):
-        try:
-            return event_handler(*args)
-        except (Exception) as e:
-            # All this to include stack frames before the call to
-            # event_handler() above
-            tb = traceback.extract_stack()[:-1]
-            tb += traceback.extract_tb(e.__traceback__)
-            out = ["Traceback (most recent call last):\n"]
-            out += traceback.format_list(tb)
-            out += traceback.format_exception_only(type(e), e)
-            print("".join(out), end="")
-
-    # Make the method look like the original for introspection
-    exception_handler.__doc__ = event_handler.__doc__
-    exception_handler.__name__ = event_handler.__name__
-    exception_handler.__module__ = event_handler.__module__
-    event_handler.__name__ = "_wrapped_%s" % event_handler.__name__
-    # Follow the pattern of decorators like @classmethod and @staticmethod
-    exception_handler.__func__ = event_handler
-    return exception_handler
+    ...
 
 
-def decorate_handler(cls, method_name):
+def decorate_handler(cls: _T, method_name: str) -> None:
     """
     Decorates an event handler method with exception trapping, and in the case
     of blocking calls, profiling.
@@ -256,22 +226,7 @@ def decorate_handler(cls, method_name):
     :param method_name:
         A unicode string of the name of the method to decorate
     """
-
-    # We have to use __dict__ rather than getattr(), otherwise the function
-    # is passed through decorators, and we can't detect @classmethod and
-    # @staticmethod
-    method = cls.__dict__[method_name]
-    if method_name.endswith("_async"):
-        wrapper = trap_exceptions
-    else:
-        wrapper = add_profiling
-    if isinstance(method, staticmethod):
-        wrapped = staticmethod(wrapper(method.__func__))
-    elif isinstance(method, classmethod):
-        wrapped = classmethod(wrapper(method.__func__))
-    else:
-        wrapped = wrapper(method)
-    setattr(cls, method_name, wrapped)
+    ...
 
 
 def unload_module(module: ModuleType) -> None:
@@ -294,10 +249,8 @@ def synthesize_on_activated_async() -> None:
     ...
 
 
-def _instantiation_error(cls, e):
-    rex = RuntimeError("unable to instantiate " f"'{cls.__module__}.{cls.__name__}'")
-    rex.__cause__ = e
-    traceback.print_exception(None, rex, None)
+def _instantiation_error(cls: _T, e: Exception) -> None:
+    ...
 
 
 def notify_application_commands() -> None:
@@ -382,14 +335,8 @@ def attach_buffer(buf: sublime.Buffer) -> None:
     ...
 
 
-def plugin_module_for_obj(obj):
-    # Since objects in plugins may be defined deep in a sub-module, if we want
-    # to filter by a module, we must make sure we are only looking at the
-    # first two module labels
-    cm = obj.__class__.__module__
-    if cm.count(".") > 2:
-        cm = ".".join(cm.split(".", 2)[0:2])
-    return cm
+def plugin_module_for_obj(obj: _T) -> str:
+    ...
 
 
 def el_callbacks(name, listener_only=False):
@@ -573,63 +520,37 @@ def on_query_context(
     ...
 
 
-def normalise_completion(c):
-    def split_trigger(trigger):
-        idx = trigger.find("\t")
-        if idx < 0:
-            return (trigger, "")
-        else:
-            return (trigger[0:idx], trigger[idx + 1 :])
-
-    if not isinstance(c, sublime.CompletionItem):
-        if isinstance(c, str):
-            trigger, annotation = split_trigger(c)
-            c = sublime.CompletionItem(trigger, annotation)
-        elif len(c) == 1:
-            trigger, annotation = split_trigger(c[0])
-            c = sublime.CompletionItem(trigger, annotation)
-        elif len(c) == 2:
-            trigger, annotation = split_trigger(c[0])
-            c = sublime.CompletionItem.snippet_completion(
-                trigger, c[1], annotation, kind=sublime.KIND_AMBIGUOUS
-            )
-        elif len(c) == 3:
-            trigger, annotation = split_trigger(c[0])
-            c = sublime.CompletionItem.snippet_completion(
-                trigger, c[2], annotation, kind=sublime.KIND_AMBIGUOUS
-            )
-        else:
-            c = sublime.CompletionItem("")
-
-    kind, kind_letter, kind_name = c.kind
-
-    letter = 0
-    if isinstance(kind_letter, str) and kind_letter != "":
-        letter = ord(kind_letter)
-    return (
-        c.trigger,
-        c.annotation,
-        c.details,
-        c.completion,
-        kind_name,
-        letter,
-        c.completion_format,
-        c.flags,
-        kind,
-    )
+def normalise_completion(
+    c: Union[
+        sublime.CompletionItem, str, Sequence[str], Sequence[str, str], Sequence[str, str, str]
+    ]
+) -> T_COMPLETION_NORMALIZED:
+    ...
 
 
 class MultiCompletionList:
-    def __init__(self, num_completion_lists, view_id, req_id):
-        self.remaining_calls = num_completion_lists
-        self.view_id = view_id
-        self.req_id = req_id
-        self.completions = []
-        self.flags = 0
+    remaining_calls: int
+    view_id: int
+    req_id: int
+    completions: List[T_COMPLETION_NORMALIZED]
+    flags: int
 
-    def completions_ready(self, completions, flags) -> None:
-        # what's the type?
-        # self.completions += [normalise_completion(c) for c in completions]
+    def __init__(self, num_completion_lists: int, view_id: int, req_id: int) -> None:
+        ...
+
+    def completions_ready(
+        self,
+        completions: Iterable[
+            Union[
+                sublime.CompletionItem,
+                str,
+                Sequence[str],
+                Sequence[str, str],
+                Sequence[str, str, str],
+            ]
+        ],
+        flags: int,
+    ) -> None:
         ...
 
 
@@ -1072,7 +993,9 @@ class MultizipImporter(importlib.abc.MetaPathFinder):
     def __init__(self):
         self.loaders = []
 
-    def _make_spec(self, loader, fullname):
+    def _make_spec(
+        self, loader: importlib.abc.Loader, fullname: str
+    ) -> importlib.machinery.ModuleSpec:
         """
         :param loader:
             The importlib.abc.Loader to create the ModuleSpec from
@@ -1083,16 +1006,11 @@ class MultizipImporter(importlib.abc.MetaPathFinder):
         :return:
             An instance of importlib.machinery.ModuleSpec()
         """
+        ...
 
-        origin, is_package = loader._spec_info(fullname)
-        spec = importlib.util.spec_from_loader(
-            fullname, loader, origin=origin, is_package=is_package
-        )
-        if is_package:
-            spec.submodule_search_locations = [loader.zippath]
-        return spec
-
-    def find_spec(self, fullname, path, target=None):
+    def find_spec(
+        self, fullname: str, path: Optional[List[str]], target: Optional[Any] = None
+    ) -> Optional[importlib.machinery.ModuleSpec]:
         """
         :param fullname:
             A unicode string of the module name
@@ -1107,17 +1025,7 @@ class MultizipImporter(importlib.abc.MetaPathFinder):
         :return:
             An importlib.machinery.ModuleSpec() object
         """
-
-        if not path:
-            for l in self.loaders:
-                if l.has(fullname):
-                    return self._make_spec(l, fullname)
-
-        for l in self.loaders:
-            if path == [l.zippath] and l.has(fullname):
-                return self._make_spec(l, fullname)
-
-        return None
+        ...
 
 
 class ZipResourceReader(importlib.abc.ResourceReader):
@@ -1125,7 +1033,10 @@ class ZipResourceReader(importlib.abc.ResourceReader):
     Implements the resource reader interface introduced in Python 3.7
     """
 
-    def __init__(self, loader, fullname):
+    loader: "ZipLoader"
+    fullname: str
+
+    def __init__(self, loader: "ZipLoader", fullname: str) -> None:
         """
         :param loader:
             The source ZipLoader() object
@@ -1133,11 +1044,9 @@ class ZipResourceReader(importlib.abc.ResourceReader):
         :param fullname:
             A unicode string of the module name to load resources for
         """
+        ...
 
-        self.loader = loader
-        self.fullname = fullname
-
-    def open_resource(self, resource):
+    def open_resource(self, resource: str) -> io.BytesIO:
         """
         :param resource:
             A unicode string of a resource name - should not contain a path
@@ -1149,14 +1058,9 @@ class ZipResourceReader(importlib.abc.ResourceReader):
         :return:
             An io.BytesIO() object
         """
+        ...
 
-        rel_zip_path = self.loader.resources.get(self.fullname, {}).get(resource)
-        if not rel_zip_path:
-            raise FileNotFoundError()
-        with zipfile.ZipFile(self.loader.zippath, "r") as z:
-            return io.BytesIO(z.read(rel_zip_path))
-
-    def resource_path(self, resource):
+    def resource_path(self, resource: str) -> None:
         """
         :param resource:
             A unicode string of a resource name - should not contain a path
@@ -1165,10 +1069,9 @@ class ZipResourceReader(importlib.abc.ResourceReader):
         :raises:
             FileNotFoundError - always, since there is no normal filesystem access
         """
+        ...
 
-        raise FileNotFoundError()
-
-    def is_resource(self, name):
+    def is_resource(self, name: str) -> bool:
         """
         :param name:
             A unicode string of a file name to check if it is a resource
@@ -1176,16 +1079,14 @@ class ZipResourceReader(importlib.abc.ResourceReader):
         :return:
             A boolean indicating if the file is a resource
         """
+        ...
 
-        return name in self.loader.resources.get(self.fullname, {})
-
-    def contents(self):
+    def contents(self) -> List[str]:
         """
         :return:
             A list of the resources for this module
         """
-
-        return sorted([k for k in self.loader.resources.get(self.fullname, {})])
+        ...
 
 
 class ZipLoader(importlib.abc.InspectLoader):
@@ -1196,17 +1097,23 @@ class ZipLoader(importlib.abc.InspectLoader):
     the .sublime-package file.
     """
 
-    def __init__(self, zippath):
+    zippath: str
+    name: str
+
+    contents: Dict[str, str]
+    filenames: Dict[str, str]
+    packages: Set[str]
+    resources: Dict[str, Dict[str, str]]
+    refreshed: float
+
+    def __init__(self, zippath: str) -> None:
         """
         :param zippath:
             A unicode string of the full filesystem path to the zip file
         """
+        ...
 
-        self.zippath = zippath
-        self.name = os.path.splitext(os.path.basename(zippath))[0]
-        self._scan_zip()
-
-    def _get_name_key(self, fullname):
+    def _get_name_key(self, fullname: str) -> Union[Tuple[None, None], Tuple[str, str]]:
         """
         Converts a module name into a pair of package name and key. The
         key is used to access the various data structures in this object.
@@ -1220,18 +1127,9 @@ class ZipLoader(importlib.abc.InspectLoader):
             being the package name, and the second being a sub-module, e.g.
             ("Default", "indentation").
         """
+        ...
 
-        if "." not in fullname:
-            if fullname == self.name:
-                return (self.name, "")
-            return (None, None)
-
-        name, key = fullname.split(".", 1)
-        if name != self.name:
-            return (None, None)
-        return (self.name, key)
-
-    def has(self, fullname):
+    def has(self, fullname: str) -> bool:
         """
         Checks if the module is handled by this loader
 
@@ -1241,32 +1139,9 @@ class ZipLoader(importlib.abc.InspectLoader):
         :return:
             A boolean if the module is handled by this loader
         """
+        ...
 
-        name, key = self._get_name_key(fullname)
-        if name is None:
-            return False
-
-        # We can check this first before overrides since if this exists we
-        # know at the very least it will be loaded from the zip
-        if name == self.name and key in self.contents:
-            return True
-
-        rel_base = os.sep.join(fullname.split("."))
-        override_file = os.path.join(override_path, rel_base + ".py")
-        if os.path.isfile(override_file):
-            return True
-
-        # Here we check to see if an override dir exists, in general, even if
-        # there is no __init__.py. We do this since we allow users to override
-        # a sub-module without ensuring there is a perfect filesystem
-        # heirarchy of __init__.py files when traversing upwards.
-        override_package = os.path.join(override_path, rel_base)
-        if os.path.isdir(override_package):
-            return True
-
-        return False
-
-    def get_resource_reader(self, fullname):
+    def get_resource_reader(self, fullname: str) -> Optional[importlib.abc.ResourceReader]:
         """
         :param fullname:
             A unicode string of the module name to get the resource reader for
@@ -1275,12 +1150,9 @@ class ZipLoader(importlib.abc.InspectLoader):
             None if the module is not a package, otherwise an object that
             implements the importlib.abc.ResourceReader() interface
         """
+        ...
 
-        if not self.is_package(fullname):
-            return None
-        return ZipResourceReader(self, fullname)
-
-    def get_filename(self, fullname):
+    def get_filename(self, fullname: str) -> str:
         """
         :param fullname:
             A unicode string of the module name
@@ -1291,13 +1163,9 @@ class ZipLoader(importlib.abc.InspectLoader):
         :return:
             A unicode string of the file path to the module
         """
+        ...
 
-        info = self._spec_info(fullname)
-        if info[0] is None:
-            raise ImportError()
-        return info[0]
-
-    def get_code(self, fullname):
+    def get_code(self, fullname: str) -> Any:
         """
         :param fullname:
             A unicode string of the module to get the code for
@@ -1309,25 +1177,9 @@ class ZipLoader(importlib.abc.InspectLoader):
         :return:
             A code object for the module
         """
+        ...
 
-        info = self._spec_info(fullname)
-        if info[0] is None:
-            raise ModuleNotFoundError(f"No module named {repr(fullname)}")
-
-        if not info[0].endswith(".pyc"):
-            return importlib.abc.InspectLoader.source_to_code(
-                self._load_source(fullname, info[0]), info[0]
-            )
-
-        _, key = self._get_name_key(fullname)
-        data = self.contents[key]
-        magic = data[0:4]
-        if importlib.util.MAGIC_NUMBER != magic:
-            raise ImportError(f"bad magic number in {repr(fullname)}: {repr(magic)}")
-        # From importlib._bootstrap_external._code_to_timestamp_pyc()
-        return marshal.loads(data[16:])
-
-    def get_source(self, fullname):
+    def get_source(self, fullname: str) -> Optional[str]:
         """
         :param fullname:
             A unicode string of the module to get the source for
@@ -1340,18 +1192,9 @@ class ZipLoader(importlib.abc.InspectLoader):
             A unicode string of the source code, or None if there is no source
             for the module (i.e. a .pyc file)
         """
+        ...
 
-        info = self._spec_info(fullname)
-        if info[0] is None:
-            raise ModuleNotFoundError(f"No module named {repr(fullname)}")
-
-        # If a sourceless file is loaded from the file, there is no source
-        if info[0].endswith(".pyc"):
-            return None
-
-        return self._load_source(fullname, info[0])
-
-    def _load_source(self, fullname, path):
+    def _load_source(self, fullname: str, path) -> str:
         """
         Loads the source code to the module
 
@@ -1365,24 +1208,9 @@ class ZipLoader(importlib.abc.InspectLoader):
         :return:
             A unicode string
         """
+        ...
 
-        if path == self.zippath or path.startswith(self.zippath + os.sep):
-            _, key = self._get_name_key(fullname)
-            if key in self.contents:
-                return self.contents[key]
-            raise ModuleNotFoundError(f"No module named {repr(fullname)}")
-
-        if os.path.isdir(path):
-            return ""
-
-        try:
-            with open(path, "r", encoding="utf-8") as f:
-                return f.read()
-        except (Exception) as e:
-            print(f"Error reading {path}: {e}")
-            raise ImportError(f"Unable to load {repr(fullname)}")
-
-    def is_package(self, fullname):
+    def is_package(self, fullname: str) -> bool:
         """
         :param fullname:
             A unicode string of the module to see if it is a package
@@ -1390,13 +1218,9 @@ class ZipLoader(importlib.abc.InspectLoader):
         :return:
             A boolean if the module is a package
         """
+        ...
 
-        info = self._spec_info(fullname)
-        if info[1] is None:
-            raise ModuleNotFoundError(f"No module named {repr(fullname)}")
-        return info[1]
-
-    def _spec_info(self, fullname):
+    def _spec_info(self, fullname: str) -> Union[Tuple[None, None], Tuple[str, bool]]:
         """
         :param fullname:
             A unicode string of the module that an
@@ -1408,103 +1232,17 @@ class ZipLoader(importlib.abc.InspectLoader):
              - (unicode string, bool) of the origin and is_package params to
                pass to importlib.machinery.ModuleSpec()
         """
-
-        rel_base = os.sep.join(fullname.split("."))
-        name, key = self._get_name_key(fullname)
-        if name is None:
-            return (None, None)
-
-        if key != "":
-            rel_py_path = rel_base + ".py"
-            override_py_file = os.path.join(override_path, rel_py_path)
-            if os.path.isfile(override_py_file):
-                return (override_py_file, False)
-
-        in_zip = name == self.name and key in self.contents
-        zip_filename = None if not in_zip else self.filenames[key]
-
-        # We don't return files named __init__.py here to ensure that any
-        # override that exists gets picked up instead.
-        if in_zip and os.path.basename(zip_filename) != "__init__.py":
-            return (os.path.join(self.zippath, zip_filename).rstrip(os.sep), key in self.packages)
-
-        rel_init_path = rel_base + os.sep + "__init__.py"
-        override_init_file = os.path.join(override_path, rel_init_path)
-        if os.path.isfile(override_init_file):
-            return (override_init_file, True)
-
-        # This only handle __init__.py in the zip. It has to be placed after
-        # the check for the override file.
-        if in_zip:
-            return (os.path.join(self.zippath, zip_filename), key in self.packages)
-
-        # This is necessary to support overrides in a subdir of a package
-        # when there is no __init__.py file in one of the parents
-        override_dir = os.path.join(override_path, rel_base)
-        if os.path.isdir(override_dir):
-            return (override_dir, True)
-
-        return (None, None)
+        ...
 
     def _scan_zip(self):
         """
         Rebuild the internal cached info about the contents of the zip
         """
-
-        self.contents = {"": ""}
-        self.filenames = {"": ""}
-        self.packages = {""}
-        self.resources = {}
-        self.refreshed = time.time()
-
-        try:
-            with zipfile.ZipFile(self.zippath, "r") as z:
-                files = [i.filename for i in z.infolist()]
-
-                for f in files:
-                    base, ext = os.path.splitext(f)
-
-                    if ext != ".py" and ext != ".pyc":
-                        rmod, rname = os.path.split(f)
-                        rmod = rmod.replace("/", ".").replace("\\", ".")
-                        rmod = (self.name + "." + rmod).rstrip(".")
-                        if rmod not in self.resources:
-                            self.resources[rmod] = {}
-                        self.resources[rmod][rname] = f
-                        continue
-
-                    paths = base.split("/")
-                    if len(paths) > 0 and paths[len(paths) - 1] == "__init__":
-                        paths.pop()
-                        self.packages.add(".".join(paths))
-
-                    pkg_path = ".".join(paths)
-                    if f.endswith(".pyc"):
-                        self.contents[pkg_path] = z.read(f)
-                    else:
-                        try:
-                            self.contents[pkg_path] = z.read(f).decode("utf-8")
-                        except UnicodeDecodeError:
-                            print(
-                                f"{os.path.join(self.zippath, f)} is not "
-                                "utf-8 encoded, unable to load plugin"
-                            )
-                            continue
-                    self.filenames[pkg_path] = f
-
-                    while len(paths) > 1:
-                        paths.pop()
-                        parent = ".".join(paths)
-                        if parent not in self.contents:
-                            self.contents[parent] = ""
-                            self.filenames[parent] = parent
-                            self.packages.add(parent)
-        except (Exception) as e:
-            print(f"Error loading {self.zippath}: {e}")
+        ...
 
 
-override_path = None
-multi_importer = MultizipImporter()
+override_path: Optional[str] = None
+multi_importer: MultizipImporter = MultizipImporter()
 sys.meta_path.insert(0, multi_importer)
 
 

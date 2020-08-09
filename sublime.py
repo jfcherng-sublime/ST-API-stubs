@@ -24,6 +24,26 @@ _T = TypeVar("_T")
 T_CALLBACK_0 = Callable[[], None]
 T_CALLBACK_1 = Callable[[_T], None]
 T_COMPLETION = Union[str, List[str], Tuple[str, str], "CompletionItem"]
+T_COMPLETION_NORMALIZED = Tuple[
+    # trigger
+    str,
+    # annotation
+    str,
+    # details
+    str,
+    # completion
+    T_COMPLETION,
+    # kind_name
+    str,
+    # letter
+    str,
+    # completion_format
+    int,
+    # flags
+    int,
+    # kind
+    int,
+]
 T_EXPANDABLE_VAR = TypeVar("T_EXPANDABLE_VAR", str, List[str], Dict[str, str])
 T_KIND = Tuple[int, str, str]
 T_LAYOUT = TypedDict(
