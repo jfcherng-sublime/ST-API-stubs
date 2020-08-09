@@ -1393,9 +1393,7 @@ class View:
         """ Returns the number of character in the file """
         ...
 
-    def begin_edit(
-        self, edit_token: int, cmd: str, args: Optional[Dict[str, T_VALUE]] = None
-    ) -> Edit:
+    def begin_edit(self, edit_token: int, cmd: str, args: Optional[Dict[str, T_VALUE]] = None) -> Edit:
         ...
 
     def end_edit(self, edit: Edit) -> None:
@@ -1473,11 +1471,7 @@ class View:
         ...
 
     def find_all(
-        self,
-        pattern: str,
-        flags: int = 0,
-        fmt: Optional[str] = None,
-        extractions: Optional[List[str]] = None,
+        self, pattern: str, flags: int = 0, fmt: Optional[str] = None, extractions: Optional[List[str]] = None,
     ) -> List[T_VECTOR]:
         """
         Returns all (non-overlapping) regions matching the regex `pattern`
@@ -1618,9 +1612,7 @@ class View:
         """
         ...
 
-    def find_by_class(
-        self, pt: T_POINT, forward: bool, classes: int, separators: str = ""
-    ) -> Region:
+    def find_by_class(self, pt: T_POINT, forward: bool, classes: int, separators: str = "") -> Region:
         """
         Finds the next location after point that matches the given classes
         If forward is `False`, searches backwards instead of forwards.
@@ -1630,9 +1622,7 @@ class View:
         """
         ...
 
-    def expand_by_class(
-        self, x: Union[Region, T_POINT], classes: int, separators: str = ""
-    ) -> Region:
+    def expand_by_class(self, x: Union[Region, T_POINT], classes: int, separators: str = "") -> Region:
         """
         Expands `x` to the left and right, until each side lands on a location
         that matches `classes`. classes is a bitwise OR of the
@@ -1823,12 +1813,7 @@ class View:
         ...
 
     def add_phantom(
-        self,
-        key: str,
-        region: Region,
-        content: str,
-        layout: int,
-        on_navigate: Optional[T_CALLBACK_1[str]] = None,
+        self, key: str, region: Region, content: str, layout: int, on_navigate: Optional[T_CALLBACK_1[str]] = None,
     ) -> int:
         ...
 
@@ -1926,9 +1911,7 @@ class View:
         """ Sets the overwrite status """
         ...
 
-    def show_popup_menu(
-        self, items: Sequence[str], on_select: T_CALLBACK_1[int], flags: int = 0
-    ) -> None:
+    def show_popup_menu(self, items: Sequence[str], on_select: T_CALLBACK_1[int], flags: int = 0) -> None:
         """
         Shows a pop up menu at the caret, to select an item in a list. `on_done`
         will be called once, with the index of the selected item. If the pop up
@@ -2117,11 +2100,7 @@ class Phantom:
     id: int
 
     def __init__(
-        self,
-        region: Region,
-        content: str,
-        layout: int,
-        on_navigate: Optional[T_CALLBACK_1[str]] = None,
+        self, region: Region, content: str, layout: int, on_navigate: Optional[T_CALLBACK_1[str]] = None,
     ) -> None:
         ...
 
@@ -2238,12 +2217,7 @@ class CompletionItem:
 
     @classmethod
     def snippet_completion(
-        cls,
-        trigger: str,
-        snippet: str,
-        annotation: str = "",
-        kind: T_KIND = KIND_SNIPPET,
-        details: str = "",
+        cls, trigger: str, snippet: str, annotation: str = "", kind: T_KIND = KIND_SNIPPET, details: str = "",
     ) -> "CompletionItem":
         """
         trigger: A unicode string of the text to match against the user's input.

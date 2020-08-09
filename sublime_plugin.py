@@ -351,9 +351,7 @@ def vel_callbacks(v, name, listener_only=False):
         yield vel if listener_only else getattr(vel, name)
 
 
-def run_view_callbacks(
-    name: str, view_id: int, *args: T_VALUE, attach: bool = False, el_only: bool = False,
-) -> None:
+def run_view_callbacks(name: str, view_id: int, *args: T_VALUE, attach: bool = False, el_only: bool = False,) -> None:
     ...
 
 
@@ -514,16 +512,12 @@ def on_deactivated_async(view_id: int) -> None:
     ...
 
 
-def on_query_context(
-    view_id: int, key: str, operator: str, operand: T_VALUE, match_all: bool
-) -> bool:
+def on_query_context(view_id: int, key: str, operator: str, operand: T_VALUE, match_all: bool) -> bool:
     ...
 
 
 def normalise_completion(
-    c: Union[
-        sublime.CompletionItem, str, Sequence[str], Sequence[str, str], Sequence[str, str, str]
-    ]
+    c: Union[sublime.CompletionItem, str, Sequence[str], Sequence[str, str], Sequence[str, str, str]]
 ) -> T_COMPLETION_NORMALIZED:
     ...
 
@@ -541,13 +535,7 @@ class MultiCompletionList:
     def completions_ready(
         self,
         completions: Iterable[
-            Union[
-                sublime.CompletionItem,
-                str,
-                Sequence[str],
-                Sequence[str, str],
-                Sequence[str, str, str],
-            ]
+            Union[sublime.CompletionItem, str, Sequence[str], Sequence[str, str], Sequence[str, str, str],]
         ],
         flags: int,
     ) -> None:
@@ -562,15 +550,11 @@ def on_hover(view_id: int, point: T_POINT, hover_zone: int) -> None:
     ...
 
 
-def on_text_command(
-    view_id: int, name: str, args: Optional[Dict[str, T_VALUE]]
-) -> Tuple[str, Optional[Dict]]:
+def on_text_command(view_id: int, name: str, args: Optional[Dict[str, T_VALUE]]) -> Tuple[str, Optional[Dict]]:
     ...
 
 
-def on_window_command(
-    window_id: int, name: str, args: Optional[Dict[str, T_VALUE]]
-) -> Tuple[str, Optional[Dict]]:
+def on_window_command(window_id: int, name: str, args: Optional[Dict[str, T_VALUE]]) -> Tuple[str, Optional[Dict]]:
     ...
 
 
@@ -737,9 +721,7 @@ class ListInputHandler(CommandInputHandler):
     def list_items(
         self,
     ) -> Union[
-        List[str],
-        List[Tuple[str, T_VALUE]],
-        Tuple[Union[List[str], List[Tuple[str, T_VALUE]]], int],
+        List[str], List[Tuple[str, T_VALUE]], Tuple[Union[List[str], List[Tuple[str, T_VALUE]]], int],
     ]:
         """
         The items to show in the list. If returning a list of `(str, value)` tuples,
@@ -993,9 +975,7 @@ class MultizipImporter(importlib.abc.MetaPathFinder):
     def __init__(self):
         self.loaders = []
 
-    def _make_spec(
-        self, loader: importlib.abc.Loader, fullname: str
-    ) -> importlib.machinery.ModuleSpec:
+    def _make_spec(self, loader: importlib.abc.Loader, fullname: str) -> importlib.machinery.ModuleSpec:
         """
         :param loader:
             The importlib.abc.Loader to create the ModuleSpec from
