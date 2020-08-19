@@ -1,4 +1,4 @@
-# version: 4081
+# version: 4084
 
 from importlib.machinery import ModuleSpec
 from types import ModuleType
@@ -186,6 +186,7 @@ text_change_listener_callbacks: Set[str] = {
     "on_reload",
     "on_reload_async",
 }
+text_change_listeners: Dict[int, List[type]] = {}
 
 profile: Dict[str, Dict[str, Any]] = {}
 
@@ -307,6 +308,10 @@ def find_view_event_listener(view: sublime.View, cls: str) -> Optional[_T]:
 
 
 def attach_buffer(buf: sublime.Buffer) -> None:
+    ...
+
+
+def detach_buffer(buf: sublime.Buffer) -> None:
     ...
 
 
@@ -902,8 +907,8 @@ class TextChangeListener:
         Async version of on_reload_async.
     """
 
-    __key: Optional[int] = None
-    buffer: Optional[sublime.Buffer] = None
+    __key: Optional[int]
+    buffer: Optional[sublime.Buffer]
 
     @classmethod
     def is_applicable(cls, buffer: sublime.Buffer) -> bool:
@@ -913,10 +918,10 @@ class TextChangeListener:
         """
         ...
 
-    def __init__(self, buffer: sublime.Buffer) -> None:
+    def __init__(self) -> None:
         ...
 
-    def remove(self) -> None:
+    def detach(self) -> None:
         """
         Remove this listener from the buffer.
 

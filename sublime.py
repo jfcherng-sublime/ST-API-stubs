@@ -1,4 +1,4 @@
-# version: 4081
+# version: 4084
 
 from typing import (
     Any,
@@ -526,6 +526,9 @@ class Window:
     def __init__(self, id: int) -> None:
         ...
 
+    def __hash__(self) -> int:
+        ...
+
     def __eq__(self, other: Any) -> bool:
         ...
 
@@ -633,6 +636,9 @@ class Window:
         """ Switches to the given `view` """
         ...
 
+    def select_sheets(self, sheets: "Iterable[Sheet]") -> None:
+        ...
+
     def bring_to_front(self) -> None:
         """ Brings the window in front of any other windows """
         ...
@@ -663,8 +669,14 @@ class Window:
         """ Returns all open sheets in the window """
         ...
 
-    def views(self) -> "List[View]":
+    def views(self, *, include_transient: bool = False) -> "List[View]":
         """ Returns all open views in the window """
+        ...
+
+    def selected_sheets(self) -> "List[Sheet]":
+        ...
+
+    def selected_sheets_in_group(self, group: int) -> "List[Sheet]":
         ...
 
     def active_sheet_in_group(self, group: int) -> "Optional[Sheet]":
@@ -763,7 +775,7 @@ class Window:
 
     def show_quick_panel(
         self,
-        items: Union[Sequence[str], Sequence[Sequence[str]]],
+        items: Union[Sequence["QuickPanelItem"], Sequence[str], Sequence[Sequence[str]]],
         on_select: T_CALLBACK_1[int],
         flags: int = 0,
         selected_index: int = -1,
@@ -1139,6 +1151,9 @@ class Sheet:
     def __init__(self, id: int) -> None:
         ...
 
+    def __hash__(self) -> int:
+        ...
+
     def __eq__(self, other: Any) -> bool:
         ...
 
@@ -1182,9 +1197,6 @@ class Sheet:
 class TextSheet(Sheet):
     sheet_id: int
 
-    def __init__(self, id: int) -> None:
-        ...
-
     def __repr__(self) -> str:
         ...
 
@@ -1202,9 +1214,6 @@ class ImageSheet(Sheet):
 
 class HtmlSheet(Sheet):
     sheet_id: int
-
-    def __init__(self, id: int) -> None:
-        ...
 
     def __repr__(self) -> str:
         ...
@@ -1234,6 +1243,9 @@ class View:
     def __len__(self) -> int:
         ...
 
+    def __hash__(self) -> int:
+        ...
+
     def __eq__(self, other: Any) -> bool:
         ...
 
@@ -1249,6 +1261,18 @@ class View:
 
     def buffer_id(self) -> int:
         """ Returns a number that uniquely identifies the buffer underlying this view """
+        ...
+
+    def buffer(self) -> "Buffer":
+        """ Returns the Buffer object which is associated with this view """
+        ...
+
+    def sheet_id(self) -> int:
+        """ Returns the sheet ID of this view """
+        ...
+
+    def sheet(self) -> "Sheet":
+        """ Return a Sheet object of this view """
         ...
 
     def element(self) -> Optional[str]:
@@ -1986,7 +2010,18 @@ class Buffer:
     def __init__(self, id: int) -> None:
         ...
 
+    def __hash__(self) -> int:
+        ...
+
     def __repr__(self) -> str:
+        ...
+
+    def id(self) -> int:
+        """ Gets the ID of this buffer """
+        ...
+
+    def file_name(self) -> Optional[str]:
+        """ Gets the file name of this buffer if any, `None` otherwise """
         ...
 
     def views(self) -> List[View]:
@@ -2313,4 +2348,16 @@ class Syntax:
         ...
 
     def __repr__(self) -> str:
+        ...
+
+
+class QuickPanelItem:
+    __slots__: List[str] = ["trigger", "details", "annotation", "kind"]
+
+    trigger: str
+    details: str
+    annotation: str
+    kind: T_KIND
+
+    def __init__(self, trigger: str, details: str = "", annotation: str = "", kind: T_KIND = KIND_AMBIGUOUS) -> None:
         ...
