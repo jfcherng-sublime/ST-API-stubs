@@ -1,4 +1,4 @@
-# version: 4084
+# version: 4085
 
 from typing import (
     Any,
@@ -156,6 +156,14 @@ KIND_NAVIGATION: T_KIND = (KIND_ID_NAVIGATION, "", "")
 KIND_MARKUP: T_KIND = (KIND_ID_MARKUP, "", "")
 KIND_VARIABLE: T_KIND = (KIND_ID_VARIABLE, "", "")
 KIND_SNIPPET: T_KIND = (KIND_ID_SNIPPET, "s", "Snippet")
+
+SYMBOL_SOURCE_ANY: int = 0
+SYMBOL_SOURCE_INDEX: int = 1
+SYMBOL_SOURCE_OPEN_FILES: int = 2
+
+SYMBOL_TYPE_ANY: int = 0
+SYMBOL_TYPE_DEFINITION: int = 1
+SYMBOL_TYPE_REFERENCE: int = 2
 
 COMPLETION_FORMAT_TEXT: int = 0
 COMPLETION_FORMAT_SNIPPET: int = 1
@@ -878,11 +886,51 @@ class Window:
         """
         ...
 
-    def lookup_symbol_in_index(self, sym: str) -> List[T_LOCATION]:
-        """ Finds all files and locations where sym is defined, using the symbol index """
+    def symbol_locations(
+        self,
+        sym: str,
+        source: int = SYMBOL_SOURCE_ANY,
+        type: int = SYMBOL_TYPE_ANY,
+        kind_id: int = KIND_ID_AMBIGUOUS,
+        kind_letter: str = "",
+    ) -> "List[SymbolLocation]":
+        """
+        :param sym:
+            A unicode string of a symbol name
+
+        :param source:
+            The source to query for symbols. One of the values:
+             - sublime.SYMBOL_SOURCE_ANY
+             - sublime.SYMBOL_SOURCE_INDEX
+             - sublime.SYMBOL_SOURCE_OPEN_FILES
+
+        :param type:
+            The type of symbol to return. One of the values:
+             - sublime.SYMBOL_TYPE_ANY
+             - sublime.SYMBOL_TYPE_DEFINITION
+             - sublime.SYMBOL_TYPE_REFERENCE
+
+        :param kind_id:
+            The kind to filter the list by. One of the values:
+             - sublime.KIND_ID_AMBIGUOUS
+             - sublime.KIND_ID_KEYWORD
+             - sublime.KIND_ID_TYPE
+             - sublime.KIND_ID_FUNCTION
+             - sublime.KIND_ID_NAMESPACE
+             - sublime.KIND_ID_NAVIGATION
+             - sublime.KIND_ID_MARKUP
+             - sublime.KIND_ID_VARIABLE
+             - sublime.KIND_ID_SNIPPET
+
+        :param kind_letter:
+            A unicode character of the kind letter to filter the list by.
+
+        :return:
+            A list of sublime.SymbolLocation() objects
+        """
         ...
 
-    def lookup_symbol_in_index_by_kind(self, sym: str, kind: int) -> List[T_LOCATION]:
+    def lookup_symbol_in_index(self, sym: str) -> List[T_LOCATION]:
         """ Finds all files and locations where sym is defined, using the symbol index """
         ...
 
@@ -891,10 +939,6 @@ class Window:
         Returns all files and locations where the symbol `sym` is defined, searching
         through open files
         """
-        ...
-
-    def lookup_symbol_in_open_files_by_kind(self, sym: str, kind: int) -> List[T_LOCATION]:
-        """ Finds all files and locations where sym is defined, searching through open files """
         ...
 
     def lookup_references_in_index(self, sym: str) -> List[T_LOCATION]:
@@ -978,7 +1022,8 @@ class Region:
         ...
 
     def to_tuple(self) -> Tuple[T_POINT, T_POINT]:
-        """ Returns a tuple of this region (excluding xpos).
+        """
+        Returns a tuple of this region (excluding xpos).
 
         Use this to uniquely identify a region in a set or similar. Regions
         can't be used for that directly as they may be mutated.
@@ -1401,8 +1446,7 @@ class View:
         ...
 
     def set_encoding(self, encoding_name: str) -> None:
-        """ Applies a new encoding to the file. This encoding will be used the
-        next time the file is saved """
+        """ Applies a new encoding to the file. This encoding will be used the next time the file is saved """
         ...
 
     def line_endings(self) -> str:
@@ -1495,7 +1539,11 @@ class View:
         ...
 
     def find_all(
-        self, pattern: str, flags: int = 0, fmt: Optional[str] = None, extractions: Optional[List[str]] = None,
+        self,
+        pattern: str,
+        flags: int = 0,
+        fmt: Optional[str] = None,
+        extractions: Optional[List[str]] = None,
     ) -> List[T_VECTOR]:
         """
         Returns all (non-overlapping) regions matching the regex `pattern`
@@ -1837,7 +1885,12 @@ class View:
         ...
 
     def add_phantom(
-        self, key: str, region: Region, content: str, layout: int, on_navigate: Optional[T_CALLBACK_1[str]] = None,
+        self,
+        key: str,
+        region: Region,
+        content: str,
+        layout: int,
+        on_navigate: Optional[T_CALLBACK_1[str]] = None,
     ) -> int:
         ...
 
@@ -1883,6 +1936,24 @@ class View:
         ...
 
     def indexed_references(self) -> List[Tuple[Region, str]]:
+        ...
+
+    def symbol_regions(self) -> "List[SymbolRegion]":
+        """ Returns a list of sublime.SymbolRegion() objects for the symbols in this view """
+        ...
+
+    def indexed_symbol_regions(self, type: int = SYMBOL_TYPE_ANY) -> "List[SymbolRegion]":
+        """
+        :param type:
+            The type of symbol to return. One of the values:
+             - sublime.SYMBOL_TYPE_ANY
+             - sublime.SYMBOL_TYPE_DEFINITION
+             - sublime.SYMBOL_TYPE_REFERENCE
+
+        :return:
+            A list of sublime.SymbolRegion() objects for the indexed symbols
+            in this view
+        """
         ...
 
     def set_status(self, key: str, value: str) -> None:
@@ -2135,7 +2206,11 @@ class Phantom:
     id: int
 
     def __init__(
-        self, region: Region, content: str, layout: int, on_navigate: Optional[T_CALLBACK_1[str]] = None,
+        self,
+        region: Region,
+        content: str,
+        layout: int,
+        on_navigate: Optional[T_CALLBACK_1[str]] = None,
     ) -> None:
         ...
 
@@ -2252,7 +2327,12 @@ class CompletionItem:
 
     @classmethod
     def snippet_completion(
-        cls, trigger: str, snippet: str, annotation: str = "", kind: T_KIND = KIND_SNIPPET, details: str = "",
+        cls,
+        trigger: str,
+        snippet: str,
+        annotation: str = "",
+        kind: T_KIND = KIND_SNIPPET,
+        details: str = "",
     ) -> "CompletionItem":
         """
         trigger: A unicode string of the text to match against the user's input.
@@ -2263,7 +2343,7 @@ class CompletionItem:
         the right-hand side of the trigger.
 
         kind: An optional completion_kind tuple that controls the presentation
-        in the auto-complete window – defaults to sublime.KIND_SNIPPET.
+        in the auto-complete window - defaults to sublime.KIND_SNIPPET.
 
         details: An optional HTML description of the completion,
         shown in the detail pane at the bottom of the auto complete window.
@@ -2293,7 +2373,7 @@ class CompletionItem:
         the right-hand side of the trigger.
 
         kind: An optional completion_kind tuple that controls the presentation
-        in the auto-complete window – defaults to sublime.KIND_AMBIGUOUS.
+        in the auto-complete window - defaults to sublime.KIND_AMBIGUOUS.
 
         details: An optional HTML description of the completion,
         shown in the detail pane at the bottom of the auto complete window.
@@ -2360,4 +2440,49 @@ class QuickPanelItem:
     kind: T_KIND
 
     def __init__(self, trigger: str, details: str = "", annotation: str = "", kind: T_KIND = KIND_AMBIGUOUS) -> None:
+        ...
+
+
+class SymbolRegion:
+    __slots__ = ["name", "region", "syntax", "type", "kind"]
+
+    name: str
+    region: Region
+    syntax: Syntax
+    type: int
+    kind: T_KIND
+
+    def __init__(self, name: str, region: Region, syntax: Syntax, type: int, kind: T_KIND) -> None:
+        ...
+
+    def __repr__(self) -> str:
+        ...
+
+
+class SymbolLocation:
+    __slots__ = ["path", "display_name", "row", "col", "syntax", "type", "kind"]
+
+    path: str
+    display_name: str
+    row: int
+    col: int
+    syntax: Syntax
+    type: int
+    kind: T_KIND
+
+    def __init__(
+        self, path: str, display_name: str, row: int, col: int, syntax: Syntax, type: int, kind: T_KIND
+    ) -> None:
+        ...
+
+    def __repr__(self) -> str:
+        ...
+
+    def path_encoded_position(self) -> str:
+        """
+        :return:
+            A unicode string of the file path, with the row and col appended
+            using :row:col, which works with window.open_file() using the
+            sublime.ENCODED_POSITION flag.
+        """
         ...

@@ -1,4 +1,4 @@
-# version: 4084
+# version: 4085
 
 from importlib.machinery import ModuleSpec
 from types import ModuleType
@@ -162,6 +162,8 @@ view_event_listener_excluded_callbacks: Set[str] = {
     "on_new_async",
     "on_new_buffer",
     "on_new_buffer_async",
+    "on_associate_buffer",
+    "on_associate_buffer_async",
     "on_close_buffer",
     "on_close_buffer_async",
     "on_new_project",
@@ -311,6 +313,10 @@ def attach_buffer(buf: sublime.Buffer) -> None:
     ...
 
 
+def check_text_change_listeners(buf: sublime.Buffer) -> None:
+    ...
+
+
 def detach_buffer(buf: sublime.Buffer) -> None:
     ...
 
@@ -327,7 +333,13 @@ def vel_callbacks(v: sublime.View, name: str, listener_only: bool = False) -> Ge
     ...
 
 
-def run_view_callbacks(name: str, view_id: int, *args: T_VALUE, attach: bool = False, el_only: bool = False,) -> None:
+def run_view_callbacks(
+    name: str,
+    view_id: int,
+    *args: T_VALUE,
+    attach: bool = False,
+    el_only: bool = False,
+) -> None:
     ...
 
 
@@ -361,6 +373,14 @@ def on_new_buffer(buffer_id: int) -> None:
 
 
 def on_new_buffer_async(buffer_id: int) -> None:
+    ...
+
+
+def on_associate_buffer(buffer_id: int) -> None:
+    ...
+
+
+def on_associate_buffer_async(buffer_id: int) -> None:
     ...
 
 
@@ -507,7 +527,9 @@ class MultiCompletionList:
         ...
 
     def completions_ready(
-        self, completions: Iterable[Union[sublime.CompletionItem, str, List[str]]], flags: int,
+        self,
+        completions: Iterable[Union[sublime.CompletionItem, str, List[str]]],
+        flags: int,
     ) -> None:
         ...
 
@@ -690,9 +712,7 @@ class ListInputHandler(CommandInputHandler):
 
     def list_items(
         self,
-    ) -> Union[
-        List[str], List[Tuple[str, T_VALUE]], Tuple[Union[List[str], List[Tuple[str, T_VALUE]]], int],
-    ]:
+    ) -> Union[List[str], List[Tuple[str, T_VALUE]], Tuple[Union[List[str], List[Tuple[str, T_VALUE]]], int]]:
         """
         The items to show in the list. If returning a list of `(str, value)` tuples,
         then the str will be shown to the user, while the value will be used as the command argument.
@@ -873,7 +893,8 @@ class ViewEventListener:
 
 
 class TextChangeListener:
-    """ Base implementation of a text change listener.
+    """
+    Base implementation of a text change listener.
 
     An instance may be added to a view using `sublime.View.add_text_listener`.
 
