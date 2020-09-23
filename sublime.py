@@ -783,7 +783,7 @@ class Window:
 
     def show_quick_panel(
         self,
-        items: Union[Sequence["QuickPanelItem"], Sequence[str], Sequence[Sequence[str]]],
+        items: Sequence[Union["QuickPanelItem", str, Sequence[str]]],
         on_select: T_CALLBACK_1[int],
         flags: int = 0,
         selected_index: int = -1,
