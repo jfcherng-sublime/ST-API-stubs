@@ -1,4 +1,4 @@
-# version: 4085
+# version: 4087
 
 from typing import (
     Any,
@@ -1584,6 +1584,14 @@ class View:
 
     def scope_name(self, pt: T_POINT) -> str:
         """ Returns the syntax scope name assigned to the character at the given point """
+        ...
+
+    def context_backtrace(self, pt: T_POINT) -> List[str]:
+        """
+        Returns a list of the contexts on the stack at the specified point.
+
+        Very slow but useful for debugging a syntax definition.
+        """
         ...
 
     def match_selector(self, pt: T_POINT, selector: str) -> bool:
