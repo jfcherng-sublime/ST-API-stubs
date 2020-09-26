@@ -988,7 +988,7 @@ class Edit:
         ...
 
 
-class Region:
+class Region(Sequence[int]):
     """ Represents an area of the buffer. Empty regions, where `a == b` are valid """
 
     __slots__: List[str] = ["a", "b", "xpos"]
@@ -1000,7 +1000,7 @@ class Region:
     def __init__(self, a: int, b: Optional[int] = None, xpos: int = -1) -> None:
         ...
 
-    def __iter__(self) -> Iterator:
+    def __iter__(self) -> Iterator[int]:
         ...
 
     def __str__(self) -> str:
@@ -1096,7 +1096,7 @@ class TextChange:
     This is primarily useful for replaying changes to a document.
     """
 
-    __slots__: List[str] = ["a", "b", "len_utf16", "len_utf8", "str"]
+    __slots__: List[T_STR] = ["a", "b", "len_utf16", "len_utf8", "str"]
 
     a: HistoricPosition
     b: HistoricPosition
@@ -1111,7 +1111,7 @@ class TextChange:
         ...
 
 
-class Selection:
+class Selection(Sequence[Region]):
     """
     Maintains a set of Regions, ensuring that none overlap
     The regions are kept in sorted order
@@ -1122,7 +1122,7 @@ class Selection:
     def __init__(self, id: int) -> None:
         ...
 
-    def __iter__(self) -> Iterator:
+    def __iter__(self) -> Iterator[Region]:
         ...
 
     def __len__(self) -> int:
