@@ -988,7 +988,7 @@ class Edit:
         ...
 
 
-class Region(Sequence[int]):
+class Region:
     """ Represents an area of the buffer. Empty regions, where `a == b` are valid """
 
     __slots__: List[str] = ["a", "b", "xpos"]
@@ -1544,7 +1544,7 @@ class View:
         flags: int = 0,
         fmt: Optional[str] = None,
         extractions: Optional[List[str]] = None,
-    ) -> List[T_VECTOR]:
+    ) -> List[Region]:
         """
         Returns all (non-overlapping) regions matching the regex `pattern`
         The optional `flags` parameter may be `LITERAL`,
