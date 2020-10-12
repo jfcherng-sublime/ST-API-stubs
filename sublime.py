@@ -1,4 +1,4 @@
-# version: 4087
+# version: 4088
 
 from typing import (
     Any,
@@ -1236,6 +1236,9 @@ class Sheet:
 
     def is_transient(self) -> bool:
         """ Determines if this view is transient or not """
+        ...
+
+    def close(self) -> None:
         ...
 
 
