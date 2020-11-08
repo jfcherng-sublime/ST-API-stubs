@@ -2453,6 +2453,9 @@ class QuickPanelItem:
     def __init__(self, trigger: str, details: str = "", annotation: str = "", kind: T_KIND = KIND_AMBIGUOUS) -> None:
         ...
 
+    def __repr__(self) -> str:
+        ...
+
 
 class SymbolRegion:
     __slots__ = ["name", "region", "syntax", "type", "kind"]
