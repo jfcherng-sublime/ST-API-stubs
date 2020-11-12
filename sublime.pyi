@@ -2155,6 +2155,8 @@ class Settings:
 
     def update(self, other: Union[Dict, Iterable] = (), /, **kwargs: Any) -> None:
         """
+        Warning: Python 3.8 only.
+
         Inserts the specified items to this Settings.
 
         The specified items can be a dictionary, or an iterable object.
