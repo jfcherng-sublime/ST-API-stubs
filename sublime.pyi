@@ -2122,7 +2122,9 @@ class Settings:
     def __init__(self, id: int) -> None:
         ...
 
-    def __getitem__(self, key: str) -> T_VALUE:
+    def __getitem__(self, key: str) -> Any:
+        # The "Any" annotation should be "T_VALUE" but it will cause annoying errors
+        # when casting the returned value. So we probably just use "Any"...
         ...
 
     def __setitem__(self, key: str, value: T_VALUE) -> None:
@@ -2145,12 +2147,14 @@ class Settings:
         """
         ...
 
-    def setdefault(self, key: str, value: T_VALUE) -> T_VALUE:
+    def setdefault(self, key: str, value: T_VALUE) -> Any:
         """
         Returns the value of the item with the specified key.
 
         If the key does not exist, insert the key, with the specified value, see example below.
         """
+        # The "Any" annotation should be "T_VALUE" but it will cause annoying errors
+        # when casting the returned value. So we probably just use "Any"...
         ...
 
     def update(self, other: Union[Dict, Iterable] = (), /, **kwargs: Any) -> None:
@@ -2163,11 +2167,13 @@ class Settings:
         """
         ...
 
-    def get(self, key: str, default: Optional[T_VALUE] = None) -> T_VALUE:
+    def get(self, key: str, default: Optional[T_VALUE] = None) -> Any:
         """
         Returns the named setting, or `default` if it's not defined
         If not passed, `default` will have a value of `None`
         """
+        # The "Any" annotation should be "T_VALUE" but it will cause annoying errors
+        # when casting the returned value. So we probably just use "Any"...
         ...
 
     def has(self, key: str) -> bool:
