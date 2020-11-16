@@ -1,4 +1,4 @@
-# version: 4090
+# version: 4092
 
 from importlib.machinery import ModuleSpec
 from types import ModuleType
@@ -22,7 +22,6 @@ from typing_extensions import TypedDict
 import importlib
 import io
 import os
-import sys
 import threading
 
 import sublime
@@ -220,7 +219,7 @@ def trap_exceptions(event_handler: Callable) -> Callable:
     ...
 
 
-def decorate_handler(cls: _T, method_name: str) -> None:
+def decorate_handler(cls: Any, method_name: str) -> None:
     """
     Decorates an event handler method with exception trapping, and in the case
     of blocking calls, profiling.
@@ -254,7 +253,7 @@ def synthesize_on_activated_async() -> None:
     ...
 
 
-def _instantiation_error(cls: _T, e: Exception) -> None:
+def _instantiation_error(cls: Any, e: Exception) -> None:
     ...
 
 
@@ -278,7 +277,7 @@ def on_api_ready() -> None:
     ...
 
 
-def is_view_event_listener_applicable(cls: _T, view: sublime.View) -> bool:
+def is_view_event_listener_applicable(cls: Any, view: sublime.View) -> bool:
     ...
 
 
@@ -1216,7 +1215,6 @@ class ZipLoader(importlib.abc.InspectLoader):
 
 override_path: Optional[str] = None
 multi_importer: MultizipImporter = MultizipImporter()
-sys.meta_path.insert(0, multi_importer)
 
 
 def update_compressed_packages(pkgs: Iterable[str]) -> None:

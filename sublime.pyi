@@ -1,4 +1,4 @@
-# version: 4090
+# version: 4092
 
 from typing import (
     Any,
@@ -676,7 +676,7 @@ class Window:
         ...
 
     def bring_to_front(self) -> None:
-        """ 
+        """
         Brings the window in front of any other windows.
 
         @version ST(>=4067)
@@ -908,7 +908,7 @@ class Window:
         ...
 
     def workspace_file_name(self) -> Optional[str]:
-        """ 
+        """
         Returns the workspace filename of the current `Window` if possible.
 
         @version ST(>=4050)
@@ -2181,6 +2181,37 @@ class View:
         with the previously selected entry pre-selected.
 
         @version ST(>=4073)
+        """
+        ...
+
+    def export_to_html(
+        self,
+        regions: Optional[Union[Region, List[Region]]] = None,
+        minihtml: bool = False,
+        enclosing_tags: bool = False,
+        font_size: bool = True,
+        font_family: bool = True,
+    ) -> str :
+        """ Export the view as HTML
+
+        :param regions:
+            The region(s) to export. By default it will export the whole view.
+            Can be given either a list of regions or a single region.
+        :param minihtml:
+            Whether the exported HTML should be compatible with the Sublime Text
+            HTML implementation.
+        :param enclosing_tags:
+            Whether to enclose the exported HTML in a tag with top-level
+            styling.
+        :param font_size:
+            Whether to include the font size in the top level styling. Only
+            applies when enclosing_tags=True is provided.
+        :param font_family:
+            Whether to include the font family in the top level styling. Only
+            applies when enclosing_tags=True is provided.
+
+        :return:
+            A string containing the exported HTML.
         """
         ...
 
