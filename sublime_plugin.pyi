@@ -30,35 +30,10 @@ import sublime
 # types #
 # ----- #
 
-_T = TypeVar("_T")
-
-T_CALLBACK_0 = Callable[[], None]
-T_CALLBACK_1 = Callable[[_T], None]
-T_COMPLETION = Union[str, List[str], Tuple[str, str], sublime.CompletionItem]
-T_COMPLETION_NORMALIZED = Tuple[
-    # trigger
-    str,
-    # annotation
-    str,
-    # details
-    str,
-    # completion
-    T_COMPLETION,
-    # kind_name
-    str,
-    # letter
-    str,
-    # completion_format
-    int,
-    # flags
-    int,
-    # kind
-    int,
-]
-T_EXPANDABLE_VAR = TypeVar("T_EXPANDABLE_VAR", str, List[str], Dict[str, str])
-T_KIND = Tuple[int, str, str]
-T_LAYOUT = TypedDict(
-    "T_LAYOUT",
+T = TypeVar("T")
+T_ExpandableVar = TypeVar("T_ExpandableVar", str, List[str], Dict[str, str])
+T_Layout = TypedDict(
+    "T_Layout",
     # fmt: off
     {
         "cols": Sequence[float],
@@ -67,12 +42,27 @@ T_LAYOUT = TypedDict(
     },
     # fmt: on
 )
-T_LOCATION = Tuple[str, str, Tuple[int, int]]
-T_POINT = int
-T_STR = str  # alias in case we have a variable named as "str"
-T_VALUE = Union[Dict, Set, List, Tuple, str, int, float, bool, None]
-T_VECTOR = Tuple[float, float]
 
+StCallback0 = Callable[[], None]
+StCallback1 = Callable[[T], None]
+StCompletion = Union[str, List[str], Tuple[str, str], sublime.CompletionItem]
+StCompletionNormalized = Tuple[
+    str,  # trigger
+    str,  # annotation
+    str,  # details
+    StCompletion,  # completion
+    str,  # kind_name
+    str,  # letter
+    int,  # completion_format
+    int,  # flags
+    int,  # kind
+]
+StCompletionKind = Tuple[int, str, str]
+StLocation = Tuple[str, str, Tuple[int, int]]
+StPoint = int
+StStr = str  # alias in case we have a variable named as "str"
+StValue = Union[dict, list, str, int, float, bool, None]
+StVector = Tuple[float, float]
 
 # -------- #
 # ST codes #
@@ -261,15 +251,15 @@ def notify_application_commands() -> None:
     ...
 
 
-def create_application_commands() -> List[Tuple[_T, str]]:
+def create_application_commands() -> List[Tuple[T, str]]:
     ...
 
 
-def create_window_commands(window_id: int) -> List[Tuple[_T, str]]:
+def create_window_commands(window_id: int) -> List[Tuple[T, str]]:
     ...
 
 
-def create_text_commands(view_id: int) -> List[Tuple[_T, str]]:
+def create_text_commands(view_id: int) -> List[Tuple[T, str]]:
     ...
 
 
@@ -281,7 +271,7 @@ def is_view_event_listener_applicable(cls: Any, view: sublime.View) -> bool:
     ...
 
 
-def create_view_event_listeners(classes: Iterable[_T], view: sublime.View) -> None:
+def create_view_event_listeners(classes: Iterable[T], view: sublime.View) -> None:
     ...
 
 
@@ -304,7 +294,7 @@ def detach_view(view: sublime.View) -> None:
     ...
 
 
-def find_view_event_listener(view: sublime.View, cls: str) -> Optional[_T]:
+def find_view_event_listener(view: sublime.View, cls: str) -> Optional[T]:
     ...
 
 
@@ -320,7 +310,7 @@ def detach_buffer(buf: sublime.Buffer) -> None:
     ...
 
 
-def plugin_module_for_obj(obj: _T) -> str:
+def plugin_module_for_obj(obj: T) -> str:
     ...
 
 
@@ -335,14 +325,14 @@ def vel_callbacks(v: sublime.View, name: str, listener_only: bool = False) -> Ge
 def run_view_callbacks(
     name: str,
     view_id: int,
-    *args: T_VALUE,
+    *args: StValue,
     attach: bool = False,
     el_only: bool = False,
 ) -> None:
     ...
 
 
-def run_window_callbacks(name: str, window_id: int, *args: T_VALUE) -> None:
+def run_window_callbacks(name: str, window_id: int, *args: StValue) -> None:
     ...
 
 
@@ -507,11 +497,11 @@ def on_deactivated_async(view_id: int) -> None:
     ...
 
 
-def on_query_context(view_id: int, key: str, operator: str, operand: T_VALUE, match_all: bool) -> bool:
+def on_query_context(view_id: int, key: str, operator: str, operand: StValue, match_all: bool) -> bool:
     ...
 
 
-def normalise_completion(c: Union[sublime.CompletionItem, str, List[str]]) -> T_COMPLETION_NORMALIZED:
+def normalise_completion(c: Union[sublime.CompletionItem, str, List[str]]) -> StCompletionNormalized:
     ...
 
 
@@ -519,7 +509,7 @@ class MultiCompletionList:
     remaining_calls: int
     view_id: int
     req_id: int
-    completions: List[T_COMPLETION_NORMALIZED]
+    completions: List[StCompletionNormalized]
     flags: int
 
     def __init__(self, num_completion_lists: int, view_id: int, req_id: int) -> None:
@@ -533,27 +523,27 @@ class MultiCompletionList:
         ...
 
 
-def on_query_completions(view_id: int, req_id: int, prefix: str, locations: List[T_POINT]) -> None:
+def on_query_completions(view_id: int, req_id: int, prefix: str, locations: List[StPoint]) -> None:
     ...
 
 
-def on_hover(view_id: int, point: T_POINT, hover_zone: int) -> None:
+def on_hover(view_id: int, point: StPoint, hover_zone: int) -> None:
     ...
 
 
-def on_text_command(view_id: int, name: str, args: Optional[Dict[str, T_VALUE]]) -> Tuple[str, Optional[Dict]]:
+def on_text_command(view_id: int, name: str, args: Optional[Dict[str, StValue]]) -> Tuple[str, Optional[Dict]]:
     ...
 
 
-def on_window_command(window_id: int, name: str, args: Optional[Dict[str, T_VALUE]]) -> Tuple[str, Optional[Dict]]:
+def on_window_command(window_id: int, name: str, args: Optional[Dict[str, StValue]]) -> Tuple[str, Optional[Dict]]:
     ...
 
 
-def on_post_text_command(view_id: int, name: str, args: Optional[Dict[str, T_VALUE]]) -> None:
+def on_post_text_command(view_id: int, name: str, args: Optional[Dict[str, StValue]]) -> None:
     ...
 
 
-def on_post_window_command(window_id: int, name: str, args: Optional[Dict[str, T_VALUE]]) -> None:
+def on_post_window_command(window_id: int, name: str, args: Optional[Dict[str, StValue]]) -> None:
     ...
 
 
@@ -613,7 +603,7 @@ class CommandInputHandler:
         """
         ...
 
-    def next_input(self, args: Dict[str, T_VALUE]) -> Optional["CommandInputHandler"]:
+    def next_input(self, args: Dict[str, StValue]) -> Optional["CommandInputHandler"]:
         """
         Returns the next input after the user has completed this one.
         May return None to indicate no more input is required,
@@ -639,14 +629,14 @@ class CommandInputHandler:
         """
         ...
 
-    def preview(self, arg: Dict[str, T_VALUE]) -> Union[str, sublime.Html]:
+    def preview(self, arg: Dict[str, StValue]) -> Union[str, sublime.Html]:
         """
         Called whenever the user changes the text in the entry box.
         The returned value (either plain text or HTML) will be shown in the preview area of the Command Palette.
         """
         ...
 
-    def validate(self, arg: Dict[str, T_VALUE]) -> bool:
+    def validate(self, arg: Dict[str, StValue]) -> bool:
         """
         Called whenever the user presses enter in the text entry box.
         Return False to disallow the current value.
@@ -657,11 +647,11 @@ class CommandInputHandler:
         """ Called when the input handler is canceled, either by the user pressing backspace or escape. """
         ...
 
-    def confirm(self, text: Dict[str, T_VALUE]) -> None:
+    def confirm(self, text: Dict[str, StValue]) -> None:
         """ Called when the input is accepted, after the user has pressed enter and the text has been validated. """
         ...
 
-    def create_input_handler_(self, args: Dict[str, T_VALUE]) -> Optional["CommandInputHandler"]:
+    def create_input_handler_(self, args: Dict[str, StValue]) -> Optional["CommandInputHandler"]:
         ...
 
     def preview_(self, v: str) -> Tuple[str, int]:
@@ -696,7 +686,7 @@ class TextInputHandler(CommandInputHandler):
         """
         ...
 
-    def setup_(self, args: Dict[str, T_VALUE]) -> Tuple[list, Dict[str, str]]:
+    def setup_(self, args: Dict[str, StValue]) -> Tuple[list, Dict[str, str]]:
         ...
 
     def description_(self, v: str, text: str) -> str:
@@ -711,7 +701,7 @@ class ListInputHandler(CommandInputHandler):
 
     def list_items(
         self,
-    ) -> Union[List[str], List[Tuple[str, T_VALUE]], Tuple[Union[List[str], List[Tuple[str, T_VALUE]]], int]]:
+    ) -> Union[List[str], List[Tuple[str, StValue]], Tuple[Union[List[str], List[Tuple[str, StValue]]], int]]:
         """
         The items to show in the list. If returning a list of `(str, value)` tuples,
         then the str will be shown to the user, while the value will be used as the command argument.
@@ -727,7 +717,7 @@ class ListInputHandler(CommandInputHandler):
         """
         ...
 
-    def setup_(self, args: Dict[str, T_VALUE]) -> Tuple[List[Tuple[str, T_VALUE]], Dict[str, str]]:
+    def setup_(self, args: Dict[str, StValue]) -> Tuple[List[Tuple[str, StValue]], Dict[str, str]]:
         ...
 
     def description_(self, v: str, text: str) -> str:
@@ -742,7 +732,7 @@ class Command:
         """
         ...
 
-    def is_enabled_(self, args: Dict[str, T_VALUE]) -> bool:
+    def is_enabled_(self, args: Dict[str, StValue]) -> bool:
         ...
 
     def is_enabled(self) -> bool:
@@ -752,7 +742,7 @@ class Command:
         """
         ...
 
-    def is_visible_(self, args: Dict[str, T_VALUE]) -> bool:
+    def is_visible_(self, args: Dict[str, StValue]) -> bool:
         ...
 
     def is_visible(self) -> bool:
@@ -762,7 +752,7 @@ class Command:
         """
         ...
 
-    def is_checked_(self, args: Dict[str, T_VALUE]) -> bool:
+    def is_checked_(self, args: Dict[str, StValue]) -> bool:
         ...
 
     def is_checked(self) -> bool:
@@ -772,7 +762,7 @@ class Command:
         """
         ...
 
-    def description_(self, args: Dict[str, T_VALUE]) -> str:
+    def description_(self, args: Dict[str, StValue]) -> str:
         ...
 
     def description(self) -> str:
@@ -783,7 +773,7 @@ class Command:
         """
         ...
 
-    def filter_args(self, args: Dict[str, T_VALUE]) -> Dict[str, T_VALUE]:
+    def filter_args(self, args: Dict[str, StValue]) -> Dict[str, StValue]:
         """ Returns the args after without the "event" entry """
         ...
 
@@ -795,7 +785,7 @@ class Command:
         """
         ...
 
-    def input(self, args: Dict[str, T_VALUE]) -> Optional[CommandInputHandler]:
+    def input(self, args: Dict[str, StValue]) -> Optional[CommandInputHandler]:
         """
         If this returns something other than None,
         the user will be prompted for an input before the command is run in the Command Palette.
@@ -809,14 +799,14 @@ class Command:
         """
         ...
 
-    def create_input_handler_(self, args: Dict[str, T_VALUE]) -> Optional[CommandInputHandler]:
+    def create_input_handler_(self, args: Dict[str, StValue]) -> Optional[CommandInputHandler]:
         ...
 
 
 class ApplicationCommand(Command):
     """ ApplicationCommands are instantiated once per application. """
 
-    def run_(self, edit_token: int, args: Dict[str, T_VALUE]) -> None:
+    def run_(self, edit_token: int, args: Dict[str, StValue]) -> None:
         ...
 
     def run(self) -> None:
@@ -832,7 +822,7 @@ class WindowCommand(Command):
     def __init__(self, window: sublime.Window) -> None:
         ...
 
-    def run_(self, edit_token: int, args: Dict[str, T_VALUE]) -> None:
+    def run_(self, edit_token: int, args: Dict[str, StValue]) -> None:
         ...
 
     def run(self) -> None:
@@ -848,7 +838,7 @@ class TextCommand(Command):
     def __init__(self, view: sublime.View) -> None:
         ...
 
-    def run_(self, edit_token: int, args: Dict[str, T_VALUE]) -> None:
+    def run_(self, edit_token: int, args: Dict[str, StValue]) -> None:
         ...
 
     def run(self, edit: sublime.Edit) -> None:

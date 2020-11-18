@@ -19,35 +19,10 @@ from typing_extensions import TypedDict
 # types #
 # ----- #
 
-_T = TypeVar("_T")
-
-T_CALLBACK_0 = Callable[[], None]
-T_CALLBACK_1 = Callable[[_T], None]
-T_COMPLETION = Union[str, List[str], Tuple[str, str], "CompletionItem"]
-T_COMPLETION_NORMALIZED = Tuple[
-    # trigger
-    str,
-    # annotation
-    str,
-    # details
-    str,
-    # completion
-    T_COMPLETION,
-    # kind_name
-    str,
-    # letter
-    str,
-    # completion_format
-    int,
-    # flags
-    int,
-    # kind
-    int,
-]
-T_EXPANDABLE_VAR = TypeVar("T_EXPANDABLE_VAR", str, List[str], Dict[str, str])
-T_KIND = Tuple[int, str, str]
-T_LAYOUT = TypedDict(
-    "T_LAYOUT",
+T = TypeVar("T")
+T_ExpandableVar = TypeVar("T_ExpandableVar", str, List[str], Dict[str, str])
+T_Layout = TypedDict(
+    "T_Layout",
     # fmt: off
     {
         "cols": Sequence[float],
@@ -56,11 +31,27 @@ T_LAYOUT = TypedDict(
     },
     # fmt: on
 )
-T_LOCATION = Tuple[str, str, Tuple[int, int]]
-T_POINT = int
-T_STR = str  # alias in case we have a variable named as "str"
-T_VALUE = Union[dict, list, str, int, float, bool, None]
-T_VECTOR = Tuple[float, float]
+
+StCallback0 = Callable[[], None]
+StCallback1 = Callable[[T], None]
+StCompletion = Union[str, List[str], Tuple[str, str], "CompletionItem"]
+StCompletionNormalized = Tuple[
+    str,  # trigger
+    str,  # annotation
+    str,  # details
+    StCompletion,  # completion
+    str,  # kind_name
+    str,  # letter
+    int,  # completion_format
+    int,  # flags
+    int,  # kind
+]
+StCompletionKind = Tuple[int, str, str]
+StLocation = Tuple[str, str, Tuple[int, int]]
+StPoint = int
+StStr = str  # alias in case we have a variable named as "str"
+StValue = Union[dict, list, str, int, float, bool, None]
+StVector = Tuple[float, float]
 
 # -------- #
 # ST codes #
@@ -147,15 +138,15 @@ KIND_ID_MARKUP: int = 6
 KIND_ID_VARIABLE: int = 7
 KIND_ID_SNIPPET: int = 8
 
-KIND_AMBIGUOUS: T_KIND = (KIND_ID_AMBIGUOUS, "", "")
-KIND_KEYWORD: T_KIND = (KIND_ID_KEYWORD, "", "")
-KIND_TYPE: T_KIND = (KIND_ID_TYPE, "", "")
-KIND_FUNCTION: T_KIND = (KIND_ID_FUNCTION, "", "")
-KIND_NAMESPACE: T_KIND = (KIND_ID_NAMESPACE, "", "")
-KIND_NAVIGATION: T_KIND = (KIND_ID_NAVIGATION, "", "")
-KIND_MARKUP: T_KIND = (KIND_ID_MARKUP, "", "")
-KIND_VARIABLE: T_KIND = (KIND_ID_VARIABLE, "", "")
-KIND_SNIPPET: T_KIND = (KIND_ID_SNIPPET, "s", "Snippet")
+KIND_AMBIGUOUS: StCompletionKind = (KIND_ID_AMBIGUOUS, "", "")
+KIND_KEYWORD: StCompletionKind = (KIND_ID_KEYWORD, "", "")
+KIND_TYPE: StCompletionKind = (KIND_ID_TYPE, "", "")
+KIND_FUNCTION: StCompletionKind = (KIND_ID_FUNCTION, "", "")
+KIND_NAMESPACE: StCompletionKind = (KIND_ID_NAMESPACE, "", "")
+KIND_NAVIGATION: StCompletionKind = (KIND_ID_NAVIGATION, "", "")
+KIND_MARKUP: StCompletionKind = (KIND_ID_MARKUP, "", "")
+KIND_VARIABLE: StCompletionKind = (KIND_ID_VARIABLE, "", "")
+KIND_SNIPPET: StCompletionKind = (KIND_ID_SNIPPET, "s", "Snippet")
 
 SYMBOL_SOURCE_ANY: int = 0
 SYMBOL_SOURCE_INDEX: int = 1
@@ -330,12 +321,12 @@ def select_folder_dialog(
     ...
 
 
-def run_command(cmd: str, args: Optional[Dict[str, T_VALUE]] = None) -> None:
+def run_command(cmd: str, args: Optional[Dict[str, StValue]] = None) -> None:
     """ Runs the named `ApplicationCommand` with the (optional) given `args` """
     ...
 
 
-def format_command(cmd: str, args: Optional[Dict[str, T_VALUE]] = None) -> str:
+def format_command(cmd: str, args: Optional[Dict[str, StValue]] = None) -> str:
     """
     Creates a "command string" from a str cmd name, and an optional dict of args.
     This is used when constructing a command-based `CompletionItem`
@@ -345,11 +336,11 @@ def format_command(cmd: str, args: Optional[Dict[str, T_VALUE]] = None) -> str:
     ...
 
 
-def html_format_command(cmd: str, args: Optional[Dict[str, T_VALUE]] = None) -> str:
+def html_format_command(cmd: str, args: Optional[Dict[str, StValue]] = None) -> str:
     ...
 
 
-def command_url(cmd: str, args: Optional[Dict[str, T_VALUE]] = None) -> str:
+def command_url(cmd: str, args: Optional[Dict[str, StValue]] = None) -> str:
     """
     Creates a `subl:` protocol URL for executing a command in a minihtml link.
 
@@ -463,7 +454,7 @@ def find_resources(pattern: str) -> List[str]:
     ...
 
 
-def encode_value(val: T_VALUE, pretty: bool = ...) -> str:
+def encode_value(val: StValue, pretty: bool = ...) -> str:
     """
     Encode a JSON compatible value into a string representation
     If `pretty` is set to `True`, the string will include newlines and indentation
@@ -471,7 +462,7 @@ def encode_value(val: T_VALUE, pretty: bool = ...) -> str:
     ...
 
 
-def decode_value(data: str) -> T_VALUE:
+def decode_value(data: str) -> StValue:
     """
     Decodes a JSON string into an object.
     If `data` is invalid, a `ValueError` will be thrown
@@ -479,7 +470,7 @@ def decode_value(data: str) -> T_VALUE:
     ...
 
 
-def expand_variables(val: T_EXPANDABLE_VAR, variables: Dict[str, str]) -> T_EXPANDABLE_VAR:
+def expand_variables(val: T_ExpandableVar, variables: Dict[str, str]) -> T_ExpandableVar:
     """
     Expands any variables in the string `value` using the variables defined in
     the dictionary `variables`
@@ -508,7 +499,7 @@ def save_settings(base_name: str) -> None:
     ...
 
 
-def set_timeout(f: T_CALLBACK_0, timeout_ms: int = 0) -> None:
+def set_timeout(f: StCallback0, timeout_ms: int = 0) -> None:
     """
     Schedules a function to be called in the future. Sublime Text will block
     while the function is running
@@ -516,7 +507,7 @@ def set_timeout(f: T_CALLBACK_0, timeout_ms: int = 0) -> None:
     ...
 
 
-def set_timeout_async(f: T_CALLBACK_0, timeout_ms: int = 0) -> None:
+def set_timeout_async(f: StCallback0, timeout_ms: int = 0) -> None:
     """
     Schedules a function to be called in the future. The function will be
     called in a worker thread, and Sublime Text will not block while the
@@ -607,7 +598,7 @@ class Window:
         """
         ...
 
-    def run_command(self, cmd: str, args: Optional[Dict[str, T_VALUE]] = ...) -> None:
+    def run_command(self, cmd: str, args: Optional[Dict[str, StValue]] = ...) -> None:
         """
         Runs the named `WindowCommand` with the (optional) given `args`
         This method is able to run any sort of command, dispatching the
@@ -743,17 +734,17 @@ class Window:
         """ Returns the transient `View` in the given `group` if any """
         ...
 
-    def layout(self) -> T_LAYOUT:
+    def layout(self) -> T_Layout:
         """ Returns the current layout """
         ...
 
-    def get_layout(self) -> T_LAYOUT:
+    def get_layout(self) -> T_Layout:
         """
         @deprecated use `layout()` instead
         """
         ...
 
-    def set_layout(self, layout: T_LAYOUT) -> None:
+    def set_layout(self, layout: T_Layout) -> None:
         """ Changes the tile-based panel layout of view groups """
         ...
 
@@ -804,9 +795,9 @@ class Window:
         self,
         caption: str,
         initial_text: str,
-        on_done: Optional[T_CALLBACK_1[str]],
-        on_change: Optional[T_CALLBACK_1[str]],
-        on_cancel: T_CALLBACK_0,
+        on_done: Optional[StCallback1[str]],
+        on_change: Optional[StCallback1[str]],
+        on_cancel: StCallback0,
     ) -> "View":
         """
         Shows the input panel, to collect a line of input from the user
@@ -820,10 +811,10 @@ class Window:
     def show_quick_panel(
         self,
         items: Sequence[Union["QuickPanelItem", str, Sequence[str]]],
-        on_select: T_CALLBACK_1[int],
+        on_select: StCallback1[int],
         flags: int = 0,
         selected_index: int = -1,
-        on_highlight: Optional[T_CALLBACK_1[int]] = None,
+        on_highlight: Optional[StCallback1[int]] = None,
         placeholder: Optional[str] = None,
     ) -> None:
         """
@@ -891,14 +882,14 @@ class Window:
         """ Returns name of the currently opened project file, if any """
         ...
 
-    def project_data(self) -> Optional[Dict[str, T_VALUE]]:
+    def project_data(self) -> Optional[Dict[str, StValue]]:
         """
         Returns the project data associated with the current window
         The data is in the same format as the contents of a _.sublime-project_ file
         """
         ...
 
-    def set_project_data(self, v: Dict[str, T_VALUE]) -> None:
+    def set_project_data(self, v: Dict[str, StValue]) -> None:
         """
         Updates the project data associated with the current window
         If the window is associated with a _.sublime-project_ file, the project
@@ -970,25 +961,25 @@ class Window:
         """
         ...
 
-    def lookup_symbol_in_index(self, sym: str) -> List[T_LOCATION]:
+    def lookup_symbol_in_index(self, sym: str) -> List[StLocation]:
         """ Finds all files and locations where sym is defined, using the symbol index """
         ...
 
-    def lookup_symbol_in_open_files(self, sym: str) -> List[T_LOCATION]:
+    def lookup_symbol_in_open_files(self, sym: str) -> List[StLocation]:
         """
         Returns all files and locations where the symbol `sym` is defined, searching
         through open files
         """
         ...
 
-    def lookup_references_in_index(self, sym: str) -> List[T_LOCATION]:
+    def lookup_references_in_index(self, sym: str) -> List[StLocation]:
         """
         Returns all files and locations where the symbol `sym` is referenced,
         using the symbol index
         """
         ...
 
-    def lookup_references_in_open_files(self, sym: str) -> List[T_LOCATION]:
+    def lookup_references_in_open_files(self, sym: str) -> List[StLocation]:
         """
         Returns all files and locations where the symbol `sym` is referenced,
         searching through open files
@@ -1058,10 +1049,10 @@ class Region:
     def __lt__(self, rhs: "Region") -> bool:
         ...
 
-    def __contains__(self, v: Union["Region", T_POINT]) -> bool:
+    def __contains__(self, v: Union["Region", StPoint]) -> bool:
         ...
 
-    def to_tuple(self) -> Tuple[T_POINT, T_POINT]:
+    def to_tuple(self) -> Tuple[StPoint, StPoint]:
         """
         Returns a 2-element tuple of:
 
@@ -1091,7 +1082,7 @@ class Region:
         """ Returns the number of characters spanned by the region """
         ...
 
-    def contains(self, x: Union["Region", T_POINT]) -> bool:
+    def contains(self, x: Union["Region", StPoint]) -> bool:
         """
         If `x` is a region, returns `True` if it's a subset
         If `x` is a point, returns `True` if `begin() <= x <= end()`
@@ -1122,13 +1113,13 @@ class HistoricPosition:
 
     __slots__: List[str] = ["pt", "row", "col", "col_utf16", "col_utf8"]
 
-    pt: T_POINT
+    pt: StPoint
     row: int
     col: int
     col_utf16: int
     col_utf8: int
 
-    def __init__(self, pt: T_POINT, row: int, col: int, col_u16: int, col_u8: int) -> None:
+    def __init__(self, pt: StPoint, row: int, col: int, col_u16: int, col_u8: int) -> None:
         ...
 
     def __repr__(self) -> str:
@@ -1141,18 +1132,18 @@ class TextChange:
     This is primarily useful for replaying changes to a document.
     """
 
-    __slots__: List[T_STR] = ["a", "b", "len_utf16", "len_utf8", "str"]
+    __slots__: List[StStr] = ["a", "b", "len_utf16", "len_utf8", "str"]
 
     a: HistoricPosition
     b: HistoricPosition
     len_utf16: int
     len_utf8: int
-    str: T_STR
+    str: StStr
 
-    def __init__(self, pa: HistoricPosition, pb: HistoricPosition, s: T_STR) -> None:
+    def __init__(self, pa: HistoricPosition, pb: HistoricPosition, s: StStr) -> None:
         ...
 
-    def __repr__(self) -> T_STR:
+    def __repr__(self) -> StStr:
         ...
 
 
@@ -1202,14 +1193,14 @@ class Selection:
         """ Removes all regions """
         ...
 
-    def add(self, x: Union[Region, T_POINT]) -> None:
+    def add(self, x: Union[Region, StPoint]) -> None:
         """
         Adds the given region or point. It will be merged with any intersecting
         regions already contained within the set
         """
         ...
 
-    def add_all(self, regions: Sequence[Union[Region, T_POINT]]) -> None:
+    def add_all(self, regions: Sequence[Union[Region, StPoint]]) -> None:
         """ Adds all `regions` in the given list or tuple """
         ...
 
@@ -1509,7 +1500,7 @@ class View:
         """ Returns the number of character in the file """
         ...
 
-    def begin_edit(self, edit_token: int, cmd: str, args: Optional[Dict[str, T_VALUE]] = None) -> Edit:
+    def begin_edit(self, edit_token: int, cmd: str, args: Optional[Dict[str, StValue]] = None) -> Edit:
         ...
 
     def end_edit(self, edit: Edit) -> None:
@@ -1518,7 +1509,7 @@ class View:
     def is_in_edit(self) -> bool:
         ...
 
-    def insert(self, edit: Edit, pt: T_POINT, text: str) -> int:
+    def insert(self, edit: Edit, pt: StPoint, text: str) -> int:
         """
         Inserts the given string in the buffer at the specified point
         Returns the number of characters inserted, this may be different if
@@ -1565,7 +1556,7 @@ class View:
         """
         ...
 
-    def run_command(self, cmd: str, args: Optional[Dict[str, T_VALUE]] = None) -> None:
+    def run_command(self, cmd: str, args: Optional[Dict[str, StValue]] = None) -> None:
         """ Runs the named `TextCommand` with the (optional) given `args` """
         ...
 
@@ -1573,7 +1564,7 @@ class View:
         """ Returns a reference to the selection """
         ...
 
-    def substr(self, x: Union[Region, T_POINT]) -> str:
+    def substr(self, x: Union[Region, StPoint]) -> str:
         """
         Returns the content of the given region.
 
@@ -1616,10 +1607,10 @@ class View:
         """
         ...
 
-    def meta_info(self, key: str, pt: T_POINT) -> str:
+    def meta_info(self, key: str, pt: StPoint) -> str:
         ...
 
-    def extract_tokens_with_scopes(self, r: Region) -> List[Tuple[T_VECTOR, str]]:
+    def extract_tokens_with_scopes(self, r: Region) -> List[Tuple[StVector, str]]:
         """
         Gets the scope information for the given region.
 
@@ -1630,18 +1621,18 @@ class View:
         """
         ...
 
-    def extract_scope(self, pt: T_POINT) -> Region:
+    def extract_scope(self, pt: StPoint) -> Region:
         """
         Returns the extent of the syntax scope name assigned to the
         character at the given point
         """
         ...
 
-    def scope_name(self, pt: T_POINT) -> str:
+    def scope_name(self, pt: StPoint) -> str:
         """ Returns the syntax scope name assigned to the character at the given point """
         ...
 
-    def context_backtrace(self, pt: T_POINT) -> List[str]:
+    def context_backtrace(self, pt: StPoint) -> List[str]:
         """
         Returns a list of the contexts on the stack at the specified point.
 
@@ -1649,14 +1640,14 @@ class View:
         """
         ...
 
-    def match_selector(self, pt: T_POINT, selector: str) -> bool:
+    def match_selector(self, pt: StPoint, selector: str) -> bool:
         """
         Checks the `selector` against the scope at the given point
         returning a bool if they match
         """
         ...
 
-    def score_selector(self, pt: T_POINT, selector: str) -> int:
+    def score_selector(self, pt: StPoint, selector: str) -> int:
         """
         Matches the `selector` against the scope at the given point, returning a score
         A score of 0 means no match, above 0 means a match. Different selectors may
@@ -1703,10 +1694,10 @@ class View:
         """
         ...
 
-    def indented_region(self, pt: T_POINT) -> Region:
+    def indented_region(self, pt: StPoint) -> Region:
         ...
 
-    def indentation_level(self, pt: T_POINT) -> int:
+    def indentation_level(self, pt: StPoint) -> int:
         ...
 
     def has_non_empty_selection_region(self) -> bool:
@@ -1722,7 +1713,7 @@ class View:
         exactly one line"""
         ...
 
-    def line(self, x: Union[Region, T_POINT]) -> Region:
+    def line(self, x: Union[Region, StPoint]) -> Region:
         """
         if `x` is a region, returns a modified copy of region such that it
         starts at the beginning of a line, and ends at the end of a line
@@ -1731,11 +1722,11 @@ class View:
         """
         ...
 
-    def full_line(self, x: Union[Region, T_POINT]) -> Region:
+    def full_line(self, x: Union[Region, StPoint]) -> Region:
         """ As line(), but the region includes the trailing newline character, if any """
         ...
 
-    def word(self, x: Union[Region, T_POINT]) -> Region:
+    def word(self, x: Union[Region, StPoint]) -> Region:
         """
         if `x` is a region, returns a modified copy of it such that it
         starts at the beginning of a word, and ends at the end of a word
@@ -1744,7 +1735,7 @@ class View:
         """
         ...
 
-    def classify(self, pt: T_POINT) -> int:
+    def classify(self, pt: StPoint) -> int:
         """
         Classifies the point `pt`, returning a bitwise OR of zero or more of these flags:
         `CLASS_WORD_START`
@@ -1759,7 +1750,7 @@ class View:
         """
         ...
 
-    def find_by_class(self, pt: T_POINT, forward: bool, classes: int, separators: str = "") -> Region:
+    def find_by_class(self, pt: StPoint, forward: bool, classes: int, separators: str = "") -> Region:
         """
         Finds the next location after point that matches the given classes
         If forward is `False`, searches backwards instead of forwards.
@@ -1769,7 +1760,7 @@ class View:
         """
         ...
 
-    def expand_by_class(self, x: Union[Region, T_POINT], classes: int, separators: str = "") -> Region:
+    def expand_by_class(self, x: Union[Region, StPoint], classes: int, separators: str = "") -> Region:
         """
         Expands `x` to the left and right, until each side lands on a location
         that matches `classes`. classes is a bitwise OR of the
@@ -1778,11 +1769,11 @@ class View:
         """
         ...
 
-    def rowcol(self, tp: T_POINT) -> Tuple[int, int]:
+    def rowcol(self, tp: StPoint) -> Tuple[int, int]:
         """ Calculates the 0-based line and column numbers of the the given point """
         ...
 
-    def rowcol_utf8(self, tp: T_POINT) -> Tuple[int, int]:
+    def rowcol_utf8(self, tp: StPoint) -> Tuple[int, int]:
         """
         (UTF-8) Calculates the 0-based line and column numbers of the the given point.
 
@@ -1790,7 +1781,7 @@ class View:
         """
         ...
 
-    def rowcol_utf16(self, tp: T_POINT) -> Tuple[int, int]:
+    def rowcol_utf16(self, tp: StPoint) -> Tuple[int, int]:
         """
         (UTF-16) Calculates the 0-based line and column numbers of the the given point.
 
@@ -1838,7 +1829,7 @@ class View:
 
     def show(
         self,
-        x: Union[Selection, Region, T_POINT],
+        x: Union[Selection, Region, StPoint],
         show_surrounds: bool = True,
         keep_to_left: bool = False,
         animate: bool = True,
@@ -1854,47 +1845,47 @@ class View:
         """
         ...
 
-    def show_at_center(self, x: Union[Region, T_POINT]) -> None:
+    def show_at_center(self, x: Union[Region, StPoint]) -> None:
         """ Scrolls the view to center on x, which may be a Region or point """
         ...
 
-    def viewport_position(self) -> T_VECTOR:
+    def viewport_position(self) -> StVector:
         """ Returns the (x, y) scroll position of the view in layout coordinates """
         ...
 
-    def set_viewport_position(self, xy: T_VECTOR, animate: bool = True) -> None:
+    def set_viewport_position(self, xy: StVector, animate: bool = True) -> None:
         """ Scrolls the view to the given position in layout coordinates """
         ...
 
-    def viewport_extent(self) -> T_VECTOR:
+    def viewport_extent(self) -> StVector:
         """ Returns the width and height of the viewport, in layout coordinates """
         ...
 
-    def layout_extent(self) -> T_VECTOR:
+    def layout_extent(self) -> StVector:
         """ Returns the total height and width of the document, in layout coordinates """
         ...
 
-    def text_to_layout(self, tp: T_POINT) -> T_VECTOR:
+    def text_to_layout(self, tp: StPoint) -> StVector:
         """ Converts a text point to layout coordinates """
         ...
 
-    def text_to_window(self, tp: T_POINT) -> T_VECTOR:
+    def text_to_window(self, tp: StPoint) -> StVector:
         """ Converts a text point to window coordinates """
         ...
 
-    def layout_to_text(self, xy: T_VECTOR) -> int:
+    def layout_to_text(self, xy: StVector) -> int:
         """ Converts layout coordinates to a text point """
         ...
 
-    def layout_to_window(self, xy: T_VECTOR) -> T_VECTOR:
+    def layout_to_window(self, xy: StVector) -> StVector:
         """ Converts layout coordinates to window coordinates """
         ...
 
-    def window_to_layout(self, xy: T_VECTOR) -> T_VECTOR:
+    def window_to_layout(self, xy: StVector) -> StVector:
         """ Converts window coordinates to layout coordinates """
         ...
 
-    def window_to_text(self, xy: T_VECTOR) -> int:
+    def window_to_text(self, xy: StVector) -> int:
         """ Converts window coordinates to a text point """
         ...
 
@@ -1931,8 +1922,8 @@ class View:
         flags: int = 0,
         annotations: List[str] = [],
         annotation_color: str = "",
-        on_navigate: Optional[T_CALLBACK_1[str]] = None,
-        on_close: Optional[T_CALLBACK_0] = None,
+        on_navigate: Optional[StCallback1[str]] = None,
+        on_close: Optional[StCallback0] = None,
     ) -> None:
         """
         Add a set of `regions` to the view. If a set of regions already exists
@@ -1989,7 +1980,7 @@ class View:
         region: Region,
         content: str,
         layout: int,
-        on_navigate: Optional[T_CALLBACK_1[str]] = None,
+        on_navigate: Optional[StCallback1[str]] = None,
     ) -> int:
         ...
 
@@ -2075,7 +2066,7 @@ class View:
         """ Clears the named status """
         ...
 
-    def extract_completions(self, prefix: str, tp: T_POINT = -1) -> List[str]:
+    def extract_completions(self, prefix: str, tp: StPoint = -1) -> List[str]:
         ...
 
     def find_all_results(self) -> List[Tuple[str, int, int]]:
@@ -2109,7 +2100,7 @@ class View:
         """ Sets the overwrite status """
         ...
 
-    def show_popup_menu(self, items: Sequence[str], on_select: T_CALLBACK_1[int], flags: int = 0) -> None:
+    def show_popup_menu(self, items: Sequence[str], on_select: StCallback1[int], flags: int = 0) -> None:
         """
         Shows a pop up menu at the caret, to select an item in a list. `on_done`
         will be called once, with the index of the selected item. If the pop up
@@ -2129,8 +2120,8 @@ class View:
         location: int = -1,
         max_width: int = 320,
         max_height: int = 240,
-        on_navigate: Optional[T_CALLBACK_1[str]] = None,
-        on_hide: Optional[T_CALLBACK_0] = None,
+        on_navigate: Optional[StCallback1[str]] = None,
+        on_hide: Optional[StCallback0] = None,
     ) -> None:
         """
         Shows a popup displaying HTML content.
@@ -2258,11 +2249,11 @@ class Settings:
         ...
 
     def __getitem__(self, key: str) -> Any:
-        # The "Any" annotation should be "T_VALUE" but it will cause annoying errors
+        # The "Any" annotation should be "StValue" but it will cause annoying errors
         # when casting the returned value. So we probably just use "Any"...
         ...
 
-    def __setitem__(self, key: str, value: T_VALUE) -> None:
+    def __setitem__(self, key: str, value: StValue) -> None:
         ...
 
     def __delitem__(self, key: str) -> None:
@@ -2274,7 +2265,7 @@ class Settings:
     def __repr__(self) -> str:
         ...
 
-    def to_dict(self) -> Dict[str, T_VALUE]:
+    def to_dict(self) -> Dict[str, StValue]:
         """
         Return the settings as a dict. This is not very fast.
 
@@ -2282,13 +2273,13 @@ class Settings:
         """
         ...
 
-    def setdefault(self, key: str, value: T_VALUE) -> Any:
+    def setdefault(self, key: str, value: StValue) -> Any:
         """
         Returns the value of the item with the specified key.
 
         If the key does not exist, insert the key, with the specified value, see example below.
         """
-        # The "Any" annotation should be "T_VALUE" but it will cause annoying errors
+        # The "Any" annotation should be "StValue" but it will cause annoying errors
         # when casting the returned value. So we probably just use "Any"...
         ...
 
@@ -2306,12 +2297,12 @@ class Settings:
         """
         ...
 
-    def get(self, key: str, default: Optional[T_VALUE] = None) -> Any:
+    def get(self, key: str, default: Optional[StValue] = None) -> Any:
         """
         Returns the named setting, or `default` if it's not defined
         If not passed, `default` will have a value of `None`
         """
-        # The "Any" annotation should be "T_VALUE" but it will cause annoying errors
+        # The "Any" annotation should be "StValue" but it will cause annoying errors
         # when casting the returned value. So we probably just use "Any"...
         ...
 
@@ -2322,7 +2313,7 @@ class Settings:
         """
         ...
 
-    def set(self, key: str, value: T_VALUE) -> None:
+    def set(self, key: str, value: StValue) -> None:
         """ Sets the named setting. Only primitive types, lists, and dicts are accepted """
         ...
 
@@ -2330,7 +2321,7 @@ class Settings:
         """ Removes the named setting. Does not remove it from any parent Settings """
         ...
 
-    def add_on_change(self, tag: str, callback: T_CALLBACK_0) -> None:
+    def add_on_change(self, tag: str, callback: StCallback0) -> None:
         """ Register a `callback` to be run whenever a setting in this object is changed """
         ...
 
@@ -2360,7 +2351,7 @@ class Phantom:
     region: Region
     content: str
     layout: int
-    on_navigate: Optional[T_CALLBACK_1[str]]
+    on_navigate: Optional[StCallback1[str]]
     id: int
 
     def __init__(
@@ -2368,7 +2359,7 @@ class Phantom:
         region: Region,
         content: str,
         layout: int,
-        on_navigate: Optional[T_CALLBACK_1[str]] = None,
+        on_navigate: Optional[StCallback1[str]] = None,
     ) -> None:
         ...
 
@@ -2378,7 +2369,7 @@ class Phantom:
     def __repr__(self) -> str:
         ...
 
-    def to_tuple(self) -> Tuple[Tuple[int, int], str, int, Optional[T_CALLBACK_1[str]]]:
+    def to_tuple(self) -> Tuple[Tuple[int, int], str, int, Optional[StCallback1[str]]]:
         """
         Returns a 4-element tuple of:
 
@@ -2447,10 +2438,10 @@ class CompletionList:
     """
 
     target: Optional[Any]
-    completions: List[T_COMPLETION]
+    completions: List[StCompletion]
     flags: int
 
-    def __init__(self, completions: List[T_COMPLETION] = None, flags: int = 0) -> None:
+    def __init__(self, completions: List[StCompletion] = None, flags: int = 0) -> None:
         """
         ---
 
@@ -2477,7 +2468,7 @@ class CompletionList:
     def _set_target(self, target: Optional[Any]) -> None:
         ...
 
-    def set_completions(self, completions: List[T_COMPLETION], flags: int = 0) -> None:
+    def set_completions(self, completions: List[StCompletion], flags: int = 0) -> None:
         """
         Sets the list of completions, allowing the list to be displayed to the user.
 
@@ -2506,9 +2497,9 @@ class CompletionItem:
 
     trigger: str
     annotation: str
-    completion: T_COMPLETION
+    completion: StCompletion
     completion_format: int
-    kind: T_KIND
+    kind: StCompletionKind
     details: str
     flags: int
 
@@ -2516,9 +2507,9 @@ class CompletionItem:
         self,
         trigger: str,
         annotation: str = "",
-        completion: T_COMPLETION = "",
+        completion: StCompletion = "",
         completion_format: int = COMPLETION_FORMAT_TEXT,
-        kind: T_KIND = KIND_AMBIGUOUS,
+        kind: StCompletionKind = KIND_AMBIGUOUS,
         details: str = "",
     ) -> None:
         ...
@@ -2535,7 +2526,7 @@ class CompletionItem:
         trigger: str,
         snippet: str,
         annotation: str = "",
-        kind: T_KIND = KIND_SNIPPET,
+        kind: StCompletionKind = KIND_SNIPPET,
         details: str = "",
     ) -> "CompletionItem":
         """
@@ -2558,9 +2549,9 @@ class CompletionItem:
         cls,
         trigger: str,
         command: str,
-        args: Dict[str, T_VALUE] = {},
+        args: Dict[str, StValue] = {},
         annotation: str = "",
-        kind: T_KIND = KIND_AMBIGUOUS,
+        kind: StCompletionKind = KIND_AMBIGUOUS,
         details: str = "",
     ) -> "CompletionItem":
         """
@@ -2650,9 +2641,9 @@ class QuickPanelItem:
     trigger: str
     details: str
     annotation: str
-    kind: T_KIND
+    kind: StCompletionKind
 
-    def __init__(self, trigger: str, details: str = "", annotation: str = "", kind: T_KIND = KIND_AMBIGUOUS) -> None:
+    def __init__(self, trigger: str, details: str = "", annotation: str = "", kind: StCompletionKind = KIND_AMBIGUOUS) -> None:
         ...
 
     def __repr__(self) -> str:
@@ -2666,9 +2657,9 @@ class SymbolRegion:
     region: Region
     syntax: Syntax
     type: int
-    kind: T_KIND
+    kind: StCompletionKind
 
-    def __init__(self, name: str, region: Region, syntax: Syntax, type: int, kind: T_KIND) -> None:
+    def __init__(self, name: str, region: Region, syntax: Syntax, type: int, kind: StCompletionKind) -> None:
         ...
 
     def __repr__(self) -> str:
@@ -2684,10 +2675,10 @@ class SymbolLocation:
     col: int
     syntax: Syntax
     type: int
-    kind: T_KIND
+    kind: StCompletionKind
 
     def __init__(
-        self, path: str, display_name: str, row: int, col: int, syntax: Syntax, type: int, kind: T_KIND
+        self, path: str, display_name: str, row: int, col: int, syntax: Syntax, type: int, kind: StCompletionKind
     ) -> None:
         ...
 
