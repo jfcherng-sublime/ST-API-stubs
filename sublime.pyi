@@ -2182,8 +2182,9 @@ class View:
         enclosing_tags: bool = False,
         font_size: bool = True,
         font_family: bool = True,
-    ) -> str :
-        """ Export the view as HTML
+    ) -> str:
+        """
+        Export the view as HTML
 
         :param regions:
             The region(s) to export. By default it will export the whole view.
@@ -2643,7 +2644,13 @@ class QuickPanelItem:
     annotation: str
     kind: StCompletionKind
 
-    def __init__(self, trigger: str, details: str = "", annotation: str = "", kind: StCompletionKind = KIND_AMBIGUOUS) -> None:
+    def __init__(
+        self,
+        trigger: str,
+        details: str = "",
+        annotation: str = "",
+        kind: StCompletionKind = KIND_AMBIGUOUS,
+    ) -> None:
         ...
 
     def __repr__(self) -> str:
