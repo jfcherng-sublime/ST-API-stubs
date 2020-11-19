@@ -23,13 +23,11 @@ T = TypeVar("T")
 T_ExpandableVar = TypeVar("T_ExpandableVar", str, List[str], Dict[str, str])
 T_Layout = TypedDict(
     "T_Layout",
-    # fmt: off
     {
         "cols": Sequence[float],
         "rows": Sequence[float],
         "cells": Sequence[Sequence[int]],
     },
-    # fmt: on
 )
 
 StCallback0 = Callable[[], None]
@@ -321,12 +319,12 @@ def select_folder_dialog(
     ...
 
 
-def run_command(cmd: str, args: Optional[Dict[str, StValue]] = None) -> None:
+def run_command(cmd: str, args: Optional[Dict] = None) -> None:
     """ Runs the named `ApplicationCommand` with the (optional) given `args` """
     ...
 
 
-def format_command(cmd: str, args: Optional[Dict[str, StValue]] = None) -> str:
+def format_command(cmd: str, args: Optional[Dict] = None) -> str:
     """
     Creates a "command string" from a str cmd name, and an optional dict of args.
     This is used when constructing a command-based `CompletionItem`
@@ -336,11 +334,11 @@ def format_command(cmd: str, args: Optional[Dict[str, StValue]] = None) -> str:
     ...
 
 
-def html_format_command(cmd: str, args: Optional[Dict[str, StValue]] = None) -> str:
+def html_format_command(cmd: str, args: Optional[Dict] = None) -> str:
     ...
 
 
-def command_url(cmd: str, args: Optional[Dict[str, StValue]] = None) -> str:
+def command_url(cmd: str, args: Optional[Dict] = None) -> str:
     """
     Creates a `subl:` protocol URL for executing a command in a minihtml link.
 
@@ -598,7 +596,7 @@ class Window:
         """
         ...
 
-    def run_command(self, cmd: str, args: Optional[Dict[str, StValue]] = ...) -> None:
+    def run_command(self, cmd: str, args: Optional[Dict] = ...) -> None:
         """
         Runs the named `WindowCommand` with the (optional) given `args`
         This method is able to run any sort of command, dispatching the
@@ -1500,7 +1498,7 @@ class View:
         """ Returns the number of character in the file """
         ...
 
-    def begin_edit(self, edit_token: int, cmd: str, args: Optional[Dict[str, StValue]] = None) -> Edit:
+    def begin_edit(self, edit_token: int, cmd: str, args: Optional[Dict] = None) -> Edit:
         ...
 
     def end_edit(self, edit: Edit) -> None:
@@ -1556,7 +1554,7 @@ class View:
         """
         ...
 
-    def run_command(self, cmd: str, args: Optional[Dict[str, StValue]] = None) -> None:
+    def run_command(self, cmd: str, args: Optional[Dict] = None) -> None:
         """ Runs the named `TextCommand` with the (optional) given `args` """
         ...
 
@@ -2550,7 +2548,7 @@ class CompletionItem:
         cls,
         trigger: str,
         command: str,
-        args: Dict[str, StValue] = {},
+        args: Dict = {},
         annotation: str = "",
         kind: StCompletionKind = KIND_AMBIGUOUS,
         details: str = "",
