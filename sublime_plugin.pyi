@@ -33,7 +33,7 @@ import sublime
 # ----- #
 
 T = TypeVar("T")
-T_ExpandableVar = TypeVar("T_ExpandableVar", str, List[str], Dict[str, str])
+T_ExpandableVar = TypeVar("T_ExpandableVar", None, bool, int, float, str, Dict, List, Tuple)
 T_Layout = TypedDict(
     "T_Layout",
     {
