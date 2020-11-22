@@ -1,4 +1,6 @@
-# version: 4093
+# This file is maintained on https://github.com/jfcherng-sublime/ST-API-stubs
+#
+# ST version: 4093
 
 from typing import (
     Any,
