@@ -1,6 +1,6 @@
 # This file is maintained on https://github.com/jfcherng-sublime/ST-API-stubs
 #
-# ST version: 4094
+# ST version: 4095
 
 from typing import (
     Any,
@@ -137,6 +137,19 @@ KIND_ID_NAVIGATION: int = 5
 KIND_ID_MARKUP: int = 6
 KIND_ID_VARIABLE: int = 7
 KIND_ID_SNIPPET: int = 8
+
+# These should only be used for QuickPanelItem
+# and ListInputItem, not for CompletionItem
+KIND_ID_COLOR_REDISH: int = 9
+KIND_ID_COLOR_ORANGISH: int = 10
+KIND_ID_COLOR_YELLOWISH: int = 11
+KIND_ID_COLOR_GREENISH: int = 12
+KIND_ID_COLOR_CYANISH: int = 13
+KIND_ID_COLOR_BLUISH: int = 14
+KIND_ID_COLOR_PURPLISH: int = 15
+KIND_ID_COLOR_PINKISH: int = 16
+KIND_ID_COLOR_DARK: int = 17
+KIND_ID_COLOR_LIGHT: int = 18
 
 KIND_AMBIGUOUS: StCompletionKind = (KIND_ID_AMBIGUOUS, "", "")
 KIND_KEYWORD: StCompletionKind = (KIND_ID_KEYWORD, "", "")
@@ -2653,6 +2666,27 @@ class SymbolRegion:
     kind: StCompletionKind
 
     def __init__(self, name: str, region: Region, syntax: Syntax, type: int, kind: StCompletionKind) -> None:
+        ...
+
+    def __repr__(self) -> str:
+        ...
+
+
+class ListInputItem:
+    text: str
+    value: Any
+    details: str
+    annotation: str
+    kind: StCompletionKind
+
+    def __init__(
+        self,
+        text: str,
+        value: Any,
+        details = "",
+        annotation = "",
+        kind: StCompletionKind = KIND_AMBIGUOUS,
+    ) -> None:
         ...
 
     def __repr__(self) -> str:
