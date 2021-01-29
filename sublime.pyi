@@ -1,6 +1,6 @@
 # This file is maintained on https://github.com/jfcherng-sublime/ST-API-stubs
 #
-# ST version: 4095
+# ST version: 4096
 
 from typing import (
     Any,
@@ -64,12 +64,15 @@ HOVER_MARGIN: int = 3
 ENCODED_POSITION: int = 1
 TRANSIENT: int = 4
 FORCE_GROUP: int = 8
-ADD_TO_SELECTION_SEMI_TRANSIENT: int = 16
+# Only valid with ADD_TO_SELECTION or REPLACE_MRU
+SEMI_TRANSIENT: int = 16
 ADD_TO_SELECTION: int = 32
+REPLACE_MRU = 64
 IGNORECASE: int = 2
 LITERAL: int = 1
 MONOSPACE_FONT: int = 1
 KEEP_OPEN_ON_FOCUS_LOST: int = 2
+WANT_EVENT: int = 4
 
 HTML: int = 1
 COOPERATE_WITH_AUTO_COMPLETE: int = 2
@@ -432,6 +435,13 @@ def log_control_tree(flag: bool) -> None:
     will log the control tree under the mouse to the console.
 
     @version ST(>=4064)
+    """
+    ...
+
+
+def ui_info() -> Dict[str, Any]:
+    """
+    Gets the UI information such as theme/color-scheme palette.
     """
     ...
 
@@ -836,12 +846,13 @@ class Window:
         * `items` may be a list of strings, or a list of string lists
         In the latter case, each entry in the quick panel will show multiple rows.
 
-        * `on_select` will be called once, with the index of the selected item
-        If the quick panel was cancelled, `on_select` will be called with an
-        argument of `-1`.
+        * `on_select` is called when the the quick panel is finished, and should
+        accept a single integer, specifying which item was selected, or `-1` for
+        `none`. If flags includes `WANT_EVENT`, `on_select` should accept a second
+        parameter, which will be a dict with the key "modifier_keys" giving
+        access to keyboard modifiers pressed when the item was selected..
 
-        * `flags` is a bitwise OR of `MONOSPACE_FONT`
-        and `KEEP_OPEN_ON_FOCUS_LOST`
+        * `flags` is a bitwise OR of `MONOSPACE_FONT`, `KEEP_OPEN_ON_FOCUS_LOST` and `WANT_EVENT`
 
         * `on_highlighted`, if given, will be called every time the highlighted item in the quick panel is changed
         """
