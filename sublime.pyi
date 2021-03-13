@@ -190,7 +190,7 @@ def platform() -> str:
 
 
 def arch() -> str:
-    """ Returns the CPU architecture, which may be "x32" or "x64" """
+    """ Returns the CPU architecture, which may be "x32", "x64" or "arm64" """
     ...
 
 
