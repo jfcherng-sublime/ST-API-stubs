@@ -6,13 +6,13 @@ With LSP proper configured, you can have something like the following screenshot
 
 ## How to Use
 
-I personally use this with [LSP][pc-lsp] + [LSP-pyright][pc-lsp-pyright] / [LSP-pylance][private-lsp-pylance] setup.
+I personally use this with [LSP][pc-lsp] + [LSP-pyright][pc-lsp-pyright] setup.
 
 1. Install the [LSP][pc-lsp] package via Package Control.
 1. You have to copy those `.pyi` stub files from this repository to `YOUR_PROJECT_ROOT/typings/` directory.
-1. Make your preferred LSP server able to "see" them.
+1. Make your preferred LSP server is able to "see" them.
 
-   - If you use [LSP-pyright][pc-lsp-pyright] / [LSP-pylance][private-lsp-pylance],
+   - If you use [LSP-pyright][pc-lsp-pyright],
      configure the `python.analysis.extraPaths`:
 
      ```js
@@ -59,4 +59,3 @@ Apart from [@AmjadHD](https://github.com/AmjadHD)'s work, there are also some ot
 [gh-lsp-pysl]: https://github.com/sublimelsp/LSP-pyls
 [pc-lsp-pyright]: https://packagecontrol.io/packages/LSP-pyright
 [pc-lsp]: https://packagecontrol.io/packages/LSP
-[private-lsp-pylance]: https://github.com/jfcherng-sublime/LSP-pylance
