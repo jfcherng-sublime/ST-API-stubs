@@ -2694,8 +2694,8 @@ class ListInputItem:
         self,
         text: str,
         value: Any,
-        details = "",
-        annotation = "",
+        details: str = "",
+        annotation: str = "",
         kind: StCompletionKind = KIND_AMBIGUOUS,
     ) -> None:
         ...
