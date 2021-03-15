@@ -1,13 +1,13 @@
-# ST version: 4093
 import collections
 import html
 import json
 import sys
+import io
 
 import sublime_api
 
 
-class _LogWriter:
+class _LogWriter(io.TextIOBase):
     def __init__(self):
         self.buf = None
 
@@ -36,12 +36,17 @@ HOVER_MARGIN = 3
 ENCODED_POSITION = 1
 TRANSIENT = 4
 FORCE_GROUP = 8
-ADD_TO_SELECTION_SEMI_TRANSIENT = 16
+# Only valid with ADD_TO_SELECTION or REPLACE_MRU
+SEMI_TRANSIENT = 16
 ADD_TO_SELECTION = 32
+REPLACE_MRU = 64
+
 IGNORECASE = 2
 LITERAL = 1
+
 MONOSPACE_FONT = 1
 KEEP_OPEN_ON_FOCUS_LOST = 2
+WANT_EVENT = 4
 
 HTML = 1
 COOPERATE_WITH_AUTO_COMPLETE = 2
@@ -109,6 +114,19 @@ KIND_ID_NAVIGATION = 5
 KIND_ID_MARKUP = 6
 KIND_ID_VARIABLE = 7
 KIND_ID_SNIPPET = 8
+
+# These should only be used for QuickPanelItem
+# and ListInputItem, not for CompletionItem
+KIND_ID_COLOR_REDISH = 9
+KIND_ID_COLOR_ORANGISH = 10
+KIND_ID_COLOR_YELLOWISH = 11
+KIND_ID_COLOR_GREENISH = 12
+KIND_ID_COLOR_CYANISH = 13
+KIND_ID_COLOR_BLUISH = 14
+KIND_ID_COLOR_PURPLISH = 15
+KIND_ID_COLOR_PINKISH = 16
+KIND_ID_COLOR_DARK = 17
+KIND_ID_COLOR_LIGHT = 18
 
 KIND_AMBIGUOUS = (KIND_ID_AMBIGUOUS, "", "")
 KIND_KEYWORD = (KIND_ID_KEYWORD, "", "")
@@ -266,7 +284,13 @@ def format_command(cmd, args=None):
     if args is None:
         return cmd
     else:
-        return f'{cmd} {json.dumps(args)}'
+        arg_str = json.dumps(
+            args,
+            ensure_ascii=False,
+            check_circular=False,
+            separators=(',', ':')
+        )
+        return f'{cmd} {arg_str}'
 
 
 def html_format_command(cmd, args=None):
@@ -338,6 +362,10 @@ def log_build_systems(flag):
 
 def log_control_tree(flag):
     sublime_api.log_control_tree(flag)
+
+
+def ui_info():
+    return sublime_api.ui_info()
 
 
 def score_selector(scope_name, selector):
@@ -618,12 +646,16 @@ class Window:
     def show_quick_panel(self, items, on_select, flags=0, selected_index=-1, on_highlight=None, placeholder=None):
         """
         on_select is called when the the quick panel is finished, and should
-        accept a single integer, specifying which item was selected, or -1 for none
+        accept a single integer, specifying which item was selected, or -1 for
+        none. If flags includes WANT_EVENT, on_select should accept a second
+        parameter, which will be a dict with the key "modifier_keys" giving
+        access to keyboard modifiers pressed when the item was selected.
 
         on_highlight is called when the quick panel is still active, and
         indicates the current highlighted index
 
-        flags is a bitwise OR of MONOSPACE_FONT, and KEEP_OPEN_ON_FOCUS_LOST
+        flags is a bitwise OR of MONOSPACE_FONT, KEEP_OPEN_ON_FOCUS_LOST and
+        WANT_EVENT
         """
 
         item_tuples = []
@@ -2050,6 +2082,24 @@ class QuickPanelItem:
 
     def __repr__(self):
         return (f'QuickPanelItem({self.trigger!r}, '
+                f'details={self.details!r}, '
+                f'annotation={self.annotation!r}, '
+                f'kind={self.kind!r})')
+
+
+class ListInputItem:
+    __slots__ = ['text', 'value', 'details', 'annotation', 'kind']
+
+    def __init__(self, text, value, details="", annotation="", kind=KIND_AMBIGUOUS):
+        self.text = text
+        self.value = value
+        self.details = details
+        self.annotation = annotation
+        self.kind = kind
+
+    def __repr__(self):
+        return (f'ListInputItem({self.text!r}, '
+                f'value={self.value!r}, '
                 f'details={self.details!r}, '
                 f'annotation={self.annotation!r}, '
                 f'kind={self.kind!r})')

@@ -1,4 +1,3 @@
-# ST version: 4093
 import importlib
 import io
 import marshal
@@ -1231,14 +1230,22 @@ class CommandInputHandler:
         else:
             return (ret, 0)
 
-    def validate_(self, v):
+    def validate_(self, v, event):
+        if self.want_event():
+            return self.validate(v, event)
         return self.validate(v)
 
     def cancel_(self):
         self.cancel()
 
-    def confirm_(self, v):
-        self.confirm(v)
+    def confirm_(self, v, event):
+        if self.want_event():
+            self.confirm(v, event)
+        else:
+            self.confirm(v)
+
+    def want_event(self):
+        return False
 
 
 class BackInputHandler(CommandInputHandler):
@@ -1282,10 +1289,33 @@ class ListInputHandler(CommandInputHandler):
         if isinstance(items, tuple):
             items, selected_item_index = items
 
-        for i in range(len(items)):
-            it = items[i]
-            if isinstance(it, str):
-                items[i] = (it, it)
+        item_tuples = []
+        for item in items:
+            if isinstance(item, str):
+                item_tuples.append((item, item))
+            elif isinstance(item, (list, tuple)):
+                item_tuples.append(item)
+            elif isinstance(item, sublime.ListInputItem):
+                details = "\x1f".join(item.details) if isinstance(item.details, (list, tuple)) else item.details
+                if item.annotation != "" or item.kind != (sublime.KIND_ID_AMBIGUOUS, "", ""):
+                    kind_letter = 0
+                    if isinstance(item.kind[1], str) and len(item.kind[1]) == 1:
+                        kind_letter = ord(item.kind[1])
+                    item_tuples.append((
+                        (
+                            item.text,
+                            details,
+                            item.annotation,
+                            (item.kind[0], kind_letter, item.kind[2])
+                        ),
+                        item.value
+                    ))
+                elif details is not None and details != "":
+                    item_tuples.append(((item.text, details, True), item.value))
+                else:
+                    item_tuples.append((item.text, item.value))
+            else:
+                raise TypeError("items must contain only str, list, tuple or ListInputItem objects")
 
         props = {
             "initial_text": self.initial_text(),
@@ -1294,7 +1324,7 @@ class ListInputHandler(CommandInputHandler):
             "type": "list",
         }
 
-        return (items, props)
+        return (item_tuples, props)
 
     def description_(self, v, text):
         res = self.description(v, text)
