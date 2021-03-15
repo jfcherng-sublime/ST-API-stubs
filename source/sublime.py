@@ -1,3 +1,4 @@
+# ST version: 4099
 import collections
 import html
 import json
@@ -205,12 +206,29 @@ def message_dialog(msg):
     sublime_api.message_dialog(msg)
 
 
-def ok_cancel_dialog(msg, ok_title=""):
-    return sublime_api.ok_cancel_dialog(msg, ok_title)
+def ok_cancel_dialog(msg, ok_title="", title=""):
+    """
+    Show a popup dialog with an "ok" and "cancel" button.
+
+    msg: str - The message to show in the dialog.
+    ok_title: str - Optional replacement string for the "ok" button.
+    title: str - Optional title for the dialog. Note Linux and macOS do not have
+                 a title in their dialog.
+    """
+    return sublime_api.ok_cancel_dialog(msg, title, ok_title)
 
 
-def yes_no_cancel_dialog(msg, yes_title="", no_title=""):
-    return sublime_api.yes_no_cancel_dialog(msg, yes_title, no_title)
+def yes_no_cancel_dialog(msg, yes_title="", no_title="", title=""):
+    """
+    Show a popup dialog with a "yes", "no" and "cancel" button.
+
+    msg: str - The message to show in the dialog.
+    yes_title: str - Optional replacement string for the "yes" button.
+    no_title: str - Optional replacement string for the "no" button.
+    title: str - Optional title for the dialog. Note Linux and macOS do not have
+                 a title in their dialog.
+    """
+    return sublime_api.yes_no_cancel_dialog(msg, title, yes_title, no_title)
 
 
 def open_dialog(callback, file_types=[], directory=None, multi_select=False, allow_folders=False):
@@ -325,43 +343,85 @@ def set_clipboard(text):
     return sublime_api.set_clipboard(text)
 
 
-def log_commands(flag):
+def log_commands(flag=None):
+    if flag is None:
+        flag = not get_log_commands()
     sublime_api.log_commands(flag)
 
 
-def log_input(flag):
+def get_log_commands():
+    return sublime_api.get_log_commands()
+
+
+def log_input(flag=None):
     """
     Enables or disables input logging. This is useful to find the names of
     certain keys on the keyboard
     """
+    if flag is None:
+        flag = not get_log_input()
     sublime_api.log_input(flag)
 
 
-def log_fps(flag):
+def get_log_input():
+    return sublime_api.get_log_input()
+
+
+def log_fps(flag=None):
     """
     Enables or disables fps logging.
     """
+    if flag is None:
+        flag = not get_log_fps()
     sublime_api.log_fps(flag)
 
 
-def log_result_regex(flag):
+def get_log_fps():
+    return sublime_api.get_log_fps()
+
+
+def log_result_regex(flag=None):
     """
     Enables or disables result regex logging. This is useful when trying to
     debug file_regex and line_regex in build systems
     """
+    if flag is None:
+        flag = not get_log_result_regex()
     sublime_api.log_result_regex(flag)
 
 
-def log_indexing(flag):
+def get_log_result_regex():
+    return sublime_api.get_log_result_regex()
+
+
+def log_indexing(flag=None):
+    if flag is None:
+        flag = not get_log_indexing()
     sublime_api.log_indexing(flag)
 
 
-def log_build_systems(flag):
+def get_log_indexing():
+    return sublime_api.get_log_indexing()
+
+
+def log_build_systems(flag=None):
+    if flag is None:
+        flag = not get_log_build_systems()
     sublime_api.log_build_systems(flag)
 
 
-def log_control_tree(flag):
+def get_log_build_systems():
+    return sublime_api.get_log_build_systems()
+
+
+def log_control_tree(flag=None):
+    if flag is None:
+        flag = not get_log_control_tree()
     sublime_api.log_control_tree(flag)
+
+
+def get_log_control_tree():
+    return sublime_api.get_log_control_tree()
 
 
 def ui_info():
