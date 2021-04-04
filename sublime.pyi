@@ -1,6 +1,6 @@
 # This file is maintained on https://github.com/jfcherng-sublime/ST-API-stubs
 #
-# ST version: 4099
+# ST version: 4100
 
 from typing import (
     Any,
@@ -67,7 +67,9 @@ FORCE_GROUP: int = 8
 # Only valid with ADD_TO_SELECTION or REPLACE_MRU
 SEMI_TRANSIENT: int = 16
 ADD_TO_SELECTION: int = 32
-REPLACE_MRU = 64
+REPLACE_MRU: int = 64
+# Only valid with ADD_TO_SELECTION
+CLEAR_TO_RIGHT: int = 128
 IGNORECASE: int = 2
 LITERAL: int = 1
 MONOSPACE_FONT: int = 1
@@ -726,6 +728,9 @@ class Window:
         - `ADD_TO_SELECTION` (4050): Add the file to the currently selected sheets in this group
         - `ADD_TO_SELECTION_SEMI_TRANSIENT` (4075): Add the file to the currently selected sheets in this group,
                                                     as a semi-transient view
+        - `SEMI_TRANSIENT`: open the file in semi-transient mode
+        - `REPLACE_MRU`: replace the active sheet in the group
+        - `CLEAR_TO_RIGHT` (4100): unselect all files to the right of the active sheet
 
         The optional group parameter an a 0-based integer of the group to open the file within.
         `-1` specifies the active group.
@@ -1365,6 +1370,9 @@ class Sheet:
 
     def is_transient(self) -> bool:
         """ Determines if this view is transient or not """
+        ...
+
+    def group(self) -> int:
         ...
 
     def close(self) -> None:

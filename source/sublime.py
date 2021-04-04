@@ -1,4 +1,4 @@
-# ST version: 4099
+# ST version: 4100
 import collections
 import html
 import json
@@ -41,6 +41,8 @@ FORCE_GROUP = 8
 SEMI_TRANSIENT = 16
 ADD_TO_SELECTION = 32
 REPLACE_MRU = 64
+# Only valid with ADD_TO_SELECTION
+CLEAR_TO_RIGHT = 128
 
 IGNORECASE = 2
 LITERAL = 1
@@ -564,6 +566,10 @@ class Window:
         ENCODED_POSITION: fname name may have :row:col or :row suffix
         TRASIENT: don't add the file to the list of open buffers
         FORCE_GROUP: don't select the file if it's opened in a different group
+        SEMI_TRANSIENT: open the file in semi-transient mode
+        ADD_TO_SELECTION: add the file to the selected sheets
+        REPLACE_MRU: replace the active sheet in the group
+        CLEAR_TO_RIGHT: unselect all files to the right of the active sheet
         """
         return View(sublime_api.window_open_file(self.window_id, fname, flags, group))
 
@@ -1145,6 +1151,12 @@ class Sheet:
 
     def is_transient(self):
         return sublime_api.sheet_is_transient(self.sheet_id)
+
+    def group(self):
+        group_num = sublime_api.sheet_group(self.sheet_id)
+        if group_num == -1:
+            return None
+        return group_num
 
     def close(self):
         return sublime_api.sheet_close(self.sheet_id)

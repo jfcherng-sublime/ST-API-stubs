@@ -1,6 +1,6 @@
 # This file is maintained on https://github.com/jfcherng-sublime/ST-API-stubs
 #
-# ST version: 4099
+# ST version: 4100
 
 from importlib.machinery import ModuleSpec
 from types import ModuleType
@@ -326,7 +326,6 @@ def run_view_callbacks(
     name: str,
     view_id: int,
     *args: StValue,
-    attach: bool = False,
     el_only: bool = False,
 ) -> None:
     ...

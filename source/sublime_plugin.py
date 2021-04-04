@@ -1,4 +1,4 @@
-# ST version: 4099
+# ST version: 4100
 import importlib
 import io
 import marshal
@@ -619,6 +619,9 @@ def check_view_event_listeners(view):
 
 
 def attach_view(view):
+    if isinstance(view, int):
+        view = sublime.View(view)
+
     check_view_event_listeners(view)
 
     view.settings().add_on_change(
@@ -719,11 +722,8 @@ def vel_callbacks(v, name, listener_only=False):
         yield vel if listener_only else getattr(vel, name)
 
 
-def run_view_callbacks(name, view_id, *args, attach=False, el_only=False):
+def run_view_callbacks(name, view_id, *args, el_only=False):
     v = sublime.View(view_id)
-
-    if attach:
-        attach_view(v)
 
     for callback in el_callbacks(name):
         callback(v, *args)
@@ -790,7 +790,7 @@ def on_init(module):
 
 
 def on_new(view_id):
-    run_view_callbacks('on_new', view_id, attach=True, el_only=True)
+    run_view_callbacks('on_new', view_id, el_only=True)
 
 
 def on_new_async(view_id):
@@ -846,7 +846,7 @@ def on_close_buffer_async(buffer_id):
 
 
 def on_clone(view_id):
-    run_view_callbacks('on_clone', view_id, attach=True, el_only=True)
+    run_view_callbacks('on_clone', view_id, el_only=True)
 
 
 def on_clone_async(view_id):
@@ -877,7 +877,7 @@ def get_profiling_data():
 
 
 def on_load(view_id):
-    run_view_callbacks('on_load', view_id, attach=True)
+    run_view_callbacks('on_load', view_id)
 
 
 def on_load_async(view_id):
@@ -885,7 +885,7 @@ def on_load_async(view_id):
 
 
 def on_revert(view_id):
-    run_view_callbacks('on_revert', view_id, attach=True)
+    run_view_callbacks('on_revert', view_id)
 
 
 def on_revert_async(view_id):
@@ -893,7 +893,7 @@ def on_revert_async(view_id):
 
 
 def on_reload(view_id):
-    run_view_callbacks('on_reload', view_id, attach=True)
+    run_view_callbacks('on_reload', view_id)
 
 
 def on_reload_async(view_id):
