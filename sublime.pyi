@@ -1373,9 +1373,11 @@ class Sheet:
         ...
 
     def group(self) -> int:
+        """ The (layout) group that the sheet is contained within """
         ...
 
     def close(self) -> None:
+        """ Closes the sheet """
         ...
 
 
