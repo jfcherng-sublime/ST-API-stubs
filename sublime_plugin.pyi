@@ -9,6 +9,7 @@ from typing import (
     Callable,
     Dict,
     Generator,
+    Generic,
     Iterable,
     Iterator,
     List,
@@ -18,6 +19,7 @@ from typing import (
     Tuple,
     TypeVar,
     Union,
+    overload,
 )
 from typing_extensions import TypedDict
 
@@ -42,6 +44,8 @@ T_Layout = TypedDict(
         "cells": Sequence[Sequence[int]],
     },
 )
+
+InputType = TypeVar('InputType')
 
 StCallback0 = Callable[[], None]
 StCallback1 = Callable[[T], None]
@@ -594,7 +598,7 @@ def on_exit(log_path: str) -> None:
     ...
 
 
-class CommandInputHandler:
+class CommandInputHandler(Generic[InputType]):
     def name(self) -> str:
         """
         The command argument name this input handler is editing.
@@ -628,14 +632,14 @@ class CommandInputHandler:
         """
         ...
 
-    def preview(self, arg: Dict) -> Union[str, sublime.Html]:
+    def preview(self, arg: InputType) -> Union[str, sublime.Html]:
         """
         Called whenever the user changes the text in the entry box.
         The returned value (either plain text or HTML) will be shown in the preview area of the Command Palette.
         """
         ...
 
-    def validate(self, arg: Dict) -> bool:
+    def validate(self, arg: InputType) -> bool:
         """
         Called whenever the user presses enter in the text entry box.
         Return False to disallow the current value.
@@ -646,7 +650,13 @@ class CommandInputHandler:
         """ Called when the input handler is canceled, either by the user pressing backspace or escape. """
         ...
 
-    def confirm(self, text: Dict) -> None:
+    @overload
+    def confirm(self, arg: InputType) -> None:
+        """ Called when the input is accepted, after the user has pressed enter and the text has been validated. """
+        ...
+
+    @overload
+    def confirm(self, arg: InputType, event: Dict) -> None:
         """ Called when the input is accepted, after the user has pressed enter and the text has been validated. """
         ...
 
@@ -669,13 +679,13 @@ class CommandInputHandler:
         ...
 
 
-class BackInputHandler(CommandInputHandler):
+class BackInputHandler(CommandInputHandler[None]):
     def name(self) -> str:
         """ The command argument name this input handler is editing. Defaults to `_Back`. """
         ...
 
 
-class TextInputHandler(CommandInputHandler):
+class TextInputHandler(CommandInputHandler[str]):
     """
     TextInputHandlers can be used to accept textual input in the Command Palette.
     Return a subclass of this from the `input()` method of a command.
@@ -695,7 +705,7 @@ class TextInputHandler(CommandInputHandler):
         ...
 
 
-class ListInputHandler(CommandInputHandler):
+class ListInputHandler(CommandInputHandler[InputType], Generic[InputType]):
     """
     ListInputHandlers can be used to accept a choice input from a list items in the Command Palette.
     Return a subclass of this from the input() method of a command.
@@ -811,9 +821,7 @@ class ApplicationCommand(Command):
     def run_(self, edit_token: int, args: Dict) -> None:
         ...
 
-    def run(self) -> None:
-        """ Called when the command is run """
-        ...
+    run: Callable[..., None]
 
 
 class WindowCommand(Command):
@@ -827,9 +835,7 @@ class WindowCommand(Command):
     def run_(self, edit_token: int, args: Dict) -> None:
         ...
 
-    def run(self) -> None:
-        """ Called when the command is run """
-        ...
+    run: Callable[..., None]
 
 
 class TextCommand(Command):
@@ -843,9 +849,7 @@ class TextCommand(Command):
     def run_(self, edit_token: int, args: Dict) -> None:
         ...
 
-    def run(self, edit: sublime.Edit) -> None:
-        """ Called when the command is run """
-        ...
+    run: Callable[..., None]
 
 
 class EventListener:
