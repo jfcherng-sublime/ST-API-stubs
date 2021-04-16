@@ -45,7 +45,7 @@ T_Layout = TypedDict(
     },
 )
 
-InputType = TypeVar('InputType')
+InputType = TypeVar("InputType")
 
 StCallback0 = Callable[[], None]
 StCallback1 = Callable[[T], None]

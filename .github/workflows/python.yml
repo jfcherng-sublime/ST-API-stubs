@@ -38,12 +38,12 @@ jobs:
 
       - name: Do linting
         run: |
+          mypy -m sublime
+          mypy -m sublime_plugin
+
           # do things in a .py ways...
           mv sublime.pyi sublime.py
           mv sublime_plugin.pyi sublime_plugin.py
-
-          mypy -m sublime
-          mypy -m sublime_plugin
 
           flake8 .
           black --check .
