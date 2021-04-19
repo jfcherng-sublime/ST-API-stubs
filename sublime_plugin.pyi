@@ -500,7 +500,7 @@ def on_deactivated_async(view_id: int) -> None:
     ...
 
 
-def on_query_context(view_id: int, key: str, operator: str, operand: StValue, match_all: bool) -> bool:
+def on_query_context(view_id: int, key: str, operator: str, operand: StValue, match_all: bool) -> Optional[bool]:
     ...
 
 
@@ -526,7 +526,9 @@ class MultiCompletionList:
         ...
 
 
-def on_query_completions(view_id: int, req_id: int, prefix: str, locations: List[StPoint]) -> None:
+def on_query_completions(
+    view_id: int, req_id: int, prefix: str, locations: List[StPoint]
+) -> Union[None, List[StCompletion], Tuple[List[StCompletion], int]]:
     ...
 
 

@@ -1708,7 +1708,7 @@ class View:
         """
         ...
 
-    def meta_info(self, key: str, pt: StPoint) -> str:
+    def meta_info(self, key: str, pt: StPoint) -> Dict[str, Any]:
         ...
 
     def extract_tokens_with_scopes(self, r: Region) -> List[Tuple[StVector, str]]:
