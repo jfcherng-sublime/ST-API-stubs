@@ -1851,7 +1851,7 @@ class View:
         """
         ...
 
-    def find_by_class(self, pt: StPoint, forward: bool, classes: int, separators: str = "") -> Region:
+    def find_by_class(self, pt: StPoint, forward: bool, classes: int, separators: str = "") -> StPoint:
         """
         Finds the next location after point that matches the given classes
         If forward is `False`, searches backwards instead of forwards.
