@@ -625,7 +625,7 @@ class CommandInputHandler(Generic[InputType]):
         ...
 
     def initial_text(self) -> str:
-        """ Initial text shown in the text entry box. Empty by default. """
+        """Initial text shown in the text entry box. Empty by default."""
         ...
 
     def initial_selection(self) -> List:
@@ -649,17 +649,17 @@ class CommandInputHandler(Generic[InputType]):
         ...
 
     def cancel(self) -> None:
-        """ Called when the input handler is canceled, either by the user pressing backspace or escape. """
+        """Called when the input handler is canceled, either by the user pressing backspace or escape."""
         ...
 
     @overload
     def confirm(self, arg: InputType) -> None:
-        """ Called when the input is accepted, after the user has pressed enter and the text has been validated. """
+        """Called when the input is accepted, after the user has pressed enter and the text has been validated."""
         ...
 
     @overload
     def confirm(self, arg: InputType, event: Dict) -> None:
-        """ Called when the input is accepted, after the user has pressed enter and the text has been validated. """
+        """Called when the input is accepted, after the user has pressed enter and the text has been validated."""
         ...
 
     def create_input_handler_(self, args: Dict) -> Optional["CommandInputHandler"]:
@@ -683,7 +683,7 @@ class CommandInputHandler(Generic[InputType]):
 
 class BackInputHandler(CommandInputHandler[None]):
     def name(self) -> str:
-        """ The command argument name this input handler is editing. Defaults to `_Back`. """
+        """The command argument name this input handler is editing. Defaults to `_Back`."""
         ...
 
 
@@ -788,7 +788,7 @@ class Command:
         ...
 
     def filter_args(self, args: Dict) -> Dict:
-        """ Returns the args after without the "event" entry """
+        """Returns the args after without the "event" entry"""
         ...
 
     def want_event(self) -> bool:
@@ -818,7 +818,7 @@ class Command:
 
 
 class ApplicationCommand(Command):
-    """ ApplicationCommands are instantiated once per application. """
+    """ApplicationCommands are instantiated once per application."""
 
     def run_(self, edit_token: int, args: Dict) -> None:
         ...
@@ -827,7 +827,7 @@ class ApplicationCommand(Command):
 
 
 class WindowCommand(Command):
-    """ WindowCommands are instantiated once per window. The Window object may be retrieved via `self.window` """
+    """WindowCommands are instantiated once per window. The Window object may be retrieved via `self.window`"""
 
     window: sublime.Window
 
@@ -841,7 +841,7 @@ class WindowCommand(Command):
 
 
 class TextCommand(Command):
-    """ TextCommands are instantiated once per view. The View object may be retrieved via `self.view` """
+    """TextCommands are instantiated once per view. The View object may be retrieved via `self.view`"""
 
     view: sublime.View
 
@@ -948,7 +948,7 @@ class TextChangeListener:
         ...
 
     def attach(self, buffer: sublime.Buffer) -> None:
-        """ Attach this listener to a buffer. """
+        """Attach this listener to a buffer."""
         ...
 
     def is_attached(self) -> bool:
