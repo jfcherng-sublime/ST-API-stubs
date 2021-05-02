@@ -620,7 +620,7 @@ def active_window() -> "Window":
     ...
 
 
-def windows() -> "List[Window]":
+def windows() -> List["Window"]:
     """Returns a list of all the open windows"""
     ...
 
@@ -637,8 +637,8 @@ class Window:
     """This class represents windows and provides an interface of methods to interact with them"""
 
     window_id: int
-    settings_object: "Optional[Settings]"
-    template_settings_object: "Optional[Settings]"
+    settings_object: Optional["Settings"]
+    template_settings_object: Optional["Settings"]
 
     def __init__(self, id: int) -> None:
         ...
@@ -674,7 +674,7 @@ class Window:
         """Returns the currently focused sheet"""
         ...
 
-    def active_view(self) -> "Optional[View]":
+    def active_view(self) -> Optional["View"]:
         """Returns the currently edited view"""
         ...
 
@@ -738,7 +738,7 @@ class Window:
         """
         ...
 
-    def find_open_file(self, fname: str) -> "Optional[View]":
+    def find_open_file(self, fname: str) -> Optional["View"]:
         """
         Finds the named file in the list of open files, and returns the
         corresponding `View`, or `None` if no such file is open
@@ -816,7 +816,7 @@ class Window:
         """Returns the currently focused sheet in the given `group`"""
         ...
 
-    def active_view_in_group(self, group: int) -> "Optional[View]":
+    def active_view_in_group(self, group: int) -> Optional["View"]:
         """Returns the currently edited view in the given `group`"""
         ...
 
@@ -832,7 +832,7 @@ class Window:
         """Returns the transient `Sheet` in the given `group` if any"""
         ...
 
-    def transient_view_in_group(self, group: int) -> "Optional[View]":
+    def transient_view_in_group(self, group: int) -> Optional["View"]:
         """Returns the transient `View` in the given `group` if any"""
         ...
 
@@ -861,7 +861,7 @@ class Window:
         """
         ...
 
-    def find_output_panel(self, name: str) -> "Optional[View]":
+    def find_output_panel(self, name: str) -> Optional["View"]:
         """
         Returns the view associated with the named output panel, or `None` if
         the output panel does not exist
@@ -1349,7 +1349,7 @@ class Sheet:
         """
         ...
 
-    def view(self) -> "Optional[View]":
+    def view(self) -> Optional["View"]:
         """
         Returns the view contained within the sheet. May be `None` if the
         sheet is an image preview, or the view has been closed
@@ -2114,7 +2114,7 @@ class View:
         """
         ...
 
-    def syntax(self) -> "Optional[Syntax]":
+    def syntax(self) -> Optional["Syntax"]:
         """Get the syntax used by the view. May be None."""
         ...
 
@@ -2134,11 +2134,11 @@ class View:
     def indexed_references(self) -> List[Tuple[Region, str]]:
         ...
 
-    def symbol_regions(self) -> "List[SymbolRegion]":
+    def symbol_regions(self) -> List["SymbolRegion"]:
         """Returns a list of sublime.SymbolRegion() objects for the symbols in this view"""
         ...
 
-    def indexed_symbol_regions(self, type: int = SYMBOL_TYPE_ANY) -> "List[SymbolRegion]":
+    def indexed_symbol_regions(self, type: int = SYMBOL_TYPE_ANY) -> List["SymbolRegion"]:
         """
         :param type:
             The type of symbol to return. One of the values:
@@ -2310,7 +2310,7 @@ class View:
         ...
 
 
-def _buffers() -> "List[Buffer]":
+def _buffers() -> List["Buffer"]:
     """Returns all available Buffer objects"""
     ...
 
@@ -2672,7 +2672,7 @@ class CompletionItem:
         ...
 
 
-def list_syntaxes() -> "List[Syntax]":
+def list_syntaxes() -> List["Syntax"]:
     """
     Returns a list of Syntaxes for all known syntaxes.
 
@@ -2681,7 +2681,7 @@ def list_syntaxes() -> "List[Syntax]":
     ...
 
 
-def syntax_from_path(path: str) -> "Optional[Syntax]":
+def syntax_from_path(path: str) -> Optional["Syntax"]:
     """
     Get the syntax for a specific path.
 
@@ -2690,7 +2690,7 @@ def syntax_from_path(path: str) -> "Optional[Syntax]":
     ...
 
 
-def find_syntax_by_name(name: str) -> "List[Syntax]":
+def find_syntax_by_name(name: str) -> List["Syntax"]:
     """
     Find syntaxes with the specified name. Name must match exactly.
 
@@ -2699,7 +2699,7 @@ def find_syntax_by_name(name: str) -> "List[Syntax]":
     ...
 
 
-def find_syntax_by_scope(scope: str) -> "List[Syntax]":
+def find_syntax_by_scope(scope: str) -> List["Syntax"]:
     """
     Find syntaxes with the specified scope. Scope must match exactly.
 
