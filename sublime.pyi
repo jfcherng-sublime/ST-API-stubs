@@ -9,6 +9,7 @@ from typing import (
     Iterable,
     Iterator,
     List,
+    Literal,
     Optional,
     Sequence,
     Tuple,
@@ -186,17 +187,17 @@ def version() -> str:
     ...
 
 
-def platform() -> str:
+def platform() -> Literal["osx", "linux", "windows"]:
     """ Returns the platform, which may be "osx", "linux" or "windows" """
     ...
 
 
-def arch() -> str:
+def arch() -> Literal["x32", "x64", "arm64"]:
     """ Returns the CPU architecture, which may be "x32", "x64" or "arm64" """
     ...
 
 
-def channel() -> str:
+def channel() -> Literal["stable", "dev"]:
     """ Returns the release channel, which may be "stable" or "dev" """
     ...
 
