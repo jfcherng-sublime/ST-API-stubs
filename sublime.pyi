@@ -2100,15 +2100,15 @@ class View:
     def query_phantoms(self, pids: List[int]) -> List[Tuple[int, int]]:
         ...
 
-    def assign_syntax(self, syntax_file: str) -> None:
+    def assign_syntax(self, syntax: Union[str, "Syntax"]) -> None:
         """
         Sets the syntax for this view.
 
-        You can use "Packages/Python/Python.sublime-syntax" or "scope:source.python"
+        You can use "Packages/Python/Python.sublime-syntax", "scope:source.python" or pass a Syntax object.
         """
         ...
 
-    def set_syntax_file(self, syntax_file: str) -> None:
+    def set_syntax_file(self, syntax: Union[str, "Syntax"]) -> None:
         """
         @deprecated use `assign_syntax()` instead
         """
