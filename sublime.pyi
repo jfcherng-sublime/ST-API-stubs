@@ -2708,7 +2708,7 @@ def find_syntax_by_scope(scope: str) -> List["Syntax"]:
     ...
 
 
-def find_syntax_for_file(path: str, first_line: str = "") -> "Syntax":
+def find_syntax_for_file(path: str, first_line: str = "") -> Optional["Syntax"]:
     """
     Returns the path to the syntax that will be used when opening a file with the name fname.
     The `first_line` of file contents may also be provided if available.
