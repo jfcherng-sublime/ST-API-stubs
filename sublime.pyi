@@ -1344,8 +1344,8 @@ class Sheet:
 
     def window(self) -> Optional[Window]:
         """
-        Returns the window containing the sheet. May be `None` if the sheet
-        has been closed
+        Returns the window containing the sheet.
+        May be `None` if the sheet has been closed.
         """
         ...
 
@@ -1504,7 +1504,10 @@ class View:
         ...
 
     def window(self) -> Optional[Window]:
-        """Returns a reference to the window containing the view"""
+        """
+        Returns a reference to the window containing the view.
+        May be `None` if the view has been closed.
+        """
         ...
 
     def clones(self) -> List["View"]:
