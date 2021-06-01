@@ -10,10 +10,9 @@ I personally use this with [LSP][pc-lsp] + [LSP-pyright][pc-lsp-pyright] setup.
 
 1. Install the [LSP][pc-lsp] package via Package Control.
 1. You have to copy those `.pyi` stub files from this repository to `YOUR_PROJECT_ROOT/typings/` directory.
-1. Make your preferred LSP server is able to "see" them.
+1. Make your preferred LSP server able to "see" them.
 
-   - If you use [LSP-pyright][pc-lsp-pyright],
-     configure the `python.analysis.extraPaths`:
+   - If you use [LSP-pyright][pc-lsp-pyright], configure the `python.analysis.extraPaths`:
 
      ```js
      {
