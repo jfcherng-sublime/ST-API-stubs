@@ -30,12 +30,12 @@ I personally use this with [LSP][pc-lsp] + [LSP-pyright][pc-lsp-pyright] setup.
      }
      ```
 
-   - If you use [LSP-pyls][gh-lsp-pysl], configure the `pyls.plugins.jedi.extra_paths`:
+   - If you use [LSP-pylsp][pc-lsp-pylsp], configure the `pylsp.plugins.jedi.extra_paths`:
 
      ```js
      {
          "settings": {
-             "pyls.plugins.jedi.extra_paths": [
+             "pylsp.plugins.jedi.extra_paths": [
                  // my custom stubs
                  "$packages/../typings",
                  // project's stubs
@@ -56,6 +56,6 @@ Apart from [@AmjadHD](https://github.com/AmjadHD)'s work, there are also some ot
 - https://github.com/sublimelsp/LSP/tree/st4000-exploration/stubs
 - https://github.com/SublimeText/sublime_lib/tree/master/stubs
 
-[gh-lsp-pysl]: https://github.com/sublimelsp/LSP-pyls
+[pc-lsp-pylsp]: https://packagecontrol.io/packages/LSP-pylsp
 [pc-lsp-pyright]: https://packagecontrol.io/packages/LSP-pyright
 [pc-lsp]: https://packagecontrol.io/packages/LSP
