@@ -2,7 +2,7 @@
 
 With LSP proper configured, you can have something like the following screenshot.
 
-![LSP and pyls](https://raw.githubusercontent.com/jfcherng-sublime/ST-api-stubs/master/docs/with-pyls.png)
+![LSP and pyright](https://raw.githubusercontent.com/jfcherng-sublime/ST-api-stubs/master/docs/with-pyright.png)
 
 ## How to Use
 
