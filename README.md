@@ -23,9 +23,9 @@ I personally use this with [LSP][pc-lsp] + [LSP-pyright][pc-lsp-pyright] setup.
                  // project's stubs
                  "$folder/typings",
              ],
+             // a special predefined setup for developing ST plugins
+             "pyright.dev_environment": "sublime_text",
          },
-         // a special predefined setup for developing ST plugins
-         "dev_environment": "sublime_text",
      }
      ```
 
