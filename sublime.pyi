@@ -561,7 +561,7 @@ def encode_value(val: StValue, pretty: bool = ...) -> str:
     ...
 
 
-def decode_value(data: str) -> StValue:
+def decode_value(data: str) -> Any:
     """
     Decodes a JSON string into an object.
     If `data` is invalid, a `ValueError` will be thrown
@@ -985,7 +985,7 @@ class Window:
         """Returns name of the currently opened project file, if any"""
         ...
 
-    def project_data(self) -> Optional[Dict[str, StValue]]:
+    def project_data(self) -> Optional[Dict[str, Any]]:
         """
         Returns the project data associated with the current window
         The data is in the same format as the contents of a _.sublime-project_ file
@@ -2371,7 +2371,7 @@ class Settings:
     def __repr__(self) -> str:
         ...
 
-    def to_dict(self) -> Dict[str, StValue]:
+    def to_dict(self) -> Dict[str, Any]:
         """
         Return the settings as a dict. This is not very fast.
 
