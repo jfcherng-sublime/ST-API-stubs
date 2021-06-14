@@ -33,8 +33,8 @@ T_Layout = TypedDict(
     },
 )
 
-StCallback0 = Callable[[], None]
-StCallback1 = Callable[[T], None]
+StCallback0 = Callable[[], Any]
+StCallback1 = Callable[[T], Any]
 StCompletion = Union[str, List[str], Tuple[str, str], "CompletionItem"]
 StCompletionNormalized = Tuple[
     str,  # trigger
