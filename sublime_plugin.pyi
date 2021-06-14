@@ -1,6 +1,6 @@
 # This file is maintained on https://github.com/jfcherng-sublime/ST-API-stubs
 #
-# ST version: 4100
+# ST version: 4107
 
 from importlib.machinery import ModuleSpec
 from types import ModuleType
