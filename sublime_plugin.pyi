@@ -66,7 +66,7 @@ StDip = float
 StLocation = Tuple[str, str, Tuple[int, int]]
 StPoint = int
 StStr = str  # alias in case we have a variable named as "str"
-StValue = Union[dict, list, str, int, float, bool, None]
+StValue = Union[dict, list, tuple, str, int, float, bool, None]
 StVector = Tuple[StDip, StDip]
 
 # -------- #

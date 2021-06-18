@@ -11,6 +11,7 @@ from typing import (
     List,
     Literal,
     Optional,
+    Reversible,
     Sequence,
     Tuple,
     TypeVar,
@@ -52,7 +53,7 @@ StDip = float
 StLocation = Tuple[str, str, Tuple[int, int]]
 StPoint = int
 StStr = str  # alias in case we have a variable named as "str"
-StValue = Union[dict, list, str, int, float, bool, None]
+StValue = Union[dict, list, tuple, str, int, float, bool, None]
 StVector = Tuple[StDip, StDip]
 
 # -------- #
@@ -554,7 +555,7 @@ def find_resources(pattern: str) -> List[str]:
     ...
 
 
-def encode_value(val: StValue, pretty: bool = ...) -> str:
+def encode_value(val: Any, pretty: bool = ...) -> str:
     """
     Encode a JSON compatible value into a string representation
     If `pretty` is set to `True`, the string will include newlines and indentation
@@ -993,7 +994,7 @@ class Window:
         """
         ...
 
-    def set_project_data(self, v: Dict[str, StValue]) -> None:
+    def set_project_data(self, v: Dict[str, Any]) -> None:
         """
         Updates the project data associated with the current window
         If the window is associated with a _.sublime-project_ file, the project
@@ -1245,7 +1246,7 @@ class TextChange:
         ...
 
 
-class Selection:
+class Selection(Reversible):
     """
     Maintains a set of Regions, ensuring that none overlap
     The regions are kept in sorted order
@@ -1281,6 +1282,9 @@ class Selection:
         ...
 
     def __repr__(self) -> str:
+        ...
+
+    def __reversed__(self) -> Iterator[Region]:
         ...
 
     def is_valid(self) -> bool:
@@ -2360,7 +2364,7 @@ class Settings:
         # when casting the returned value. So we probably just use "Any"...
         ...
 
-    def __setitem__(self, key: str, value: StValue) -> None:
+    def __setitem__(self, key: str, value: Any) -> None:
         ...
 
     def __delitem__(self, key: str) -> None:
@@ -2380,7 +2384,7 @@ class Settings:
         """
         ...
 
-    def setdefault(self, key: str, value: StValue) -> Any:
+    def setdefault(self, key: str, value: Any) -> Any:
         """
         Returns the value of the item with the specified key.
 
@@ -2404,7 +2408,7 @@ class Settings:
         """
         ...
 
-    def get(self, key: str, default: Optional[StValue] = None) -> Any:
+    def get(self, key: str, default: Optional[Any] = None) -> Any:
         """
         Returns the named setting, or `default` if it's not defined
         If not passed, `default` will have a value of `None`
@@ -2420,7 +2424,7 @@ class Settings:
         """
         ...
 
-    def set(self, key: str, value: StValue) -> None:
+    def set(self, key: str, value: Any) -> None:
         """Sets the named setting. Only primitive types, lists, and dicts are accepted"""
         ...
 
@@ -2740,14 +2744,14 @@ class Syntax:
 
 class QuickPanelItem:
     trigger: str
-    details: str
+    details: Union[str, Sequence[str]]
     annotation: str
     kind: StCompletionKind
 
     def __init__(
         self,
         trigger: str,
-        details: str = "",
+        details: Union[str, Sequence[str]] = "",
         annotation: str = "",
         kind: StCompletionKind = KIND_AMBIGUOUS,
     ) -> None:
