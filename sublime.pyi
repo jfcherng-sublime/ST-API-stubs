@@ -900,13 +900,13 @@ class Window:
         initial_text: str,
         on_done: Optional[StCallback1[str]],
         on_change: Optional[StCallback1[str]],
-        on_cancel: StCallback0,
+        on_cancel: Optional[StCallback0],
     ) -> "View":
         """
         Shows the input panel, to collect a line of input from the user
         `on_done` and `on_change`, if not `None`, should both be functions
         that expect a single string argument
-        `on_cancel` should be a function that expects no arguments
+        `on_cancel` should be `None` or a function that expects no arguments
         The view used for the input widget is returned
         """
         ...
