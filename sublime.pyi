@@ -41,9 +41,9 @@ StCompletionNormalized = Tuple[
     str,  # trigger
     str,  # annotation
     str,  # details
-    StCompletion,  # completion
+    str,  # completion
     str,  # kind_name
-    str,  # letter
+    int,  # icon letter (Unicode code point, decimal form)
     int,  # completion_format
     int,  # flags
     int,  # kind

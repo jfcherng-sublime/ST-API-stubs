@@ -22,13 +22,11 @@ from typing import (
     overload,
 )
 from typing_extensions import TypedDict
-
 import importlib.abc
 import io
 import os
-import threading
-
 import sublime
+import threading
 
 # ----- #
 # types #
@@ -54,9 +52,9 @@ StCompletionNormalized = Tuple[
     str,  # trigger
     str,  # annotation
     str,  # details
-    StCompletion,  # completion
+    str,  # completion
     str,  # kind_name
-    str,  # letter
+    int,  # icon letter (Unicode code point, decimal form)
     int,  # completion_format
     int,  # flags
     int,  # kind
@@ -72,7 +70,6 @@ StVector = Tuple[StDip, StDip]
 # -------- #
 # ST codes #
 # -------- #
-
 
 api_ready: bool = False
 
