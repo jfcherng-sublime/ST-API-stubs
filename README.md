@@ -20,10 +20,10 @@ I personally use this with [LSP][pc-lsp] + [LSP-pyright][pc-lsp-pyright] setup.
      {
          "settings": {
              "python.analysis.extraPaths": [
-                 // my custom stubs
-                 "$packages/../typings",
                  // project's stubs
                  "$folder/typings",
+                 // my custom stubs
+                 "$packages/../typings",
              ],
              // a special predefined setup for developing ST plugins
              "pyright.dev_environment": "sublime_text",
@@ -37,10 +37,10 @@ I personally use this with [LSP][pc-lsp] + [LSP-pyright][pc-lsp-pyright] setup.
      {
          "settings": {
              "pylsp.plugins.jedi.extra_paths": [
-                 // my custom stubs
-                 "$packages/../typings",
                  // project's stubs
                  "$folder/typings",
+                 // my custom stubs
+                 "$packages/../typings",
              ],
          },
      }
