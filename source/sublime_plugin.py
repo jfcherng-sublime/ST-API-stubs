@@ -1,4 +1,4 @@
-# ST version: 4100
+# ST version: 4109
 import importlib
 import io
 import marshal
@@ -95,7 +95,7 @@ pending_on_activated_async_callbacks = {
 view_event_listener_excluded_callbacks = {
     'on_clone',
     'on_clone_async',
-    'on_exit'
+    'on_exit',
     'on_init',
     'on_load_project',
     'on_load_project_async',

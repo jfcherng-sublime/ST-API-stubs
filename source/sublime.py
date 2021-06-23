@@ -1,4 +1,4 @@
-# ST version: 4100
+# ST version: 4109
 import collections
 import html
 import json
@@ -254,12 +254,11 @@ def open_dialog(callback, file_types=[], directory=None, multi_select=False, all
     if allow_folders:
         flags |= 2
 
-    files = sublime_api.open_dialog(file_types, directory or '', flags)
+    cb = callback
+    if not multi_select:
+        cb = lambda files: callback(files[0] if files else None)
 
-    if multi_select:
-        set_timeout(lambda: callback(files), 0)
-    else:
-        set_timeout(lambda: callback(files[0] if files else None), 0)
+    sublime_api.open_dialog(file_types, directory or '', flags, cb)
 
 
 def save_dialog(callback, file_types=[], directory=None, name=None, extension=None):
@@ -274,8 +273,7 @@ def save_dialog(callback, file_types=[], directory=None, name=None, extension=No
     name: str | None - The default name of the file in the save dialog.
     extension: str | None - The default extension used in the save dialog.
     """
-    file = sublime_api.save_dialog(file_types, directory or '', name or '', extension or '') or None
-    set_timeout(lambda: callback(file), 0)
+    sublime_api.save_dialog(file_types, directory or '', name or '', extension or '', callback)
 
 
 def select_folder_dialog(callback, directory=None, multi_select=False):
@@ -288,12 +286,11 @@ def select_folder_dialog(callback, directory=None, multi_select=False):
     multi_select: bool - Whether to allow selecting multiple folders. Function
                          will call callback with a list if this is True.
     """
-    folders = sublime_api.select_folder_dialog(directory or '', multi_select)
+    cb = callback
+    if not multi_select:
+        cb = lambda folders: callback(folders[0] if folders else None)
 
-    if multi_select:
-        set_timeout(lambda: callback(folders), 0)
-    else:
-        set_timeout(lambda: callback(folders[0] if folders else None), 0)
+    sublime_api.select_folder_dialog(directory or '', multi_select, cb)
 
 
 def run_command(cmd, args=None):
