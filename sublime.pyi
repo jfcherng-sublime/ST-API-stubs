@@ -1302,7 +1302,7 @@ class Selection(Reversible):
         """
         ...
 
-    def add_all(self, regions: Sequence[Union[Region, StPoint]]) -> None:
+    def add_all(self, regions: Iterable[Union[Region, StPoint]]) -> None:
         """Adds all `regions` in the given list or tuple"""
         ...
 
