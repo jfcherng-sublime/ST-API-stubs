@@ -1,6 +1,6 @@
 # This file is maintained on https://github.com/jfcherng-sublime/ST-API-stubs
 #
-# ST version: 4107
+# ST version: 4109
 
 from typing import (
     Any,
@@ -14,19 +14,20 @@ from typing import (
     Reversible,
     Sequence,
     Tuple,
+    TypedDict,
     TypeVar,
     Union,
 )
-from typing_extensions import TypedDict
 
 # ----- #
 # types #
 # ----- #
 
 T = TypeVar("T")
-T_ExpandableVar = TypeVar("T_ExpandableVar", None, bool, int, float, str, Dict, List, Tuple)
-T_Layout = TypedDict(
-    "T_Layout",
+InputType = TypeVar("InputType")
+StExpandableVar = TypeVar("StExpandableVar", None, bool, int, float, str, Dict, List, Tuple)
+StLayout = TypedDict(
+    "StLayout",
     {
         "cols": Sequence[float],
         "rows": Sequence[float],
@@ -571,7 +572,7 @@ def decode_value(data: str) -> Any:
     ...
 
 
-def expand_variables(val: T_ExpandableVar, variables: Dict[str, str]) -> T_ExpandableVar:
+def expand_variables(val: StExpandableVar, variables: Dict[str, str]) -> StExpandableVar:
     """
     Expands any variables in the string `value` using the variables defined in
     the dictionary `variables`
@@ -838,17 +839,17 @@ class Window:
         """Returns the transient `View` in the given `group` if any"""
         ...
 
-    def layout(self) -> T_Layout:
+    def layout(self) -> StLayout:
         """Returns the current layout"""
         ...
 
-    def get_layout(self) -> T_Layout:
+    def get_layout(self) -> StLayout:
         """
         @deprecated use `layout()` instead
         """
         ...
 
-    def set_layout(self, layout: T_Layout) -> None:
+    def set_layout(self, layout: StLayout) -> None:
         """Changes the tile-based panel layout of view groups"""
         ...
 

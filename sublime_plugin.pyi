@@ -1,6 +1,6 @@
 # This file is maintained on https://github.com/jfcherng-sublime/ST-API-stubs
 #
-# ST version: 4107
+# ST version: 4109
 
 from importlib.machinery import ModuleSpec
 from types import ModuleType
@@ -14,14 +14,14 @@ from typing import (
     Iterator,
     List,
     Optional,
+    overload,
     Sequence,
     Set,
     Tuple,
+    TypedDict,
     TypeVar,
     Union,
-    overload,
 )
-from typing_extensions import TypedDict
 import importlib.abc
 import io
 import os
@@ -33,17 +33,16 @@ import threading
 # ----- #
 
 T = TypeVar("T")
-T_ExpandableVar = TypeVar("T_ExpandableVar", None, bool, int, float, str, Dict, List, Tuple)
-T_Layout = TypedDict(
-    "T_Layout",
+InputType = TypeVar("InputType")
+StExpandableVar = TypeVar("StExpandableVar", None, bool, int, float, str, Dict, List, Tuple)
+StLayout = TypedDict(
+    "StLayout",
     {
         "cols": Sequence[float],
         "rows": Sequence[float],
         "cells": Sequence[Sequence[int]],
     },
 )
-
-InputType = TypeVar("InputType")
 
 StCallback0 = Callable[[], Any]
 StCallback1 = Callable[[T], Any]
