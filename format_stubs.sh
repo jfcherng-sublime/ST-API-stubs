@@ -9,10 +9,12 @@ pushd "${SCRIPT_DIR}" || exit
 
 mv "sublime.pyi" "sublime.py"
 mv "sublime_plugin.pyi" "sublime_plugin.py"
+mv "sublime_typing.pyi" "sublime_typing.py"
 
 black .
 
 mv "sublime.py" "sublime.pyi"
 mv "sublime_plugin.py" "sublime_plugin.pyi"
+mv "sublime_typing.py" "sublime_typing.pyi"
 
 popd || exit

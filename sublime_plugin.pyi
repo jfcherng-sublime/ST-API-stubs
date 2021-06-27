@@ -2,6 +2,12 @@
 #
 # ST version: 4109
 
+from __future__ import annotations
+from sublime_typing import (
+    Completion,
+    CompletionNormalized,
+    Point,
+)
 from importlib.machinery import ModuleSpec
 from types import ModuleType
 from typing import (
@@ -18,7 +24,6 @@ from typing import (
     Sequence,
     Set,
     Tuple,
-    TypedDict,
     TypeVar,
     Union,
 )
@@ -32,39 +37,8 @@ import threading
 # types #
 # ----- #
 
-T = TypeVar("T")
 InputType = TypeVar("InputType")
-StExpandableVar = TypeVar("StExpandableVar", None, bool, int, float, str, Dict, List, Tuple)
-StLayout = TypedDict(
-    "StLayout",
-    {
-        "cols": Sequence[float],
-        "rows": Sequence[float],
-        "cells": Sequence[Sequence[int]],
-    },
-)
-
-StCallback0 = Callable[[], Any]
-StCallback1 = Callable[[T], Any]
-StCompletion = Union[str, Sequence[str], Tuple[str, str], sublime.CompletionItem]
-StCompletionNormalized = Tuple[
-    str,  # trigger
-    str,  # annotation
-    str,  # details
-    str,  # completion
-    str,  # kind_name
-    int,  # icon letter (Unicode code point, decimal form)
-    int,  # completion_format
-    int,  # flags
-    int,  # kind
-]
-StCompletionKind = Tuple[int, str, str]
-StDip = float
-StLocation = Tuple[str, str, Tuple[int, int]]
-StPoint = int
-StStr = str  # alias in case we have a variable named as "str"
-StValue = Union[dict, list, tuple, str, int, float, bool, None]
-StVector = Tuple[StDip, StDip]
+ListItem = Union[str, Tuple[str, InputType]]
 
 # -------- #
 # ST codes #
@@ -511,7 +485,7 @@ def on_query_context(
     ...
 
 
-def normalise_completion(c: Union[sublime.CompletionItem, str, Sequence[str]]) -> StCompletionNormalized:
+def normalise_completion(c: Union[sublime.CompletionItem, str, Sequence[str]]) -> CompletionNormalized:
     ...
 
 
@@ -519,7 +493,7 @@ class MultiCompletionList:
     remaining_calls: int
     view_id: int
     req_id: int
-    completions: List[StCompletionNormalized]
+    completions: List[CompletionNormalized]
     flags: int
 
     def __init__(self, num_completion_lists: int, view_id: int, req_id: int) -> None:
@@ -537,12 +511,12 @@ def on_query_completions(
     view_id: int,
     req_id: int,
     prefix: str,
-    locations: Sequence[StPoint],
-) -> Union[None, List[StCompletion], Tuple[List[StCompletion], int]]:
+    locations: Sequence[Point],
+) -> Union[None, List[Completion], Tuple[List[Completion], int]]:
     ...
 
 
-def on_hover(view_id: int, point: StPoint, hover_zone: int) -> None:
+def on_hover(view_id: int, point: Point, hover_zone: int) -> None:
     ...
 
 
@@ -723,9 +697,7 @@ class ListInputHandler(CommandInputHandler[InputType], Generic[InputType]):
     Return a subclass of this from the input() method of a command.
     """
 
-    def list_items(
-        self,
-    ) -> Union[List[str], List[Tuple], Tuple[Union[List[str], List[Tuple]], int]]:
+    def list_items(self) -> Union[List[ListItem], Tuple[List[ListItem], int]]:
         """
         The items to show in the list. If returning a list of `(str, value)` tuples,
         then the str will be shown to the user, while the value will be used as the command argument.
