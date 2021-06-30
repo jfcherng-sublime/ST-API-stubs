@@ -656,7 +656,7 @@ class Window:
         """Returns the currently edited view"""
         ...
 
-    def new_html_sheet(self, name: str, contents: str, flags: int = 0, group: int = -1) -> Sheet:
+    def new_html_sheet(self, name: str, contents: str, flags: int = 0, group: int = -1) -> HtmlSheet:
         """
         Constructs a sheet with HTML contents rendered using minihtml.
 
