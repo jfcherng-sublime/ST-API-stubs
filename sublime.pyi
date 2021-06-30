@@ -24,6 +24,7 @@ from typing import (
     Iterator,
     List,
     Literal,
+    Mapping,
     Optional,
     Reversible,
     Sequence,
@@ -2371,7 +2372,7 @@ class Settings:
         # when casting the returned value. So we probably just use "Any"...
         ...
 
-    def update(self, paris: Union[Dict, Iterable] = (), /, **kwargs: Any) -> None:
+    def update(self, paris: Union[Dict, Mapping, Iterable] = (), /, **kwargs: Any) -> None:
         """
         Update the settings from pairs, which may be any of the following:
 
