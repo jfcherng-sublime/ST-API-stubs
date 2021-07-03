@@ -36,16 +36,20 @@ jobs:
 
       - name: Do linting
         run: |
+          pushd typings/ || exit
+
           mypy \
             -m sublime \
             -m sublime_plugin \
-            -m sublime_typing \
+            -m _sublime_typing \
             --
 
-          # do things in a .py ways...
-          mv sublime.pyi sublime.py
-          mv sublime_plugin.pyi sublime_plugin.py
-          mv sublime_typing.pyi sublime_typing.py
+          # rename *.pyi to *.py
+          for f in *.pyi; do
+              mv -- "$f" "${f%.pyi}.py"
+          done
 
           flake8 .
           black --check .
+
+          popd || exit

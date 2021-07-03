@@ -6,9 +6,6 @@ target-version = ['py38']
 exclude = '''
 /(
   \.git |
-  source |
-  plugin/libs |
-  stubs |
-  typings
+  sources
 )/
 '''
