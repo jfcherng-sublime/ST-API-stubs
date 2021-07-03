@@ -3,7 +3,7 @@
 # ST version: 4109
 
 from __future__ import annotations
-from sublime_typing import Completion, CompletionNormalized, Point
+from _sublime_typing import Completion, CompletionNormalized, Point
 from importlib.machinery import ModuleSpec
 from types import ModuleType
 from typing import (

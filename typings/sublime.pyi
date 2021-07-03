@@ -3,7 +3,7 @@
 # ST version: 4109
 
 from __future__ import annotations
-from sublime_typing import (
+from _sublime_typing import (
     Callback0,
     Callback1,
     Completion,

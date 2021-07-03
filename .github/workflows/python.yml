@@ -41,7 +41,7 @@ jobs:
           mypy \
             -m sublime \
             -m sublime_plugin \
-            -m sublime_typing \
+            -m _sublime_typing \
             --
 
           # rename *.pyi to *.py
