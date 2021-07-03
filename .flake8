@@ -1,4 +1,4 @@
 [flake8]
-exclude = source
+exclude = sources/
 ignore = E203,E262,W503
 max-line-length = 120
