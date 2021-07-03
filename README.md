@@ -11,7 +11,9 @@ You can also use these stub files to make [mypy][gh-mypy] work better with your 
 I personally use this with [LSP][pc-lsp] + [LSP-pyright][pc-lsp-pyright] setup.
 
 1. Install the [LSP][pc-lsp] package via Package Control.
-1. You have to copy those `.pyi` stub files from this repository to `YOUR_PROJECT_ROOT/typings/` directory.
+1. You have to copy `typings/` from this repository to `YOUR_PROJECT_ROOT/typings/` directory.
+   Some people may be used to call it `stubs/`. In that case, you just have to also change all
+   those `typings/` in following settings in this section.
 1. Make your preferred LSP server able to "see" them.
 
    - If you use [LSP-pyright][pc-lsp-pyright], configure the `python.analysis.extraPaths`:
