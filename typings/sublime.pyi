@@ -832,7 +832,7 @@ class Window:
     def create_output_panel(self, name: str, unlisted: bool = False) -> View:
         """
         Returns the view associated with the named output panel, creating it if required
-        The output panel can be shown by running the _show_panel_ window command,
+        The output panel can be shown by running the `show_panel` window command,
         with the panel argument set to the `name` with an "output." prefix.
 
         The optional `unlisted` parameter is a boolean to control if the
@@ -967,14 +967,14 @@ class Window:
     def project_data(self) -> Optional[Dict[str, Any]]:
         """
         Returns the project data associated with the current window
-        The data is in the same format as the contents of a _.sublime-project_ file
+        The data is in the same format as the contents of a `.sublime-project` file
         """
         ...
 
     def set_project_data(self, v: Dict[str, Any]) -> None:
         """
         Updates the project data associated with the current window
-        If the window is associated with a _.sublime-project_ file, the project
+        If the window is associated with a `.sublime-project` file, the project
         file will be updated on disk, otherwise the window will store the data
         internally
         """
@@ -2435,7 +2435,7 @@ class Phantom:
     left-aligned with the beginning of the line.
 
     * `on_navigate` is an optional callback that should accept a single string
-    parameter, that is the _href_ attribute of the link clicked.
+    parameter, that is the `href` attribute of the link clicked.
     """
 
     region: Region
