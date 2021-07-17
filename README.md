@@ -16,17 +16,13 @@ I personally use this with [LSP][pc-lsp] + [LSP-pyright][pc-lsp-pyright] setup.
    those `typings/` in following settings in this section.
 1. Make your preferred LSP server able to "see" them.
 
-   - If you use [LSP-pyright][pc-lsp-pyright], configure the `python.analysis.extraPaths`:
+   - If you use [LSP-pyright][pc-lsp-pyright], configure the `pyright.dev_environment`:
+
+     ST stubs have been bundled in LSP-pyright so you just have to activate the setup.
 
      ```js
      {
          "settings": {
-             "python.analysis.extraPaths": [
-                 // project's stubs
-                 "$folder/typings",
-                 // my custom stubs
-                 "$packages/../typings",
-             ],
              // a special predefined setup for developing ST plugins
              "pyright.dev_environment": "sublime_text",
          },
