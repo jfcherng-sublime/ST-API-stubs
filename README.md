@@ -1,50 +1,61 @@
 # Sublime Text API Stubs
 
-With LSP proper configured, you can have something like the following screenshot.
+With LSP properly configured and type annotations provided, you can have something like the following screenshot.
 
 ![LSP and pyright](https://raw.githubusercontent.com/jfcherng-sublime/ST-api-stubs/master/docs/with-pyright.png)
 
-You can also use these stub files to make [mypy][gh-mypy] work better with your plugins.
+You can also use these stub files in [mypy][gh-mypy] to do static analysis for your plugin.
 
-## How to Use
+## How to Use Them
 
-I personally use this with [LSP][pc-lsp] + [LSP-pyright][pc-lsp-pyright] setup.
+### Setup for [LSP-pyright][pc-lsp-pyright]
 
-1. Install the [LSP][pc-lsp] package via Package Control.
-1. You have to copy `typings/` from this repository to `YOUR_PROJECT_ROOT/typings/` directory.
-   Some people may be used to call it `stubs/`. In that case, you just have to also change all
-   those `typings/` in following settings in this section.
-1. Make your preferred LSP server able to "see" them.
+1. Configure the `pyright.dev_environment`:
 
-   - If you use [LSP-pyright][pc-lsp-pyright], configure the `pyright.dev_environment`:
+   ST stubs have been bundled in `LSP-pyright` so you just have to activate the setup.
 
-     ST stubs have been bundled in LSP-pyright so you just have to activate the setup.
+   ```js
+   {
+       "settings": {
+           // a special predefined setup for developing ST plugins
+           "pyright.dev_environment": "sublime_text",
+       },
+   }
+   ```
 
-     ```js
-     {
-         "settings": {
-             // a special predefined setup for developing ST plugins
-             "pyright.dev_environment": "sublime_text",
-         },
-     }
-     ```
+1. Restart the language server (by restarting ST).
 
-   - If you use [LSP-pylsp][pc-lsp-pylsp], configure the `pylsp.plugins.jedi.extra_paths`:
+### Setup for [LSP-pylsp][pc-lsp-pylsp]
 
-     ```js
-     {
-         "settings": {
-             "pylsp.plugins.jedi.extra_paths": [
-                 // project's stubs
-                 "$folder/typings",
-                 // my custom stubs
-                 "$packages/../typings",
-             ],
-         },
-     }
-     ```
+1. Copy `typings/` from this repository to `YOUR_PROJECT_ROOT/typings/` directory.
+1. Make the language server able to see them.
 
-1. Restart your ST and happy coding ♥
+   Configure the `pylsp.plugins.jedi.extra_paths`:
+
+   ```js
+   {
+       "settings": {
+           "pylsp.plugins.jedi.extra_paths": [
+               // $folder is the first project folder in your ST project folders
+               "$folder/typings",
+           ],
+       },
+   }
+   ```
+
+1. Restart the language server (by restarting ST).
+
+### Setup for [mypy][gh-mypy]
+
+1. Copy `typings/` from this repository as `YOUR_PROJECT_ROOT/typings/` directory.
+1. In your `mypy.ini`, in the `[mypy]` section, set the stub directories.
+
+   ```ini
+   [mypy]
+   mypy_path = typings:stubs
+   ```
+
+1. `mypy` should be able to understand `sublime` and `sublime_plugin` modules now.
 
 ## Acknowledgment and Related Resources
 
