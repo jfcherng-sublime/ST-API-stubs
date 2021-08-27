@@ -1504,6 +1504,11 @@ class View:
         ...
 
     def retarget(self, new_fname: str) -> None:
+        """
+        Assigns this view to the file.
+
+        You may want to run a `revert` command to reload the file content after that.
+        """
         ...
 
     def name(self) -> str:
