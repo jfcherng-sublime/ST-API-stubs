@@ -1,4 +1,4 @@
-# ST version: 4109
+# ST version: 4114
 import importlib
 import io
 import marshal
@@ -689,7 +689,7 @@ def check_text_change_listeners(buf):
             if want and not found:
                 cls().attach(buf)
             elif found and not want:
-                instance.detach(buf)
+                instance.detach()
 
 
 def detach_buffer(buf):
