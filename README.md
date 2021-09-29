@@ -63,7 +63,7 @@ This repository is initially mostly based on [AmjadHD/sublime_dev](https://githu
 
 Apart from [@AmjadHD](https://github.com/AmjadHD)'s work, there are also some other similar works:
 
-- https://github.com/sublimelsp/LSP/tree/st4000-exploration/stubs
+- https://github.com/sublimelsp/LSP/tree/main/stubs
 - https://github.com/SublimeText/sublime_lib/tree/master/stubs
 
 [gh-mypy]: https://github.com/python/mypy
