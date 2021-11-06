@@ -1788,9 +1788,14 @@ class View:
         ...
 
     def indented_region(self, pt: Point) -> Region:
+        """
+        Returns the region that represents consecutive lines which has the same indentation level
+        if they are indented. If the point is not indented, returns `sublime.Region(pt, pt)`.
+        """
         ...
 
     def indentation_level(self, pt: Point) -> int:
+        """Returns the indentation level of the point."""
         ...
 
     def has_non_empty_selection_region(self) -> bool:
