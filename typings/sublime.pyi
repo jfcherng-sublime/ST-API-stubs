@@ -1610,11 +1610,11 @@ class View:
         """
         ...
 
-    def erase(self, edit: Edit, region: Region) -> None:
+    def erase(self, edit: Edit, r: Region) -> None:
         """Erases the contents of the region from the buffer."""
         ...
 
-    def replace(self, edit: Edit, region: Region, text: str) -> None:
+    def replace(self, edit: Edit, r: Region, text: str) -> None:
         """Replaces the contents of the region with the given string."""
         ...
 
@@ -1639,10 +1639,10 @@ class View:
         """
         ...
 
-    def transform_region_from(self, region: Region, change_id: Tuple[int, int, int]) -> Region:
+    def transform_region_from(self, r: Region, when: Tuple[int, int, int]) -> Region:
         """
         Transforms a region from a previous point in time to an equivalent
-        region in the current state of the `View`. The `change_id` must have been
+        region in the current state of the `View`. The `when` must have been
         obtained from `change_id()` at the point in time the region is from.
 
         @version ST(>=4069)
