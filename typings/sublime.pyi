@@ -1795,7 +1795,7 @@ class View:
         ...
 
     def indentation_level(self, pt: Point) -> int:
-        """Returns the indentation level of the point."""
+        """Returns the indentation level of the line which contains the point."""
         ...
 
     def has_non_empty_selection_region(self) -> bool:
