@@ -1,4 +1,4 @@
-# ST version: 4123
+# ST version: 4127
 import collections
 import html
 import json
@@ -1208,6 +1208,19 @@ class HtmlSheet(Sheet):
 
     def set_contents(self, contents):
         sublime_api.html_sheet_set_contents(self.sheet_id, contents)
+
+
+class ContextStackFrame:
+    __slots__ = ['context_name', 'source_file', 'source_location']
+
+    def __init__(self, context_name, source_file, source_location):
+        self.context_name = context_name
+        self.source_file = source_file
+        self.source_location = source_location
+
+    def __repr__(self):
+        return (f'ContextStackFrame({self.context_name!r},'
+                f' {self.source_file!r}, {self.source_location!r})')
 
 
 class View:

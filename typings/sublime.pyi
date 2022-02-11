@@ -1,5 +1,5 @@
 # This file is maintained on https://github.com/jfcherng-sublime/ST-API-stubs
-# ST version: 4123
+# ST version: 4127
 
 from __future__ import annotations
 
@@ -1428,6 +1428,22 @@ class HtmlSheet(Sheet):
         ...
 
 
+class ContextStackFrame:
+    """
+    @version ST(>=4127)
+    """
+
+    context_name: str
+    source_file: str
+    source_location: Tuple[int, int]
+
+    def __init__(self, context_name: str, source_file: str, source_location: Tuple[int, int]) -> None:
+        ...
+
+    def __repr__(self) -> str:
+        ...
+
+
 class View:
     """
     Represents a view into a text buffer. Note that multiple views may refer to
@@ -1752,7 +1768,7 @@ class View:
         """Returns the syntax scope name assigned to the character at the given point"""
         ...
 
-    def context_backtrace(self, pt: Point) -> List[str]:
+    def context_backtrace(self, pt: Point) -> List[ContextStackFrame]:
         """
         Returns a list of the contexts on the stack at the specified point.
 
