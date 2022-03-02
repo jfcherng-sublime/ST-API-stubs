@@ -2605,7 +2605,7 @@ class CompletionList:
     completions: List[Completion]
     flags: int
 
-    def __init__(self, completions: Sequence[Completion] = None, flags: int = 0) -> None:
+    def __init__(self, completions: Optional[Sequence[Completion]] = None, flags: int = 0) -> None:
         """
         ---
 
