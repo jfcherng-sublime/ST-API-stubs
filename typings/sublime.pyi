@@ -2508,10 +2508,10 @@ class Phantom:
     - `LAYOUT_BELOW`: Display the phantom in space below the current line,
                     left-aligned with the region.
     - `LAYOUT_BLOCK`: Display the phantom in space below the current line,
-    left-aligned with the beginning of the line.
+       left-aligned with the beginning of the line.
 
     * `on_navigate` is an optional callback that should accept a single string
-    parameter, that is the `href` attribute of the link clicked.
+       parameter, that is the `href` attribute of the link clicked.
     """
 
     region: Region
@@ -2575,7 +2575,7 @@ class PhantomSet:
 
     def update(self, new_phantoms: Sequence[Phantom]) -> None:
         """
-        phantoms should be a list of phantoms.
+        phantoms should be a sequence of phantoms.
 
         The `region` attribute of each existing phantom in the set will be updated.
         New phantoms will be added to the view and phantoms not in phantoms list will be deleted.
