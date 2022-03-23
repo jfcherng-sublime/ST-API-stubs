@@ -1756,7 +1756,7 @@ class View:
 
         The returned value is like
         ```python
-        [(Region(0, 6), 'source.python meta.statement...')]
+        [(Region(0, 6), 'source.python meta.statement...'), ...]
         ```
         """
         ...
