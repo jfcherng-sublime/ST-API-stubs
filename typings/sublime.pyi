@@ -1,5 +1,5 @@
 # This file is maintained on https://github.com/jfcherng-sublime/ST-API-stubs
-# ST version: 4127
+# ST version: 4130
 
 from __future__ import annotations
 
@@ -1768,6 +1768,14 @@ class View:
         """
         ...
 
+    def expand_to_scope(self, pt: Point, selector: str) -> Region:
+        """
+        Expand the point to a region by the selector.
+
+        @version ST(>=4130)
+        """
+        ...
+
     def scope_name(self, pt: Point) -> str:
         """Returns the syntax scope name assigned to the character at the given point"""
         ...
@@ -1897,22 +1905,39 @@ class View:
         """
         ...
 
-    def find_by_class(self, pt: Point, forward: bool, classes: int, separators: str = "") -> Point:
+    def find_by_class(
+        self,
+        pt: Point,
+        forward: bool,
+        classes: int,
+        separators: str = "",
+        sub_word_separators: str = "",
+    ) -> Point:
         """
         Finds the next location after point that matches the given classes
         If forward is `False`, searches backwards instead of forwards.
         classes is a bitwise OR of the `CLASS_XXX` flags
         `separators` may be passed in, to define what characters should be
         considered to separate words.
+
+        - `sub_word_separators` requires ST >= 4130
         """
         ...
 
-    def expand_by_class(self, x: Union[Region, Point], classes: int, separators: str = "") -> Region:
+    def expand_by_class(
+        self,
+        x: Union[Region, Point],
+        classes: int,
+        separators: str = "",
+        sub_word_separators: str = "",
+    ) -> Region:
         """
         Expands `x` to the left and right, until each side lands on a location
         that matches `classes`. classes is a bitwise OR of the
         `CLASS_XXX` flags. `separators` may be passed in, to define
         what characters should be considered to separate words.
+
+        - `sub_word_separators` requires ST >= 4130
         """
         ...
 

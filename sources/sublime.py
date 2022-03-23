@@ -1,4 +1,4 @@
-# ST version: 4127
+# ST version: 4130
 import collections
 import html
 import json
@@ -1435,6 +1435,9 @@ class View:
     def extract_scope(self, pt):
         return sublime_api.view_extract_scope(self.view_id, pt)
 
+    def expand_to_scope(self, pt, selector):
+        return sublime_api.view_expand_to_scope(self.view_id, pt, selector)
+
     def scope_name(self, pt):
         return sublime_api.view_scope_name(self.view_id, pt)
 
@@ -1508,14 +1511,14 @@ class View:
 
         return sublime_api.view_classify(self.view_id, pt)
 
-    def find_by_class(self, pt, forward, classes, separators=""):
-        return sublime_api.view_find_by_class(self.view_id, pt, forward, classes, separators)
+    def find_by_class(self, pt, forward, classes, separators="", sub_word_separators=""):
+        return sublime_api.view_find_by_class(self.view_id, pt, forward, classes, separators, sub_word_separators)
 
-    def expand_by_class(self, x, classes, separators=""):
+    def expand_by_class(self, x, classes, separators="", sub_word_separators=""):
         if isinstance(x, Region):
-            return sublime_api.view_expand_by_class(self.view_id, x.a, x.b, classes, separators)
+            return sublime_api.view_expand_by_class(self.view_id, x.a, x.b, classes, separators, sub_word_separators)
         else:
-            return sublime_api.view_expand_by_class(self.view_id, x, x, classes, separators)
+            return sublime_api.view_expand_by_class(self.view_id, x, x, classes, separators, sub_word_separators)
 
     def rowcol(self, tp):
         return sublime_api.view_row_col(self.view_id, tp)
