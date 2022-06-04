@@ -11,14 +11,12 @@ from _sublime_typing import (
     Completion,
     CompletionKind,
     Dip,
-    ExpandableVar,
-    ExtractVariablesDict,
     HasKeysMethod,
     Layout,
     Location,
     Point,
-    ScopeStyleDict,
     Str,
+    T_ExpandableVar,
     Vector,
 )
 from typing import (
@@ -544,7 +542,7 @@ def decode_value(data: str) -> Any:
     ...
 
 
-def expand_variables(val: ExpandableVar, variables: Dict[str, str]) -> ExpandableVar:
+def expand_variables(val: T_ExpandableVar, variables: Dict[str, str]) -> T_ExpandableVar:
     """
     Expands any variables in the string `value` using the variables defined in the dictionary
     `variables` `value` may also be a `list` or `dict`, in which case the structure will be

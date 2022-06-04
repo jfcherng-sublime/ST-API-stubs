@@ -24,14 +24,16 @@ import sublime
 # ----- #
 
 T = TypeVar("T")
-AnyCallable = TypeVar("AnyCallable", bound=Callable[..., Any])
-ExpandableVar = TypeVar(
-    "ExpandableVar",
-    bound=Union[None, bool, int, float, str, Dict[Any, Any], List[Any], Tuple[Any, ...]],
-)
 
+AnyCallable = Callable[..., Any]
 Callback0 = Callable[[], Any]
 Callback1 = Callable[[T], Any]
+
+T_AnyCallable = TypeVar("T_AnyCallable", bound=AnyCallable)
+T_ExpandableVar = TypeVar(
+    "T_ExpandableVar",
+    bound=Union[None, bool, int, float, str, Dict[Any, Any], List[Any], Tuple[Any, ...]],
+)
 
 Point = int
 Dip = float
