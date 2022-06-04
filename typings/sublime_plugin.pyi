@@ -16,14 +16,12 @@ from typing import (
     Iterable,
     Iterator,
     List,
-    Optional,
     Type,
     overload,
     Sequence,
     Set,
     Tuple,
     TypeVar,
-    Union,
 )
 import importlib.abc
 import io
@@ -35,10 +33,7 @@ import threading
 # types #
 # ----- #
 
-T_InputType = TypeVar(
-    "T_InputType",
-    bound=Union[str, int, float, Dict[Any, Any], List[Any], Tuple[Any, ...], None],
-)
+T_InputType = TypeVar("T_InputType", bound=None | str | int | float | Dict[Any, Any] | List[Any] | Tuple[Any, ...])
 
 # -------- #
 # ST codes #
@@ -269,7 +264,7 @@ def detach_view(view: sublime.View) -> None:
     ...
 
 
-def find_view_event_listener(view: sublime.View, cls: Type) -> Optional[ViewEventListener]:
+def find_view_event_listener(view: sublime.View, cls: Type) -> None | ViewEventListener:
     """Find the view event listener object, whose class is `cls`, for the `view`."""
     ...
 
@@ -290,15 +285,11 @@ def plugin_module_for_obj(obj: object) -> str:
     ...
 
 
-def el_callbacks(name: str, listener_only: bool = False) -> Generator[Union[Type, str], None, None]:
+def el_callbacks(name: str, listener_only: bool = False) -> Generator[Type | str, None, None]:
     ...
 
 
-def vel_callbacks(
-    v: sublime.View,
-    name: str,
-    listener_only: bool = False,
-) -> Generator[Union[Type, str], None, None]:
+def vel_callbacks(v: sublime.View, name: str, listener_only: bool = False) -> Generator[Type | str, None, None]:
     ...
 
 
@@ -482,11 +473,11 @@ def on_query_context(
     operator: str,
     operand: Any,
     match_all: bool,
-) -> Optional[bool]:
+) -> None | bool:
     ...
 
 
-def normalise_completion(c: Union[sublime.CompletionItem, str, Sequence[str]]) -> CompletionNormalized:
+def normalise_completion(c: sublime.CompletionItem | str | Sequence[str]) -> CompletionNormalized:
     ...
 
 
@@ -502,7 +493,7 @@ class MultiCompletionList:
 
     def completions_ready(
         self,
-        completions: Iterable[Union[sublime.CompletionItem, str, Sequence[str]]],
+        completions: Iterable[sublime.CompletionItem | str | Sequence[str]],
         flags: int,
     ) -> None:
         ...
@@ -513,7 +504,7 @@ def on_query_completions(
     req_id: int,
     prefix: str,
     locations: Sequence[Point],
-) -> Union[None, List[Completion], Tuple[List[Completion], int]]:
+) -> None | List[Completion] | Tuple[List[Completion], int]:
     ...
 
 
@@ -521,23 +512,23 @@ def on_hover(view_id: int, point: Point, hover_zone: int) -> None:
     ...
 
 
-def on_text_command(view_id: int, name: str, args: Optional[Dict[str, Any]]) -> Tuple[str, Optional[Dict[str, Any]]]:
+def on_text_command(view_id: int, name: str, args: None | Dict[str, Any]) -> Tuple[str, None | Dict[str, Any]]:
     ...
 
 
 def on_window_command(
     window_id: int,
     name: str,
-    args: Optional[Dict[str, Any]],
-) -> Tuple[str, Optional[Dict[str, Any]]]:
+    args: None | Dict[str, Any],
+) -> Tuple[str, None | Dict[str, Any]]:
     ...
 
 
-def on_post_text_command(view_id: int, name: str, args: Optional[Dict[str, Any]]) -> None:
+def on_post_text_command(view_id: int, name: str, args: None | Dict[str, Any]) -> None:
     ...
 
 
-def on_post_window_command(window_id: int, name: str, args: Optional[Dict[str, Any]]) -> None:
+def on_post_window_command(window_id: int, name: str, args: None | Dict[str, Any]) -> None:
     ...
 
 
@@ -597,7 +588,7 @@ class CommandInputHandler(Generic[T_InputType]):
         """
         ...
 
-    def next_input(self, args: Dict[str, Any]) -> Optional[CommandInputHandler[T_InputType]]:
+    def next_input(self, args: Dict[str, Any]) -> None | CommandInputHandler[T_InputType]:
         """
         Returns the next input after the user has completed this one.
         May return None to indicate no more input is required,
@@ -617,11 +608,11 @@ class CommandInputHandler(Generic[T_InputType]):
         """Initial text shown in the text entry box. Empty by default."""
         ...
 
-    def initial_selection(self) -> List[Tuple[List[Union[str, Tuple[str, T_InputType], sublime.ListInputItem]], int]]:
+    def initial_selection(self) -> List[Tuple[List[str | Tuple[str, T_InputType] | sublime.ListInputItem], int]]:
         """A list of 2-element tuplues, defining the initially selected parts of the initial text."""
         ...
 
-    def preview(self, arg: T_InputType) -> Union[str, sublime.Html]:
+    def preview(self, arg: T_InputType) -> str | sublime.Html:
         """
         Called whenever the user changes the text in the entry box.
         The returned value (either plain text or HTML) will be shown in the preview area of the Command Palette.
@@ -649,7 +640,7 @@ class CommandInputHandler(Generic[T_InputType]):
         """Called when the input is accepted, after the user has pressed enter and the text has been validated."""
         ...
 
-    def create_input_handler_(self, args: Dict[str, Any]) -> Optional[CommandInputHandler[T_InputType]]:
+    def create_input_handler_(self, args: Dict[str, Any]) -> None | CommandInputHandler[T_InputType]:
         ...
 
     def preview_(self, v: str) -> Tuple[str, int]:
@@ -702,9 +693,8 @@ class ListInputHandler(CommandInputHandler[T_InputType], Generic[T_InputType]):
 
     def list_items(
         self,
-    ) -> Union[
-        List[Union[str, Tuple[str, T_InputType], sublime.ListInputItem]],
-        Tuple[List[Union[str, Tuple[str, T_InputType], sublime.ListInputItem]], int],
+    ) -> List[str | Tuple[str, T_InputType] | sublime.ListInputItem] | Tuple[
+        List[str | Tuple[str, T_InputType] | sublime.ListInputItem], int
     ]:
         """
         The items to show in the list. If returning a list of `(str, value)` tuples,
@@ -789,7 +779,7 @@ class Command:
         """
         ...
 
-    def input(self, args: Dict[str, Any]) -> Optional[CommandInputHandler[Any]]:
+    def input(self, args: Dict[str, Any]) -> None | CommandInputHandler[Any]:
         """
         If this returns something other than `None`,
         the user will be prompted for an input before the command is run in the Command Palette.
@@ -803,7 +793,7 @@ class Command:
         """
         ...
 
-    def create_input_handler_(self, args: Dict[str, Any]) -> Optional[CommandInputHandler[Any]]:
+    def create_input_handler_(self, args: Dict[str, Any]) -> None | CommandInputHandler[Any]:
         ...
 
 
@@ -915,8 +905,8 @@ class TextChangeListener:
         Async version of on_reload_async.
     """
 
-    __key: Optional[int]
-    buffer: Optional[sublime.Buffer]
+    __key: None | int
+    buffer: None | sublime.Buffer
 
     @classmethod
     def is_applicable(cls, buffer: sublime.Buffer) -> bool:
@@ -971,9 +961,9 @@ class MultizipImporter(importlib.abc.MetaPathFinder):
     def find_spec(
         self,
         fullname: str,
-        path: Optional[Sequence[Union[bytes, str]]],
-        target: Optional[Any] = None,
-    ) -> Optional[ModuleSpec]:
+        path: None | Sequence[bytes | str],
+        target: None | Any = None,
+    ) -> None | ModuleSpec:
         """
         :param fullname:
             A unicode string of the module name
@@ -1009,7 +999,7 @@ class ZipResourceReader(importlib.abc.ResourceReader):
         """
         ...
 
-    def open_resource(self, resource: Union[bytes, str, os.PathLike[Any]]) -> io.BytesIO:
+    def open_resource(self, resource: bytes | str | os.PathLike[Any]) -> io.BytesIO:
         """
         :param resource:
             A unicode string of a resource name - should not contain a path
@@ -1023,7 +1013,7 @@ class ZipResourceReader(importlib.abc.ResourceReader):
         """
         ...
 
-    def resource_path(self, resource: Union[bytes, str, os.PathLike[Any]]) -> str:
+    def resource_path(self, resource: bytes | str | os.PathLike[Any]) -> str:
         """
         :param resource:
             A unicode string of a resource name - should not contain a path
@@ -1076,7 +1066,7 @@ class ZipLoader(importlib.abc.InspectLoader):
         """
         ...
 
-    def _get_name_key(self, fullname: str) -> Union[Tuple[None, None], Tuple[str, str]]:
+    def _get_name_key(self, fullname: str) -> Tuple[None, None] | Tuple[str, str]:
         """
         Converts a module name into a pair of package name and key. The
         key is used to access the various data structures in this object.
@@ -1104,7 +1094,7 @@ class ZipLoader(importlib.abc.InspectLoader):
         """
         ...
 
-    def get_resource_reader(self, fullname: str) -> Optional[importlib.abc.ResourceReader]:
+    def get_resource_reader(self, fullname: str) -> None | importlib.abc.ResourceReader:
         """
         :param fullname:
             A unicode string of the module name to get the resource reader for
@@ -1142,7 +1132,7 @@ class ZipLoader(importlib.abc.InspectLoader):
         """
         ...
 
-    def get_source(self, fullname: str) -> Optional[str]:
+    def get_source(self, fullname: str) -> None | str:
         """
         :param fullname:
             A unicode string of the module to get the source for
@@ -1183,7 +1173,7 @@ class ZipLoader(importlib.abc.InspectLoader):
         """
         ...
 
-    def _spec_info(self, fullname: str) -> Union[Tuple[None, None], Tuple[str, bool]]:
+    def _spec_info(self, fullname: str) -> Tuple[None, None] | Tuple[str, bool]:
         """
         :param fullname:
             A unicode string of the module that an
@@ -1204,7 +1194,7 @@ class ZipLoader(importlib.abc.InspectLoader):
         ...
 
 
-override_path: Optional[str] = None
+override_path: None | str = None
 multi_importer: MultizipImporter = MultizipImporter()
 
 

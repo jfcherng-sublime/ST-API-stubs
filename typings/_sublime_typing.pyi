@@ -3,20 +3,7 @@
 from __future__ import annotations
 
 # __future__ must be the first import
-from typing import (
-    Any,
-    Callable,
-    Dict,
-    Iterable,
-    List,
-    Optional,
-    Protocol,
-    Sequence,
-    Tuple,
-    TypedDict,
-    TypeVar,
-    Union,
-)
+from typing import Any, Callable, Dict, Iterable, List, Protocol, Sequence, Tuple, TypedDict, TypeVar
 import sublime
 
 # ----- #
@@ -32,14 +19,14 @@ Callback1 = Callable[[T], Any]
 T_AnyCallable = TypeVar("T_AnyCallable", bound=AnyCallable)
 T_ExpandableVar = TypeVar(
     "T_ExpandableVar",
-    bound=Union[None, bool, int, float, str, Dict[Any, Any], List[Any], Tuple[Any, ...]],
+    bound=None | bool | int | float | str | Dict[Any, Any] | List[Any] | Tuple[Any, ...],
 )
 
 Point = int
 Dip = float
 Str = str  # alias in case we have a variable named as "str"
 
-Completion = Union[str, Sequence[str], Tuple[str, str], sublime.CompletionItem]
+Completion = str | Sequence[str] | Tuple[str, str] | sublime.CompletionItem
 CompletionKind = Tuple[int, str, str]
 CompletionNormalized = Tuple[
     str,  # trigger
@@ -110,7 +97,7 @@ class ScopeStyleDict(TypedDict, total=False):
 
 class CommandArgsDict(TypedDict):
     command: str
-    args: Optional[Dict[str, Any]]
+    args: None | Dict[str, Any]
 
 
 class HasKeysMethod(Protocol):
