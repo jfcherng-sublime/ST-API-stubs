@@ -1102,12 +1102,23 @@ class Window:
         """
         ...
 
-    def extract_variables(self) -> ExtractVariablesDict:
+    def extract_variables(self) -> Dict[str, str]:
         """
         Returns a dictionary of strings populated with contextual keys:
-        `packages`, `platform`, `file`, `file_path`, `file_name`, `file_base_name`,
-        `file_extension`, `folder`, `project`, `project_path`, `project_name`,
-        `project_base_name`, `project_extension`.
+
+        - `file_base_name`
+        - `file_extension`
+        - `file_name`
+        - `file_path`
+        - `file`
+        - `folder`
+        - `packages`
+        - `platform`
+        - `project_base_name`
+        - `project_extension`.
+        - `project_name`
+        - `project_path`
+        - `project`
 
         This dict is suitable for passing to `sublime.expand_variables()`.
         """
@@ -1821,7 +1832,7 @@ class View:
         """
         ...
 
-    def style_for_scope(self, scope: str) -> ScopeStyleDict:
+    def style_for_scope(self, scope: str) -> Dict[str, str]:
         """
         Accepts a string scope name and returns a `dict` of style information, includes the keys:
 
