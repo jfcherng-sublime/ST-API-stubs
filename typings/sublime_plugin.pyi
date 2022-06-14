@@ -588,7 +588,7 @@ class CommandInputHandler(Generic[T_InputType]):
         """
         ...
 
-    def next_input(self, args: Dict[str, Any]) -> None | CommandInputHandler[T_InputType]:
+    def next_input(self, args: Dict[str, Any]) -> None | CommandInputHandler[Any]:
         """
         Returns the next input after the user has completed this one.
         May return None to indicate no more input is required,
