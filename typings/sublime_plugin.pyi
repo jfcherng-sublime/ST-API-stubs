@@ -608,7 +608,9 @@ class CommandInputHandler(Generic[T_InputType]):
         """Initial text shown in the text entry box. Empty by default."""
         ...
 
-    def initial_selection(self) -> List[Tuple[List[str | Tuple[str, T_InputType] | sublime.ListInputItem], int]]:
+    def initial_selection(
+        self,
+    ) -> List[Tuple[List[str | Tuple[str, T_InputType] | sublime.ListInputItem[T_InputType]], int]]:
         """A list of 2-element tuplues, defining the initially selected parts of the initial text."""
         ...
 
@@ -693,8 +695,8 @@ class ListInputHandler(CommandInputHandler[T_InputType], Generic[T_InputType]):
 
     def list_items(
         self,
-    ) -> List[str | Tuple[str, T_InputType] | sublime.ListInputItem] | Tuple[
-        List[str | Tuple[str, T_InputType] | sublime.ListInputItem], int
+    ) -> List[str | Tuple[str, T_InputType] | sublime.ListInputItem[T_InputType]] | Tuple[
+        List[str | Tuple[str, T_InputType] | sublime.ListInputItem[T_InputType]], int
     ]:
         """
         The items to show in the list. If returning a list of `(str, value)` tuples,
