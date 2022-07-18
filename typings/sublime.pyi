@@ -3,22 +3,6 @@
 
 from __future__ import annotations
 
-# __future__ must be the first import
-from _sublime_typing import (
-    Callback0,
-    Callback1,
-    CommandArgsDict,
-    Completion,
-    CompletionKind,
-    Dip,
-    HasKeysMethod,
-    Layout,
-    Location,
-    Point,
-    Str,
-    T_ExpandableVar,
-    Vector,
-)
 from typing import (
     Any,
     Callable,
@@ -33,6 +17,22 @@ from typing import (
     Sequence,
     Tuple,
     TypeVar,
+)
+
+from _sublime_typing import (
+    Callback0,
+    Callback1,
+    CommandArgsDict,
+    Completion,
+    CompletionKind,
+    Dip,
+    HasKeysMethod,
+    Layout,
+    Location,
+    Point,
+    Str,
+    T_ExpandableVar,
+    Vector,
 )
 
 # ----- #
