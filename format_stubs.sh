@@ -13,6 +13,7 @@ for f in *.pyi; do
 done
 
 black .
+isort .
 
 # rename *.py to *.pyi
 for f in *.py; do

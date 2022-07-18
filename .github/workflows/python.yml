@@ -51,5 +51,6 @@ jobs:
 
           flake8 .
           black --check .
+          isort --check .
 
           popd || exit
