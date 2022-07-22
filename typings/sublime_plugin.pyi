@@ -513,7 +513,11 @@ def on_hover(view_id: int, point: Point, hover_zone: int) -> None:
     ...
 
 
-def on_text_command(view_id: int, name: str, args: None | Dict[str, Any]) -> Tuple[str, None | Dict[str, Any]]:
+def on_text_command(
+    view_id: int,
+    name: str,
+    args: None | Dict[str, Any],
+) -> None | Tuple[str, None | Dict[str, Any]]:
     ...
 
 
@@ -521,7 +525,7 @@ def on_window_command(
     window_id: int,
     name: str,
     args: None | Dict[str, Any],
-) -> Tuple[str, None | Dict[str, Any]]:
+) -> None | Tuple[str, None | Dict[str, Any]]:
     ...
 
 
