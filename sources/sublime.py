@@ -697,6 +697,10 @@ class Window:
         else:
             return None
 
+    def promote_sheet(self, sheet: Sheet) -> None:
+        """Promote the 'Sheet' parameter if semi-transient or transient."""
+        ...
+
     def layout(self):
         return sublime_api.window_get_layout(self.window_id)
 

@@ -1,5 +1,5 @@
 # This file is maintained on https://github.com/jfcherng-sublime/ST-API-stubs
-# ST version: 4131
+# ST version: 4136
 
 from __future__ import annotations
 
@@ -27,7 +27,7 @@ from typing import (
 )
 
 import sublime
-from _sublime_typing import AnyCallable, Completion, CompletionNormalized, EventDict, Point, T_AnyCallable
+from _sublime_types import AnyCallable, Completion, CompletionNormalized, EventDict, Point, T_AnyCallable
 
 # ----- #
 # types #
