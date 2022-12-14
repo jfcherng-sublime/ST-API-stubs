@@ -12,8 +12,8 @@ for f in *.pyi; do
     mv -- "$f" "${f%.pyi}.py"
 done
 
-black .
-isort .
+black . --preview
+isort . --profile black
 
 # rename *.py to *.pyi
 for f in *.py; do
