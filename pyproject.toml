@@ -28,3 +28,8 @@ exclude = '''
   sources
 )/
 '''
+
+[tool.ruff]
+select = ["E", "F", "W"]
+line-length = 120
+target-version = 'py311'
