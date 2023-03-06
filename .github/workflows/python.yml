@@ -6,10 +6,10 @@ name: Main
 on:
   push:
     branches:
-      - "**"
+      - '**'
   pull_request:
     branches:
-      - "**"
+      - '**'
 
 jobs:
   job_lint:
@@ -18,8 +18,8 @@ jobs:
 
     strategy:
       matrix:
-        os: ["ubuntu-latest"]
-        python-version: ["3.8"]
+        os: ['ubuntu-latest']
+        python-version: ['3.8']
 
     steps:
       - uses: actions/checkout@v3
@@ -32,25 +32,8 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip wheel
-          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          [ -f requirements.txt ] && pip install -r requirements.txt
 
       - name: Do linting
         run: |
-          pushd typings/ || exit
-
-          mypy \
-            -m sublime \
-            -m sublime_plugin \
-            -m _sublime_types \
-            --
-
-          # rename *.pyi to *.py
-          for f in *.pyi; do
-              mv -- "$f" "${f%.pyi}.py"
-          done
-
-          flake8 .
-          black --check --diff .
-          isort --check --diff .
-
-          popd || exit
+          bash ci.sh lint
