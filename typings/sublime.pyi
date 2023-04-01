@@ -17,6 +17,7 @@ from typing import (
     Sequence,
     Tuple,
     TypeVar,
+    overload,
 )
 
 from _sublime_types import (
@@ -263,6 +264,40 @@ def yes_no_cancel_dialog(msg: str, yes_title: str = "", no_title: str = "", titl
 
     Returns `DIALOG_YES`, `DIALOG_NO` or `DIALOG_CANCEL`.
     """
+    ...
+
+
+@overload
+def open_dialog(
+    callback: Callable[[None | Sequence[str]], None],
+    file_types: Sequence[Tuple[str, Sequence[str]]],
+    directory: None | str,
+    multi_select: Literal[True],
+    allow_folders: bool = False,
+) -> None:
+    ...
+
+
+@overload
+def open_dialog(
+    callback: Callable[[None | Sequence[str]], None],
+    file_types: Sequence[Tuple[str, Sequence[str]]] = [],
+    directory: None | str = None,
+    allow_folders: bool = False,
+    *,
+    multi_select: Literal[True],
+) -> None:
+    ...
+
+
+@overload
+def open_dialog(
+    callback: Callable[[None | str], None],
+    file_types: Sequence[Tuple[str, Sequence[str]]] = [],
+    directory: None | str = None,
+    multi_select: bool = False,
+    allow_folders: bool = False,
+) -> None:
     ...
 
 
