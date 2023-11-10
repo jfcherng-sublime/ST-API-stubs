@@ -18,6 +18,7 @@ skip_glob = [
 ]
 
 [tool.black]
+preview = true
 line-length = 120
 target-version = ['py311']
 
