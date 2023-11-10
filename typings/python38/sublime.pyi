@@ -767,8 +767,7 @@ def open_dialog(
     directory: None | str,
     multi_select: Literal[True],
     allow_folders: bool = False,
-) -> None:
-    ...
+) -> None: ...
 
 
 @overload
@@ -779,8 +778,7 @@ def open_dialog(
     allow_folders: bool = False,
     *,
     multi_select: Literal[True],
-) -> None:
-    ...
+) -> None: ...
 
 
 @overload
@@ -790,8 +788,7 @@ def open_dialog(
     directory: None | str = None,
     multi_select: bool = False,
     allow_folders: bool = False,
-) -> None:
-    ...
+) -> None: ...
 
 
 def open_dialog(
@@ -1197,17 +1194,13 @@ class Window:
         self.settings_object: Settings | None
         self.template_settings_object: Settings | None
 
-    def __hash__(self) -> int:
-        ...
+    def __hash__(self) -> int: ...
 
-    def __eq__(self, other: object) -> bool:
-        ...
+    def __eq__(self, other: object) -> bool: ...
 
-    def __bool__(self) -> bool:
-        ...
+    def __bool__(self) -> bool: ...
 
-    def __repr__(self) -> str:
-        ...
+    def __repr__(self) -> str: ...
 
     def id(self) -> int:
         """
@@ -1742,11 +1735,9 @@ class Edit:
 
     edit_token: int
 
-    def __init__(self, token: int) -> None:
-        ...
+    def __init__(self, token: int) -> None: ...
 
-    def __repr__(self) -> str:
-        ...
+    def __repr__(self) -> str: ...
 
 
 class Region:
@@ -1783,11 +1774,9 @@ class Region:
         """
         ...
 
-    def __str__(self) -> str:
-        ...
+    def __str__(self) -> str: ...
 
-    def __repr__(self) -> str:
-        ...
+    def __repr__(self) -> str: ...
 
     def __len__(self) -> int:
         """:returns: The size of the region."""
@@ -1887,8 +1876,7 @@ class HistoricPosition:
         .. since:: 4075
         """
 
-    def __repr__(self) -> str:
-        ...
+    def __repr__(self) -> str: ...
 
 
 class TextChange:
@@ -1925,8 +1913,7 @@ class TextChange:
         :meta noindex:
         """
 
-    def __repr__(self) -> str:
-        ...
+    def __repr__(self) -> str: ...
 
 
 class Selection(Reversible[Region]):
@@ -1963,18 +1950,15 @@ class Selection(Reversible[Region]):
         """:returns: Whether the selections are identical."""
         ...
 
-    def __lt__(self, rhs: Selection | None) -> bool:
-        ...
+    def __lt__(self, rhs: Selection | None) -> bool: ...
 
     def __bool__(self) -> bool:
         """The selection is ``True`` when not empty."""
         ...
 
-    def __str__(self) -> str:
-        ...
+    def __str__(self) -> str: ...
 
-    def __repr__(self) -> str:
-        ...
+    def __repr__(self) -> str: ...
 
     def is_valid(self) -> bool:
         """:returns: Whether this selection is for a valid view."""
@@ -2003,8 +1987,7 @@ class Selection(Reversible[Region]):
         ...
 
 
-def make_sheet(sheet_id: int) -> Sheet | None:
-    ...
+def make_sheet(sheet_id: int) -> Sheet | None: ...
 
 
 class Sheet:
@@ -2016,14 +1999,11 @@ class Sheet:
     def __init__(self, id: int) -> None:
         self.sheet_id: int
 
-    def __hash__(self) -> int:
-        ...
+    def __hash__(self) -> int: ...
 
-    def __eq__(self, other: object) -> bool:
-        ...
+    def __eq__(self, other: object) -> bool: ...
 
-    def __repr__(self) -> str:
-        ...
+    def __repr__(self) -> str: ...
 
     def id(self) -> int:
         """:returns: A number that uniquely identifies this sheet."""
@@ -2098,8 +2078,7 @@ class TextSheet(Sheet):
     .. since:: 4065
     """
 
-    def __repr__(self) -> str:
-        ...
+    def __repr__(self) -> str: ...
 
     def set_name(self, name: str) -> None:
         """Set the name displayed in the tab. Only affects unsaved files."""
@@ -2112,8 +2091,7 @@ class ImageSheet(Sheet):
     .. since:: 4065
     """
 
-    def __repr__(self) -> str:
-        ...
+    def __repr__(self) -> str: ...
 
 
 class HtmlSheet(Sheet):
@@ -2123,8 +2101,7 @@ class HtmlSheet(Sheet):
     .. since:: 4065
     """
 
-    def __repr__(self) -> str:
-        ...
+    def __repr__(self) -> str: ...
 
     def set_name(self, name: str) -> None:
         """Set the name displayed in the tab."""
@@ -2155,8 +2132,7 @@ class ContextStackFrame:
         ``tmLanguage`` based syntaxes.
         """
 
-    def __repr__(self) -> str:
-        ...
+    def __repr__(self) -> str: ...
 
 
 class View:
@@ -2173,20 +2149,15 @@ class View:
         self.selection: Selection
         self.settings_object: Settings | None
 
-    def __len__(self) -> int:
-        ...
+    def __len__(self) -> int: ...
 
-    def __hash__(self) -> int:
-        ...
+    def __hash__(self) -> int: ...
 
-    def __eq__(self, other: object) -> bool:
-        ...
+    def __eq__(self, other: object) -> bool: ...
 
-    def __bool__(self) -> bool:
-        ...
+    def __bool__(self) -> bool: ...
 
-    def __repr__(self) -> str:
-        ...
+    def __repr__(self) -> str: ...
 
     def id(self) -> int:
         """:returns: A number that uniquely identifies this view."""
@@ -2360,14 +2331,11 @@ class View:
         """:returns: The number of character in the file."""
         ...
 
-    def begin_edit(self, edit_token: int, cmd: str, args: CommandArgs = None) -> Edit:
-        ...
+    def begin_edit(self, edit_token: int, cmd: str, args: CommandArgs = None) -> Edit: ...
 
-    def end_edit(self, edit: Edit) -> None:
-        ...
+    def end_edit(self, edit: Edit) -> None: ...
 
-    def is_in_edit(self) -> bool:
-        ...
+    def is_in_edit(self) -> bool: ...
 
     def insert(self, edit: Edit, pt: Point, text: str) -> int:
         """
@@ -2578,14 +2546,11 @@ class View:
         """
         ...
 
-    def indented_region(self, pt: Point) -> Region:
-        ...
+    def indented_region(self, pt: Point) -> Region: ...
 
-    def indentation_level(self, pt: Point) -> int:
-        ...
+    def indentation_level(self, pt: Point) -> int: ...
 
-    def has_non_empty_selection_region(self) -> bool:
-        ...
+    def has_non_empty_selection_region(self) -> bool: ...
 
     def lines(self, region: Region) -> list[Region]:
         """
@@ -2919,20 +2884,15 @@ class View:
         content: str,
         layout: PhantomLayout,
         on_navigate: Callable[[str], Any] | None = None,
-    ) -> int:
-        ...
+    ) -> int: ...
 
-    def erase_phantoms(self, key: str) -> None:
-        ...
+    def erase_phantoms(self, key: str) -> None: ...
 
-    def erase_phantom_by_id(self, pid: int) -> None:
-        ...
+    def erase_phantom_by_id(self, pid: int) -> None: ...
 
-    def query_phantom(self, pid: int) -> list[Region]:
-        ...
+    def query_phantom(self, pid: int) -> list[Region]: ...
 
-    def query_phantoms(self, pids: list[int]) -> list[Region]:
-        ...
+    def query_phantoms(self, pids: list[int]) -> list[Region]: ...
 
     def assign_syntax(self, syntax: str | Syntax) -> None:
         """
@@ -3025,11 +2985,9 @@ class View:
         """
         ...
 
-    def find_all_results(self) -> list[tuple[str, int, int]]:
-        ...
+    def find_all_results(self) -> list[tuple[str, int, int]]: ...
 
-    def find_all_results_with_text(self) -> list[tuple[str, int, int, str]]:
-        ...
+    def find_all_results_with_text(self) -> list[tuple[str, int, int, str]]: ...
 
     def command_history(self, index: int, modifying_only: bool = False) -> tuple[str, CommandArgs, int]:
         """
@@ -3177,14 +3135,11 @@ class Buffer:
     def __init__(self, id: int) -> None:
         self.buffer_id: int
 
-    def __hash__(self) -> int:
-        ...
+    def __hash__(self) -> int: ...
 
-    def __eq__(self, other: object) -> bool:
-        ...
+    def __eq__(self, other: object) -> bool: ...
 
-    def __repr__(self) -> str:
-        ...
+    def __repr__(self) -> str: ...
 
     def id(self) -> int:
         """
@@ -3255,8 +3210,7 @@ class Settings:
         """
         ...
 
-    def __repr__(self) -> str:
-        ...
+    def __repr__(self) -> str: ...
 
     def to_dict(self) -> dict[str, Any]:
         """
@@ -3295,8 +3249,7 @@ class Settings:
         .. since:: 4078 3.8
         """
 
-    def get(self, key: str, default: Value | None = None) -> Any:
-        ...
+    def get(self, key: str, default: Value | None = None) -> Any: ...
 
     def has(self, key: str) -> bool:
         """Same as `__contains__`."""
@@ -3357,11 +3310,9 @@ class Phantom:
         """
         self.id: int
 
-    def __eq__(self, rhs: object) -> bool:
-        ...
+    def __eq__(self, rhs: object) -> bool: ...
 
-    def __repr__(self) -> str:
-        ...
+    def __repr__(self) -> str: ...
 
     def to_tuple(self) -> tuple[tuple[Point, Point], str, PhantomLayout, Callable[[str], Any] | None]:
         """
@@ -3391,11 +3342,9 @@ class PhantomSet:
         """
         self.phantoms: list[Phantom]
 
-    def __del__(self) -> None:
-        ...
+    def __del__(self) -> None: ...
 
-    def __repr__(self) -> str:
-        ...
+    def __repr__(self) -> str: ...
 
     def update(self, phantoms: Iterable[Phantom]) -> None:
         """
@@ -3416,8 +3365,7 @@ class Html:
     def __init__(self, data: str) -> None:
         self.data: str
 
-    def __repr__(self) -> str:
-        ...
+    def __repr__(self) -> str: ...
 
 
 class CompletionList:
@@ -3440,11 +3388,9 @@ class CompletionList:
         :param flags: Flags controlling auto-complete behavior. See `AutoCompleteFlags`.
         """
 
-    def __repr__(self) -> str:
-        ...
+    def __repr__(self) -> str: ...
 
-    def _set_target(self, target: None | Any) -> None:
-        ...
+    def _set_target(self, target: None | Any) -> None: ...
 
     def set_completions(
         self,
@@ -3498,11 +3444,9 @@ class CompletionItem:
         """
         self.flags
 
-    def __eq__(self, rhs: object) -> bool:
-        ...
+    def __eq__(self, rhs: object) -> bool: ...
 
-    def __repr__(self) -> str:
-        ...
+    def __repr__(self) -> str: ...
 
     @classmethod
     def snippet_completion(
@@ -3596,14 +3540,11 @@ class Syntax:
         self.scope: str
         """ The base scope name of the syntax. """
 
-    def __eq__(self, other: object) -> bool:
-        ...
+    def __eq__(self, other: object) -> bool: ...
 
-    def __hash__(self) -> int:
-        ...
+    def __hash__(self) -> int: ...
 
-    def __repr__(self) -> str:
-        ...
+    def __repr__(self) -> str: ...
 
 
 class QuickPanelItem:
@@ -3633,8 +3574,7 @@ class QuickPanelItem:
         self.kind: Kind
         """ The kind of the item. See `Kind`. """
 
-    def __repr__(self) -> str:
-        ...
+    def __repr__(self) -> str: ...
 
 
 class ListInputItem:
@@ -3667,8 +3607,7 @@ class ListInputItem:
         self.kind: Kind
         """ The kind of the item. See `Kind`. """
 
-    def __repr__(self) -> str:
-        ...
+    def __repr__(self) -> str: ...
 
 
 class SymbolRegion:
@@ -3692,8 +3631,7 @@ class SymbolRegion:
         self.kind: Kind
         """ The kind of the symbol. See `Kind`. """
 
-    def __repr__(self) -> str:
-        ...
+    def __repr__(self) -> str: ...
 
 
 class SymbolLocation:
@@ -3730,8 +3668,6 @@ class SymbolLocation:
         self.kind: Kind
         """ The kind of the symbol. See `Kind`. """
 
-    def __repr__(self) -> str:
-        ...
+    def __repr__(self) -> str: ...
 
-    def path_encoded_position(self) -> str:
-        ...
+    def path_encoded_position(self) -> str: ...

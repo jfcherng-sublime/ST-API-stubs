@@ -66,5 +66,4 @@ class CommandArgsDict(TypedDict):
 
 
 class HasKeysMethod(Protocol):
-    def keys(self) -> Iterable[str]:
-        ...
+    def keys(self) -> Iterable[str]: ...
