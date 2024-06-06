@@ -298,16 +298,6 @@ def open_dialog(
     multi_select: bool = False,
     allow_folders: bool = False,
 ) -> None:
-    ...
-
-
-def open_dialog(
-    callback: Callable[[None | str | Sequence[str]], None],
-    file_types: Sequence[Tuple[str, Sequence[str]]] = [],
-    directory: None | str = None,
-    multi_select: bool = False,
-    allow_folders: bool = False,
-) -> None:
     """
     Presents the user with a file dialog for the purpose of opening a file,
     and passes the resulting file path to callback.
