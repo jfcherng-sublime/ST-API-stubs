@@ -1,3 +1,7 @@
+# This Project Has Been Abandoned
+
+You may use https://github.com/SublimeText/sublime-text-stubs instead.
+
 # Sublime Text API Stubs
 
 With LSP properly configured and type annotations provided, you can have something like the following screenshot.
